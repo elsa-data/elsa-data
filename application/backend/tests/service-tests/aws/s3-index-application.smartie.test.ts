@@ -1,3 +1,11 @@
+import { S3Client } from "@aws-sdk/client-s3";
+import { mockClient } from "aws-sdk-client-mock";
+import assert from "node:assert";
+import { join } from "node:path";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
+import { DatasetService } from "../../../src/business/services/dataset/dataset-service";
+import { S3IndexApplicationService } from "../../../src/business/services/dataset/loader/s3-index-import-service.xts";
+import { addMocksForFileSystem } from "../../../src/test-data/aws-mock/add-s3-mocks-for-filesystem";
 import {
   SMARTIE_DATASET_CONFIG,
   SMARTIE_DESCRIPTION,
@@ -6,17 +14,9 @@ import {
   SMARTIE_NAME,
   SMARTIE_URI,
 } from "../../../src/test-data/dataset/insert-test-data-smartie";
-import { join } from "node:path";
-import { mockClient } from "aws-sdk-client-mock";
-import { S3Client } from "@aws-sdk/client-s3";
-import { registerTypes } from "../../test-dependency-injection.common";
-import { S3IndexApplicationService } from "../../../src/business/services/australian-genomics/s3-index-import-service.xts";
-import { AuthenticatedUser } from "../../../src/business/authenticated-user";
-import { beforeEachCommon } from "../commons/user.common";
 import { blankTestData } from "../../../src/test-data/util/blank-test-data";
-import { DatasetService } from "../../../src/business/services/dataset-service";
-import assert from "node:assert";
-import { addMocksForFileSystem } from "../../../src/test-data/aws-mock/add-s3-mocks-for-filesystem";
+import { registerTypes } from "../../test-dependency-injection.common";
+import { beforeEachCommon } from "../commons/user.common";
 
 const testContainer = registerTypes();
 let user: AuthenticatedUser;

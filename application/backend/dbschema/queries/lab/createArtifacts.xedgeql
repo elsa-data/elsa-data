@@ -1,0 +1,98 @@
+# Create artifacts with FastQ pairs, optional BAM/VCF files, and corresponding runs/analyses
+# This is a standalone EdgeQL version of the createArtifacts function from test-data-helpers.ts
+
+with
+  # Create FastQ pairs from input files
+  fastq_pairs := (
+    for fastq_data in <array<tuple<forward_url: str, forward_size: int64, forward_checksums: array<tuple<type: str, value: str>>, reverse_url: str, reverse_size: int64, reverse_checksums: array<tuple<type: str, value: str>>>><json>$fastqs
+    union (
+      insert lab::ArtifactFastqPair {
+        forwardFile := (
+          insert storage::File {
+            url := fastq_data.forward_url,
+            size := fastq_data.forward_size,
+            checksums := fastq_data.forward_checksums,
+          }
+        ),
+        reverseFile := (
+          insert storage::File {
+            url := fastq_data.reverse_url,
+            size := fastq_data.reverse_size,
+            checksums := fastq_data.reverse_checksums,
+          }
+        ),
+      }
+    )
+  ),
+  
+  # Create a run with the FastQ artifacts
+  run := (
+    insert lab::Run {
+      artifactsProduced := fastq_pairs,
+    }
+  ),
+  
+  # Get FastQ artifacts from the run
+  fastq_artifacts := (
+    select lab::Run.artifactsProduced
+    filter .`<artifactsProduced[is lab::Run]`.id = run.id
+  ),
+  
+  # Create VCF artifact if provided
+  vcf_artifact := (
+    insert lab::ArtifactVcf {
+      sampleIds := <optional array<str>>$vcf_sample_ids,
+      vcfFile := (
+        insert storage::File {
+          url := <str>$vcf_url,
+          size := <int64>$vcf_size,
+          checksums := <array<tuple<type: str, value: str>>>$vcf_checksums,
+        }
+      ) unless conflict on .url else storage::File,
+      tbiFile := (
+        insert storage::File {
+          url := <str>$vcf_index_url,
+          size := <int64>$vcf_index_size,
+          checksums := <array<tuple<type: str, value: str>>>$vcf_index_checksums,
+        }
+      ) unless conflict on .url else storage::File,
+    }
+  ) if exists <optional str>$vcf_url and exists <optional str>$vcf_index_url else <lab::ArtifactVcf>{},
+  
+  # Create BAM artifact if provided
+  bam_artifact := (
+    insert lab::ArtifactBam {
+      bamFile := (
+        insert storage::File {
+          url := <str>$bam_url,
+          size := <int64>$bam_size,
+          checksums := <array<tuple<type: str, value: str>>>$bam_checksums,
+        }
+      ),
+      baiFile := (
+        insert storage::File {
+          url := <str>$bam_index_url,
+          size := <int64>$bam_index_size,
+          checksums := <array<tuple<type: str, value: str>>>$bam_index_checksums,
+        }
+      ),
+    }
+  ) if exists <optional str>$bam_url and exists <optional str>$bam_index_url else <lab::ArtifactBam>{},
+  
+  # Create analysis with secondary artifacts (VCF/BAM)
+  analysis := (
+    insert lab::Analyses {
+      pipeline := "A pipeline",
+      input := fastq_artifacts,
+      output := vcf_artifact union bam_artifact,
+    }
+  ),
+  
+  # Get analysis artifacts
+  analysis_artifacts := (
+    select lab::Analyses.output
+    filter .`<output[is lab::Analyses]`.id = analysis.id
+  )
+
+# Return union of all artifacts
+select fastq_artifacts union analysis_artifacts;

@@ -1,5 +1,4 @@
 import type { DependencyContainer } from "tsyringe";
-import type { ElsaSettings } from "../../config/elsa-settings";
 import type {
   DuoDiseaseSpecificResearchType,
   DuoGeneralResearchUseType,
@@ -7,7 +6,8 @@ import type {
   DuoHealthMedicalBiomedicalResearchType,
   DuoNonCommercialUseOnlyType,
   DuoNotForProfitUseOnlyType,
-} from "../../shared/schemas-duo";
+} from "../../business/services/consent/duo/duo-types.ts";
+import type { ElsaSettings } from "../../config/elsa-settings";
 import { createFile } from "../util/test-data-helpers";
 import {
   CORIELL_CELL_SYSTEM,

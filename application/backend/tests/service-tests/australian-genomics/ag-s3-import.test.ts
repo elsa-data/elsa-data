@@ -1,64 +1,60 @@
-import {
-  S3IndexApplicationService,
-  FileGroupType,
-} from "../../../src/business/services/australian-genomics/s3-index-import-service.xts";
 import { S3Client } from "@aws-sdk/client-s3";
+import { mockClient } from "aws-sdk-client-mock";
 import * as gel from "gel";
 import e from "../../../dbschema/edgeql-js";
-import { mockClient } from "aws-sdk-client-mock";
+import { storage } from "../../../dbschema/interfaces";
+import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import {
-  File,
+  getMd5FromChecksumsArray,
+  makeEmptyIdentifierArray,
+  makeSystemlessIdentifierArray,
+} from "../../../src/business/db/helper";
+import {
   ArtifactEnum,
   insertArtifactBamQuery,
 } from "../../../src/business/db/lab-queries";
 import { fileByUrlQuery } from "../../../src/business/db/storage-queries";
+import * as awsHelper from "../../../src/business/services/aws/aws-helper";
+import { DatasetService } from "../../../src/business/services/dataset/dataset-service";
+import {
+  FileGroupType,
+  S3IndexApplicationService,
+} from "../../../src/business/services/dataset/loader/s3-index-import-service.xts";
+import { DatasetAustralianGenomicsDirectories } from "../../../src/config/config-schema-dataset";
 import { blankTestData } from "../../../src/test-data/util/blank-test-data";
+import { registerTypes } from "../../test-dependency-injection.common";
 import {
   createS3ObjectList,
-  S3_URL_PREFIX,
-  MOCK_STORAGE_PREFIX_URL,
+  MOCK_1_CARDIAC_FASTQ1_FILENAME,
+  MOCK_1_CARDIAC_FASTQ2_FILENAME,
+  MOCK_1_CARDIAC_MANIFEST,
+  MOCK_1_CARDIAC_S3_OBJECT_LIST,
+  MOCK_1_S3URL_MANIFEST_OBJECT,
+  MOCK_1_STUDY_ID,
+  MOCK_2_BAI_FILE_RECORD,
+  MOCK_2_BAM_FILE_RECORD,
+  MOCK_2_CARDIAC_MANIFEST,
+  MOCK_2_CARDIAC_S3_OBJECT_LIST,
+  MOCK_2_STUDY_ID,
+  MOCK_3_CARDIAC_MANIFEST,
+  MOCK_3_CARDIAC_S3_OBJECT_LIST,
+  MOCK_4_CARDIAC_MANIFEST,
+  MOCK_4_CARDIAC_S3_OBJECT_LIST,
+  MOCK_4_CARDIAC_VCF_FILENAME,
+  MOCK_4_STUDY_ID_1,
+  MOCK_4_STUDY_ID_2,
+  MOCK_4_STUDY_ID_3,
+  MOCK_BAI_MERGE_MANIFEST,
+  MOCK_BAM_MERGE_MANIFEST,
   MOCK_DATASET_URI,
   MOCK_FASTQ_FORWARD_MERGE_MANIFEST,
   MOCK_FASTQ_REVERSE_MERGE_MANIFEST,
-  MOCK_BAM_MERGE_MANIFEST,
-  MOCK_BAI_MERGE_MANIFEST,
-  MOCK_VCF_MERGE_MANIFEST,
+  MOCK_STORAGE_PREFIX_URL,
   MOCK_TBI_MERGE_MANIFEST,
-  MOCK_1_CARDIAC_MANIFEST,
-  MOCK_1_CARDIAC_S3_OBJECT_LIST,
-  MOCK_1_MANIFEST_OBJECT,
-  MOCK_1_S3URL_MANIFEST_OBJECT,
-  MOCK_1_CARDIAC_FASTQ1_FILENAME,
-  MOCK_1_CARDIAC_FASTQ2_FILENAME,
-  MOCK_1_STUDY_ID,
-  MOCK_2_STUDY_ID,
-  MOCK_2_CARDIAC_S3_OBJECT_LIST,
-  MOCK_2_CARDIAC_MANIFEST,
-  MOCK_2_BAM_FILE_RECORD,
-  MOCK_2_BAI_FILE_RECORD,
-  MOCK_3_CARDIAC_S3_OBJECT_LIST,
-  MOCK_3_CARDIAC_MANIFEST,
-  MOCK_4_CARDIAC_MANIFEST,
-  MOCK_4_CARDIAC_S3_OBJECT_LIST,
-  MOCK_4_STUDY_ID_3,
-  MOCK_4_STUDY_ID_2,
-  MOCK_4_STUDY_ID_1,
-  MOCK_4_CARDIAC_VCF_FILENAME,
+  MOCK_VCF_MERGE_MANIFEST,
+  S3_URL_PREFIX,
 } from "../commons/ag.common";
-import * as awsHelper from "../../../src/business/services/aws/aws-helper";
-import {
-  getMd5FromChecksumsArray,
-  makeSystemlessIdentifierArray,
-  makeEmptyIdentifierArray,
-  makeSystemlessIdentifier,
-} from "../../../src/business/db/helper";
-import { registerTypes } from "../../test-dependency-injection.common";
-import { DatasetService } from "../../../src/business/services/dataset-service";
-import { storage } from "../../../dbschema/interfaces";
-import { AuthenticatedUser } from "../../../src/business/authenticated-user";
 import { beforeEachCommon } from "../commons/user.common";
-import { DatasetAustralianGenomicsDirectories } from "../../../src/config/config-schema-dataset";
-import { readObjectToStringFromS3Url } from "../../../src/business/services/aws/aws-helper";
 
 const testContainer = registerTypes();
 

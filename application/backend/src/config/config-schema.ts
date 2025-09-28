@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { BrandingSchema } from "./config-schema-branding";
+import { ConsenterSchema } from "./config-schema-consenter.ts";
 import { DacSchema } from "./config-schema-dac";
 import { DataEgressConfigSchema } from "./config-schema-data-egress";
 import { DatasetSchema } from "./config-schema-dataset";
@@ -123,6 +124,12 @@ export const configZodDefinition = z.object({
     .default([])
     .describe(
       "An array defining the sharing mechanisms which are to be enabled from this instance",
+    ),
+  consenters: z
+    .array(ConsenterSchema)
+    .default([])
+    .describe(
+      "An array defining the consenter mechanisms which are to be enabled from this instance",
     ),
   // if present, a mailer is being configured and if not present, then the mailer does not start
   emailer: z.optional(EmailerSchema),

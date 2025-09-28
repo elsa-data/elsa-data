@@ -1,5 +1,5 @@
 import e from "../../../dbschema/edgeql-js";
-import type { DuoLimitationCodedType } from "../../shared/schemas-duo";
+import type { DuoLimitationCodedType } from "../../business/services/consent/duo/duo-types.ts";
 import {
   createArtifacts,
   type File,

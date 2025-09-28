@@ -1,4 +1,4 @@
-import { type Static, Type } from "@sinclair/typebox";
+import Type from "typebox";
 
 /**
  * We use typebox to provide us with JSON schema compatible definitions
@@ -10,93 +10,50 @@ import { type Static, Type } from "@sinclair/typebox";
 
 /**
  * We manually codify the DUO code system to also include the *data* structures / information model
- * that is needed to make sense of the codes (i.e. GS needs somewhere to put the list of country codes)
+ * that is needed to make sense of the codes (e.g. GS needs somewhere to put the list of country codes)
  */
 
-const KnownModifierCodes = [
-  "DUO:0000019",
-  "DUO:0000020",
-  "DUO:0000046",
-  "DUO:0000018",
-  "DUO:0000045",
-  "DUO:0000024",
-  "DUO:0000016",
-  "DUO:0000025",
-  "DUO:0000029",
-  "DUO:0000043",
-  "DUO:0000015",
-  "DUO:0000022",
-  "DUO:0000026",
-  "DUO:0000006",
-  "DUO:0000028",
-  "DUO:0000027",
-] as const;
-
-const KnownLimitationCodes = [
-  "DUO:0000042",
-  "DUO:0000006",
-  "DUO:0000007",
-  "DUO:0000011",
-  "DUO:0000004",
-] as const;
-
-const KnownDuoCodes = [...KnownModifierCodes, ...KnownLimitationCodes] as const;
-
-export type KnownModifierCode = (typeof KnownModifierCodes)[number];
-
-export type KnownLimitationCode = (typeof KnownLimitationCodes)[number];
-
-export type KnownDuoCode = (typeof KnownDuoCodes)[number];
-
+export const DUO_PUB = "DUO:0000019";
 export const DuoPublicationRequiredSchema = Type.Object({
-  code: Type.Literal("DUO:0000019"), // PUB
+  code: Type.Literal(DUO_PUB), // PUB
 });
 
+export const DUO_NCU = "DUO:0000046";
 export const DuoNonCommercialUseOnlySchema = Type.Object({
-  code: Type.Literal("DUO:0000046"), // NCU
+  code: Type.Literal(DUO_NCU), // NCU
 });
 
+export const DUO_NPUNCU = "DUO:0000018";
 export const DuoNotForProfitNonCommercialUseOnlySchema = Type.Object({
-  code: Type.Literal("DUO:0000018"), // NPUNCU   NotForProfitNonCommercialUseOnlyCode
+  code: Type.Literal(DUO_NPUNCU), // NPUNCU   NotForProfitNonCommercialUseOnlyCode
 });
 
+export const DUO_COL = "DUO:0000020";
 export const DuoCollaborationRequiredSchema = Type.Object({
-  code: Type.Literal("DUO:0000020"), // COL
+  code: Type.Literal(DUO_COL), // COL
 });
 
+export const DUO_GS = "DUO:0000022";
 export const DuoGeographicalRestrictionSchema = Type.Object({
-  code: Type.Literal("DUO:0000022"), //  GS GeographicalRestrictionCode
+  code: Type.Literal(DUO_GS), //  GS GeographicalRestrictionCode
   regions: Type.Array(Type.String()),
 });
 
+export const DUO_NPU = "DUO:0000045";
 export const DuoNotForProfitUseOnlySchema = Type.Object({
-  code: Type.Literal("DUO:0000045"), // NPU  NotForProfitUseOnlyCode
+  code: Type.Literal(DUO_NPU), // NPU  NotForProfitUseOnlyCode
 });
 
+export const DUO_TS = "DUO:0000025";
 export const DuoTimeSpecificSchema = Type.Object({
-  code: Type.Literal("DUO:0000025"), // TS
-  start: Type.Optional(Type.RegEx(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
-  end: Type.Optional(Type.RegEx(/^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/)),
+  code: Type.Literal(DUO_TS), // TS
+  start: Type.Optional(
+    Type.String({ pattern: /^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/ }),
+  ),
+  end: Type.Optional(
+    Type.String({ pattern: /^\d{4}-(0\d|1[0-2])-([0-2]\d|3[01])$/ }),
+  ),
 });
-
-export type DuoGeographicalRestrictionType = Static<
-  typeof DuoGeographicalRestrictionSchema
->;
-export type DuoNonCommercialUseOnlyType = Static<
-  typeof DuoNonCommercialUseOnlySchema
->;
-export type DuoNotForProfitNonCommercialUseOnlyType = Static<
-  typeof DuoNotForProfitNonCommercialUseOnlySchema
->;
-export type DuoNotForProfitUseOnlyType = Static<
-  typeof DuoNotForProfitUseOnlySchema
->;
-export type DuoPublicationRequiredType = Static<
-  typeof DuoPublicationRequiredSchema
->;
-export type DuoCollaborationRequiredType = Static<
-  typeof DuoCollaborationRequiredSchema
->;
 
 export const DuoModifierSchema = Type.Union(
   [
@@ -148,37 +105,58 @@ export const DuoModifierSchema = Type.Union(
 // we should get $ref working so that the definition of the array of modifiers is only declared once
 // export const ModifierArrayReference = Type.Array(Type.Ref(DuoModifierSchema));
 
+/**
+ * General Research Use Limitation
+ */
+export const DUO_GRU = "DUO:0000042"; // GRU
 export const DuoGeneralResearchUseSchema = Type.Object({
-  code: Type.Literal("DUO:0000042"), // GRU
-  modifiers: Type.Array(DuoModifierSchema),
+  code: Type.Literal(DUO_GRU), // GRU
+  modifiers: Type.Optional(Type.Array(DuoModifierSchema)),
 });
 
+/**
+ * Health / Medical / Biomedical Research Limitation
+ */
+export const DUO_HMB = "DUO:0000006";
 export const DuoHealthMedicalBiomedicalResearchSchema = Type.Object({
-  code: Type.Literal("DUO:0000006"), // HMB
-  modifiers: Type.Array(Type.Ref(DuoModifierSchema)),
+  code: Type.Literal(DUO_HMB), // HMB
+  modifiers: Type.Optional(Type.Array(DuoModifierSchema)),
 });
 
+/**
+ * Disease Specific Limitation
+ */
+export const DUO_DS = "DUO:0000007";
 export const DuoDiseaseSpecificResearchSchema = Type.Object({
-  code: Type.Literal("DUO:0000007"), // DS
+  code: Type.Literal(DUO_DS), // DS
   diseaseSystem: Type.String(),
   diseaseCode: Type.String(),
-  modifiers: Type.Array(Type.Ref(DuoModifierSchema)),
+  modifiers: Type.Optional(Type.Array(DuoModifierSchema)),
 });
 
+/**
+ * Population Ancestry Research Only Limitation
+ */
+export const DUO_POA = "DUO:0000011";
 export const DuoPopulationAncestryResearchOnlySchema = Type.Object({
-  code: Type.Literal("DUO:0000011"), // POA
-  modifiers: Type.Array(Type.Ref(DuoModifierSchema)),
+  code: Type.Literal(DUO_POA), // POA
+  modifiers: Type.Optional(Type.Array(DuoModifierSchema)),
 });
 
+export const DUO_NRES = "DUO:0000004";
 export const DuoNoRestrictionSchema = Type.Object({
-  code: Type.Literal("DUO:0000004"), // NRES
-  modifiers: Type.Array(Type.Ref(DuoModifierSchema)),
+  code: Type.Literal(DUO_NRES), // NRES
+  modifiers: Type.Optional(Type.Array(DuoModifierSchema)),
 });
 
 export const DuoFreeTextSchema = Type.Object({
   description: Type.String(),
 });
 
+/**
+ * DUO Limitation is the base statement of consent. This schema includes all limitations including
+ * free text limitations.
+ */
 export const DuoLimitationSchema = Type.Union([
   DuoGeneralResearchUseSchema,
   DuoHealthMedicalBiomedicalResearchSchema,
@@ -188,30 +166,37 @@ export const DuoLimitationSchema = Type.Union([
   DuoFreeTextSchema,
 ]);
 
+/**
+ * If someone wants to apply using a code - but no accompanying data.
+ */
+export const DuoLimitationCodeSchema = Type.Union([
+  Type.Literal(DUO_GRU),
+  Type.Literal(DUO_HMB),
+  Type.Literal(DUO_DS),
+  Type.Literal(DUO_POA),
+  Type.Literal(DUO_NRES),
+]);
+
+/**
+ * DUO Limitation Coded is an alternate base statement of consent. It omits freetext limitations therefore
+ * restricting to consent statements that are computable.
+ */
 export const DuoLimitationCodedSchema = Type.Union([
   DuoGeneralResearchUseSchema,
   DuoHealthMedicalBiomedicalResearchSchema,
   DuoDiseaseSpecificResearchSchema,
+  DuoPopulationAncestryResearchOnlySchema,
+  DuoNoRestrictionSchema,
 ]);
 
-export type DuoLimitationCodedType = Static<typeof DuoLimitationCodedSchema>;
+export const DuoApplicationSchema = Type.Object({
+  // not including a research type will rule out all data other than "no restriction" data
+  researchType: Type.Optional(DuoLimitationCodeSchema),
 
-export type DuoGeneralResearchUseType = Static<
-  typeof DuoGeneralResearchUseSchema
->;
-export type DuoHealthMedicalBiomedicalResearchType = Static<
-  typeof DuoHealthMedicalBiomedicalResearchSchema
->;
-export type DuoDiseaseSpecificResearchType = Static<
-  typeof DuoDiseaseSpecificResearchSchema
->;
-export type DuoPopulationAncestryResearchOnlyType = Static<
-  typeof DuoPopulationAncestryResearchOnlySchema
->;
-export type DuoNoRestrictionType = Static<typeof DuoNoRestrictionSchema>;
+  researchers: Type.Optional(Type.Array(Type.String())),
+  institutions: Type.Optional(Type.Array(Type.String())),
+  countries: Type.Optional(Type.Array(Type.String())),
 
-// for completeness, we include a DUO data use limitation that allows freetext - but for practical
-// computation we essentially never want these
-export type DuoLimitationType = Static<typeof DuoLimitationSchema>;
-
-export type DuoModifierType = Static<typeof DuoModifierSchema>;
+  disease: Type.Optional(Type.String()),
+  // projects
+});

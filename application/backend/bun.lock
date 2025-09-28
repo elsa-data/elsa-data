@@ -86,6 +86,7 @@
         "tar-stream": "3.1.7",
         "temp": "0.9.4",
         "tsyringe": "4.8.0",
+        "typebox": "1.0.8",
         "uuid": "9.0.1",
         "zod": "3.24.3",
       },
@@ -1667,6 +1668,8 @@
     "type-fest": ["type-fest@2.19.0", "", {}, "sha512-RAH822pAdBgcNMAfWnCBU3CFZcfZ/i1eZjwFU/dsLKumyuuP3niueg2UAukXYF0E2AAoc82ZSSf9J0WQBinzHA=="],
 
     "type-is": ["type-is@1.6.18", "", { "dependencies": { "media-typer": "0.3.0", "mime-types": "~2.1.24" } }, ""],
+
+    "typebox": ["typebox@1.0.8", "", {}, "sha512-DhdRGD6yQBv7BDY0+IDhux3YIJ/ZXd1elJ60EPHOlRZBhdlzRJ/2OIXRh7lMfI8gVR7P82og5Cs1jyoANifxyg=="],
 
     "typescript": ["typescript@5.8.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-p1diW6TqL9L07nNxvRMM7hMMw4c5XOo/1ibL4aAIGmSAt9slTE1Xgw5KWuof2uTOvCg9BY7ZRi+GaF+7sfgPeQ=="],
 

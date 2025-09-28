@@ -1,5 +1,5 @@
 import type { DependencyContainer } from "tsyringe";
-import { DatasetService } from "./business/services/dataset-service";
+import { DatasetService } from "./business/services/dataset/dataset-service.ts";
 
 export const DELETE_DATASETS_COMMAND = "delete-dataset";
 

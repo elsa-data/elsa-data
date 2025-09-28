@@ -55,4 +55,71 @@ export const manifestRoutes = async (
         .send(output);
     },
   );
+
+  fastify.get("/integration/htsget-rs", {}, async function (request, reply) {
+    reply
+      //.header(
+      //  "Cache-Control",
+      //  `public, max-age=${output.maxAge}, must-revalidate, immutable`,
+      // )
+      .send({
+        version: 1,
+        htsgetAuth: [
+          {
+            id: "HG00096",
+            location: "s3://umccr-10g-data-dev/HG00096/HG00096",
+            rules: [
+              {
+                format: "BAM",
+              },
+            ],
+          },
+          {
+            id: "HG00096",
+            location: "s3://umccr-10g-data-dev/HG00096/HG00096.hard-filtered",
+            rules: [
+              {
+                format: "VCF",
+              },
+            ],
+          },
+          {
+            id: "HG00097",
+            location: "s3://umccr-10g-data-dev/HG00097/HG00097",
+            rules: [
+              {
+                format: "BAM",
+              },
+            ],
+          },
+          {
+            id: "HG00097",
+            location: "s3://umccr-10g-data-dev/HG00097/HG00097.hard-filtered",
+            rules: [
+              {
+                format: "VCF",
+              },
+            ],
+          },
+          {
+            id: "HG00099",
+            location: "s3://umccr-10g-data-dev/HG00099/HG00099",
+            rules: [
+              {
+                format: "BAM",
+              },
+            ],
+          },
+          {
+            id: "HG00099",
+            location: "s3://umccr-10g-data-dev/HG00099/HG00099.hard-filtered",
+            rules: [
+              {
+                format: "VCF",
+              },
+            ],
+          },
+        ],
+      });
+  });
 };

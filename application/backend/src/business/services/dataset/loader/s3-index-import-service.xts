@@ -54,6 +54,10 @@ import { UserData } from "../../data/user-data";
 import { DatasetAustralianGenomicsDirectories } from "../../../config/config-schema-dataset";
 import { parse } from "papaparse";
 
+THIS NEEDS TO BE REWRITTEN AS A LOADER AND MAYBE WE NEED TO
+RETHINK IT ALL
+
+
 type PhenopacketIndividiual =
   phenopackets.org.phenopackets.schema.v2.IPhenopacket;
 type PhenopacketFamily = phenopackets.org.phenopackets.schema.v2.IFamily;

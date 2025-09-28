@@ -9,10 +9,11 @@ jobs:
     timeout-minutes: 15
     runs-on: ubuntu-latest
 
-    # run an Gel database in the background that will be connected to from our app
+    # run a Gel database in the background that will be connected to from our app
+    # we need this for generating glue code as well as running the tests
     services:
       gel:
-        image: geldata/gel:6.5
+        image: geldata/gel:6.10
         env:
           GEL_SERVER_SECURITY: insecure_dev_mode
         ports:
@@ -59,7 +60,7 @@ jobs:
           # we explicitly make sure that if a unit test *did* try to access the db it will fail
           GEL_DSN: undefined
 
-      # install the EdgeDb CLI
+      # install the Gel database CLI
       - uses: gel/setup-gel@v1.4.0
         with:
           cli-version: stable

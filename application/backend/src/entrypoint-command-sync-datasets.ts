@@ -1,8 +1,6 @@
 import type { DependencyContainer } from "tsyringe";
+import { DevLoader } from "./business/services/dataset/loader/dev-loader.ts";
 import { getServices } from "./di-helpers";
-import { insert10F } from "./test-data/dataset/insert-test-data-10f";
-import { TENF_URI } from "./test-data/dataset/insert-test-data-10f-helpers";
-import { insert10G, TENG_URI } from "./test-data/dataset/insert-test-data-10g";
 // import { S3IndexApplicationService } from "./business/services/australian-genomics/s3-index-import-service.xts";
 
 export const SYNC_DATASETS_COMMAND = "sync-datasets";
@@ -18,10 +16,12 @@ export async function commandSyncDatasets(
   dc: DependencyContainer,
   datasetUriArray: string[],
 ): Promise<number> {
-  const { settings, logger } = getServices(dc);
-  // const agIndexService = dc.resolve(S3IndexApplicationService);
+  const { settings, logger, edgeDbClient } = getServices(dc);
+  // const agIndexService = dc.resolve(S3IndexApplicationService); TO BE datasetFormatLoader = dc.resolve(
+  const devLoader = dc.resolve(DevLoader);
 
   // no point in doing a dataset twice - even if the user lists them twice - so we put the input into a set
+  // to remove duplicates
   const datasetUriSet = new Set<string>(datasetUriArray);
 
   for (const datasetUri of datasetUriSet) {
@@ -32,12 +32,12 @@ export async function commandSyncDatasets(
         didLoad = true;
 
         logger.info(
-          `Starting synchronisation for ->${datasetUri}<- using loader ${configuredDataset.loader}`,
+          `Starting synchronisation for dataset with URI ->${datasetUri}<- using loader ->${configuredDataset.loader}<-`,
         );
 
         switch (configuredDataset.loader) {
           case "australian-genomics-directories":
-            throw new Error("Not implemented yet");
+            throw new Error("Was implemented but now deprecated");
             //await agIndexService.syncWithDatabaseFromDatasetUri(
             //  datasetUri,
             //  configuredDataset,
@@ -51,28 +51,14 @@ export async function commandSyncDatasets(
             throw new Error("Not implemented yet");
             break;
           case "dev":
-            // I guess we could restrict this loader to literally dev deployments only (we could do a check here) - but this
-            // whole code section is
-            // only executable by system administrators - and I guess they might have a good
-            // reason to do this in prod(?) - so no check for now
-            switch (configuredDataset.uri) {
-              case TENG_URI:
-                await insert10G(dc);
-                break;
-              case TENF_URI:
-                await insert10F(dc);
-                break;
-              default:
-                logger.error(
-                  `Dataset URI ${
-                    (configuredDataset.uri as any).loader
-                  } is not a dev dataset`,
-                );
-            }
+            await devLoader.synchroniseDataset(
+              edgeDbClient,
+              configuredDataset.uri,
+            );
             break;
           default:
             logger.error(
-              `Loader type ${(configuredDataset as any).loader} not known`,
+              `Dataset loader type ->${(configuredDataset as any).loader}<- is not known`,
             );
         }
       }
@@ -80,7 +66,7 @@ export async function commandSyncDatasets(
 
     if (!didLoad) {
       logger.warn(
-        `Did not perform a sync for ->${datasetUri}<- as it was not listed in the configuration`,
+        `Did not perform a synchronisation for dataset with URI ->${datasetUri}<- as it was not listed in the configuration`,
       );
     }
   }

@@ -1,0 +1,21 @@
+# Insert a complete dataset case with patient, specimen, consent and artifacts
+# Used for comprehensive test data creation
+
+insert dataset::DatasetCase {
+  externalIdentifiers := [],
+  patients := (
+    insert dataset::DatasetPatient {
+      sexAtBirth := "male"",
+      externalIdentifiers := [{ "", 'ABCDEF'}],
+      specimens := (
+        insert dataset::DatasetSpecimen {
+          externalIdentifiers := [{"", "1234"],
+          artifacts := {
+            // some stuff here for pointers to the files in Netapp
+
+          }
+        }
+      )
+    }
+  )
+}

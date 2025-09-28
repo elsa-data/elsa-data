@@ -1,9 +1,9 @@
+import addFormats from "ajv-formats";
+import Ajv from "ajv/dist/2019";
 import {
   DuoLimitationCodedType,
   DuoLimitationSchema,
-} from "../../../src/shared/schemas-duo";
-import addFormats from "ajv-formats";
-import Ajv from "ajv/dist/2019";
+} from "../../../src/business/services/consent/duo/duo-schemas";
 
 const ajv = addFormats(new Ajv({}), [
   "date-time",

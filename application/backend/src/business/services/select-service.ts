@@ -35,6 +35,11 @@ export class SelectService {
     patientContext: dataset.DatasetPatient,
     specimenContext: dataset.DatasetSpecimen,
   ): Promise<boolean> {
+    /*
+    {
+  "participantIds":["PID-TYT-00000"]
+    }
+     */
     // A Beacon query demo
     // if (applicationContext.beaconQuery && vcf && vcfIndex) {
     //  return await this.beaconSelect(applicationContext.beaconQuery as string, vcf, vcfIndex, caseContext, patientContext, specimenContext);

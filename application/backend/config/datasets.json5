@@ -30,5 +30,11 @@
       description: "10C",
       loader: "dev",
     },
+    {
+      uri: "urn:doi:10.example-not-real/kaos",
+      name: "KAOS",
+      description: "KAOS",
+      loader: "dev",
+    },
   ],
 }

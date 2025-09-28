@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   DuoLimitationCodedType,
   DuoModifierType,
-} from "../../../../../../backend/src/shared/schemas-duo";
+} from "../../../../../../backend/src/business/services/consent/duo/duo-schemas.ts";
 import { EagerErrorBoundary, ErrorState } from "../../../../components/errors";
 import { duoCodeToDescription, isKnownDuoCode } from "../../../../ontology/duo";
 import { useEnvRelay } from "../../../../providers/env-relay-provider";

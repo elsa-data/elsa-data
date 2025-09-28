@@ -6,7 +6,7 @@ import { AuditEventService } from "../../business/services/audit-event-service";
 import { AwsCloudTrailLakeService } from "../../business/services/aws/aws-cloudtrail-lake-service";
 import { CopyService } from "../../business/services/copy-service";
 import { DacService } from "../../business/services/dacs/dac-service";
-import { DatasetService } from "../../business/services/dataset-service";
+import { DatasetService } from "../../business/services/dataset/dataset-service.ts";
 import { JobCloudFormationCreateService } from "../../business/services/jobs/job-cloud-formation-create-service";
 import { JobCloudFormationDeleteService } from "../../business/services/jobs/job-cloud-formation-delete-service";
 import { JobCopyOutService } from "../../business/services/jobs/job-copy-out-service";

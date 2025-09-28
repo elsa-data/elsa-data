@@ -1,24 +1,24 @@
 import * as gel from "gel";
 import { inject, injectable } from "tsyringe";
-import e from "../../../dbschema/edgeql-js";
+import e from "../../../../dbschema/edgeql-js";
 import {
   getAllDataset,
   getDatasetCasesByUri,
   getDatasetConsent,
   getDatasetStorageStatsByUri,
-} from "../../../dbschema/queries";
+} from "../../../../dbschema/queries.ts";
 import {
   createPagedResult,
   type PagedResult,
-} from "../../api/helpers/pagination-helpers";
-import type { DatasetType } from "../../config/config-schema-dataset";
-import type { ElsaSettings } from "../../config/elsa-settings";
-import type { DatasetLightType } from "../../shared/schemas-dataset";
-import type { DuoLimitationCodedType } from "../../shared/schemas-duo";
-import { AuthenticatedUser } from "../authenticated-user";
-import { selectDatasetIdByDatasetUri } from "../db/dataset-queries";
-import { makeSystemlessIdentifierArray } from "../db/helper";
-import { AuditEventService } from "./audit-event-service";
+} from "../../../api/helpers/pagination-helpers.ts";
+import type { DatasetType } from "../../../config/config-schema-dataset.ts";
+import type { ElsaSettings } from "../../../config/elsa-settings.ts";
+import type { DatasetLightType } from "../../../shared/schemas-dataset.ts";
+import { AuthenticatedUser } from "../../authenticated-user.ts";
+import { selectDatasetIdByDatasetUri } from "../../db/dataset-queries.ts";
+import { makeSystemlessIdentifierArray } from "../../db/helper.ts";
+import { AuditEventService } from "../audit-event-service.ts";
+import type { DuoLimitationCodedType } from "../consent/duo/duo-types.ts";
 
 @injectable()
 export class DatasetService {
