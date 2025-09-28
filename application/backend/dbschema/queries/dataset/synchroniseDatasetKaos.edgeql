@@ -304,7 +304,7 @@ WITH
           }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00011") ],
+                externalIdentifiers := [ (system:="",value:="HG00171") ],
                 artifacts := dArtifacts
             }
           )
@@ -319,7 +319,7 @@ WITH
           externalIdentifiers := [ (system:="",value:="E") ],
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00012") ],
+                externalIdentifiers := [ (system:="",value:="HG01810") ],
                 artifacts := eArtifacts
             }
           )

@@ -1,14 +1,6 @@
 name: CI
 
-on:
-  # Triggers the workflow on push or pull request events but not for our feature branches
-  #push:
-  #  branches: ["dev", "main"]
-  #pull_request:
-  #  branches: ["dev", "main"]
-
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+on: push
 
 jobs:
   build:
@@ -20,8 +12,9 @@ jobs:
 
       # install software we will use
       - uses: oven-sh/setup-bun@v2
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
+
+      # backend compile
+      # quick check to make sure code is not fundamentally broken
+      - name: Source compiles
+        run: bunx tsc
+        working-directory: application/backend
