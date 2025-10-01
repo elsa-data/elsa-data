@@ -66,8 +66,10 @@ export const manifestRoutes = async (
         version: 1,
         htsgetAuth: [
           {
-            id: "HG00096",
-            location: "s3://umccr-10g-data-dev/HG00096/HG00096",
+            location: {
+              id: "HG00096",
+              backend: "s3://umccr-10g-data-dev/HG00096/HG00096",
+            },
             rules: [
               {
                 format: "BAM",
@@ -75,8 +77,10 @@ export const manifestRoutes = async (
             ],
           },
           {
-            id: "HG00096",
-            location: "s3://umccr-10g-data-dev/HG00096/HG00096.hard-filtered",
+            location: {
+              id: "HG00096",
+              backend: "s3://umccr-10g-data-dev/HG00096/HG00096.hard-filtered",
+            },
             rules: [
               {
                 format: "VCF",
@@ -84,8 +88,10 @@ export const manifestRoutes = async (
             ],
           },
           {
-            id: "HG00097",
-            location: "s3://umccr-10g-data-dev/HG00097/HG00097",
+            location: {
+              id: "HG00097",
+              backend: "s3://umccr-10g-data-dev/HG00097/HG00097",
+            },
             rules: [
               {
                 format: "BAM",
@@ -93,8 +99,10 @@ export const manifestRoutes = async (
             ],
           },
           {
-            id: "HG00097",
-            location: "s3://umccr-10g-data-dev/HG00097/HG00097.hard-filtered",
+            location: {
+              id: "HG00097",
+              backend: "s3://umccr-10g-data-dev/HG00097/HG00097.hard-filtered",
+            },
             rules: [
               {
                 format: "VCF",
@@ -102,8 +110,10 @@ export const manifestRoutes = async (
             ],
           },
           {
-            id: "HG00099",
-            location: "s3://umccr-10g-data-dev/HG00099/HG00099",
+            location: {
+              id: "HG00099",
+              backend: "s3://umccr-10g-data-dev/HG00099/HG00099"
+            },
             rules: [
               {
                 format: "BAM",
@@ -111,8 +121,10 @@ export const manifestRoutes = async (
             ],
           },
           {
-            id: "HG00099",
-            location: "s3://umccr-10g-data-dev/HG00099/HG00099.hard-filtered",
+            location: {
+              id: "HG00099",
+              backend: "s3://umccr-10g-data-dev/HG00099/HG00099.hard-filtered",
+            },
             rules: [
               {
                 format: "VCF",
