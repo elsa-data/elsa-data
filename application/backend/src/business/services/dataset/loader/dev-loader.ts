@@ -1,13 +1,20 @@
 import type { Executor } from "gel";
 import type { Logger } from "pino";
 import { type DependencyContainer, inject, injectable } from "tsyringe";
-import { synchroniseDatasetKaos } from "../../../../../dbschema/queries";
+import {
+  synchroniseDatasetControl,
+  synchroniseDatasetKaos,
+} from "../../../../../dbschema/queries";
 import { TENF_URI } from "../../../../test-data/dataset/insert-test-data-10f-helpers.ts";
 import { insert10F } from "../../../../test-data/dataset/insert-test-data-10f.ts";
 import {
   insert10G,
   TENG_URI,
 } from "../../../../test-data/dataset/insert-test-data-10g.ts";
+import {
+  CONTROL_DATASET_DOI,
+  CONTROL_DATASET_URI,
+} from "../../../../test-data/dataset/test-data-control.ts";
 import {
   KAOS_DATASET_DOI,
   KAOS_DATASET_URI,
@@ -43,6 +50,12 @@ export class DevLoader {
         await synchroniseDatasetKaos(executor, {
           datasetDoi: KAOS_DATASET_DOI,
           datasetUri: KAOS_DATASET_URI,
+        });
+        break;
+      case CONTROL_DATASET_URI:
+        await synchroniseDatasetControl(executor, {
+          datasetDoi: CONTROL_DATASET_DOI,
+          datasetUri: CONTROL_DATASET_URI,
         });
         break;
       default:

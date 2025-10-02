@@ -30,7 +30,10 @@ import {
   SMARTIE_DESCRIPTION,
   SMARTIE_URI,
 } from "../dataset/insert-test-data-smartie";
+import { CONTROL_DATASET_URI } from "../dataset/test-data-control.ts";
+import { KAOS_DATASET_URI } from "../dataset/test-data-kaos.ts";
 import { insertRelease6 } from "../release/insert-test-data-release6";
+import { insertRelease7 } from "../release/insert-test-data-release7.ts";
 import { insertUser5 } from "../user/insert-user5";
 
 const BLANK_DB_PROPS = [
@@ -131,10 +134,9 @@ export async function insertScenario1(dc: DependencyContainer) {
 
   const devLoader = dc.resolve(DevLoader);
 
-  await devLoader.synchroniseDataset(
-    edgeDbClient,
-    "urn:doi:10.example-not-real/kaos",
-  );
+  await devLoader.synchroniseDataset(edgeDbClient, KAOS_DATASET_URI);
+
+  await devLoader.synchroniseDataset(edgeDbClient, CONTROL_DATASET_URI);
 
   // Some blank DB records inserted to see how it looks like
   for (const dbProp of BLANK_DB_PROPS) {
@@ -177,6 +179,12 @@ export async function insertScenario1(dc: DependencyContainer) {
     releaseManager: [manager],
     releaseMember: [member],
     datasetUris: [SMARTIE_URI],
+  });
+  const r7 = await insertRelease7(dc, {
+    releaseAdministrator: [administrator],
+    releaseManager: [manager],
+    releaseMember: [member],
+    datasetUris: [KAOS_DATASET_URI, CONTROL_DATASET_URI],
   });
 
   logger.debug(
