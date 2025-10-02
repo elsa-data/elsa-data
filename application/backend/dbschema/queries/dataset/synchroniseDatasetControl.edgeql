@@ -1,16 +1,16 @@
-# synchronises the KAOS dataset
+# synchronises the CONTROL dataset
 
 WITH
   doi := <str>$datasetDoi,
   uri := <str>$datasetUri,
   externalIdentifiers := [ (system:="DOI",value:=doi) ],
-  description := "KAOS - a dataset for evil",
+  description := "CONTROL - a dataset for good",
 
   aArtifacts := {
     (INSERT lab::ArtifactBam {
           bamFile := (
             INSERT storage::File {
-              url := "s3://blah/foo.bam",
+              url := "s3://blah/foo11.bam",
               size := 12324324,
               checksums := [ (type:="MD5",value:="424ca9d51649b47dc935fc63552036ee") ]
             }
@@ -19,7 +19,7 @@ WITH
           ),
           baiFile := (
             INSERT storage::File {
-              url := "s3://blah/foo.bam.bai",
+              url := "s3://blah/foo11.bam.bai",
               size := 12324324,
               checksums := [ (type:="MD5",value:="424ca9d51649b47dc935fc63552036ee") ]
             }
@@ -31,7 +31,7 @@ WITH
       (INSERT lab::ArtifactVcf {
           vcfFile := (
             INSERT storage::File {
-              url := "s3://blah/foo.vcf.gz",
+              url := "s3://blah/foo11.vcf.gz",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             }
@@ -40,7 +40,7 @@ WITH
           ),
           tbiFile := (
             INSERT storage::File {
-              url := "s3://blah/foo.vcf.gz.tbi",
+              url := "s3://blah/foo11.vcf.gz.tbi",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
@@ -53,14 +53,14 @@ WITH
     (INSERT lab::ArtifactBam {
           bamFile := (
             INSERT storage::File {
-              url := "s3://blah/foob.bam",
+              url := "s3://blah/foo12.bam",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
           ),
           baiFile := (
             INSERT storage::File {
-              url := "s3://blah/foob.bam.bai",
+              url := "s3://blah/foo13.bam.bai",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
@@ -70,14 +70,14 @@ WITH
       (INSERT lab::ArtifactVcf {
           vcfFile := (
             INSERT storage::File {
-              url := "s3://blah/foob.vcf.gz",
+              url := "s3://blah/foo13.vcf.gz",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
           ),
           tbiFile := (
             INSERT storage::File {
-              url := "s3://blah/foob.vcf.gz.tbi",
+              url := "s3://blah/foo13.vcf.gz.tbi",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
@@ -90,14 +90,14 @@ WITH
     (INSERT lab::ArtifactBam {
           bamFile := (
             INSERT storage::File {
-              url := "s3://blah/fooc.bam",
+              url := "s3://blah/foo14.bam",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
           ),
           baiFile := (
             INSERT storage::File {
-              url := "s3://blah/fooc.bam.bai",
+              url := "s3://blah/foo14.bam.bai",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
@@ -107,14 +107,14 @@ WITH
       (INSERT lab::ArtifactVcf {
           vcfFile := (
             INSERT storage::File {
-              url := "s3://blah/fooc.vcf.gz",
+              url := "s3://blah/foo14.vcf.gz",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
           ),
           tbiFile := (
             INSERT storage::File {
-              url := "s3://blah/fooc.vcf.gz.tbi",
+              url := "s3://blah/foo14.vcf.gz.tbi",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
@@ -127,14 +127,14 @@ WITH
     (INSERT lab::ArtifactBam {
           bamFile := (
             INSERT storage::File {
-              url := "s3://blah/food.bam",
+              url := "s3://blah/foo15.bam",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
           ),
           baiFile := (
             INSERT storage::File {
-              url := "s3://blah/food.bam.bai",
+              url := "s3://blah/foo15.bam.bai",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
@@ -144,14 +144,14 @@ WITH
       (INSERT lab::ArtifactVcf {
           vcfFile := (
             INSERT storage::File {
-              url := "s3://blah/food.vcf.gz",
+              url := "s3://blah/foo15.vcf.gz",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
           ),
           tbiFile := (
             INSERT storage::File {
-              url := "s3://blah/food.vcf.gz.tbi",
+              url := "s3://blah/foo15.vcf.gz.tbi",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
@@ -164,14 +164,14 @@ WITH
     (INSERT lab::ArtifactBam {
           bamFile := (
             INSERT storage::File {
-              url := "s3://blah/fooe.bam",
+              url := "s3://blah/foo16.bam",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
           ),
           baiFile := (
             INSERT storage::File {
-              url := "s3://blah/fooe.bam.bai",
+              url := "s3://blah/foo16.bam.bai",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
@@ -181,14 +181,14 @@ WITH
       (INSERT lab::ArtifactVcf {
           vcfFile := (
             INSERT storage::File {
-              url := "s3://blah/fooe.vcf.gz",
+              url := "s3://blah/foo16.vcf.gz",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
           ),
           tbiFile := (
             INSERT storage::File {
-              url := "s3://blah/fooe.vcf.gz.tbi",
+              url := "s3://blah/foo16.vcf.gz.tbi",
               size := 12324324,
               checksums := [ (type:="MD5",value:="123435456") ]
             } unless conflict on .url else (select storage::File)
@@ -200,8 +200,8 @@ WITH
 
   run := {
     (INSERT lab::Run {
-      platform := "Illumina Whizz Bang",
-      runDate := <datetime>'2018-05-07T15:01:22+00',
+      platform := "Illumina Machine",
+      runDate := <datetime>'2019-08-11T15:01:22+00',
       artifactsProduced := {
         aArtifacts,
         bArtifacts,
@@ -214,57 +214,58 @@ WITH
 
   cases := {
     (INSERT dataset::DatasetCase {
-      externalIdentifiers := [ (system:="",value:="FAMILY-ABC") ],
-      # we have static consents at this family level allowing only
-      # disease specific research
-      consent := (INSERT consent::Consent {
-        statements := {
-          (INSERT consent::ConsentStatementDuo {
-            # SNOMED hereditary auditory
-            dataUseLimitation := <json>(code := "DUO:0000007", diseaseSystem := "http://snomed.info/sct", diseaseCode := "362991006")
-          }),
-          (INSERT consent::ConsentStatementDuo {
-            # SNOMED hereditary visual
-            dataUseLimitation := <json>(code := "DUO:0000007", diseaseSystem := "http://snomed.info/sct", diseaseCode := "363343008")
-          })
-        }
-      }),
+      externalIdentifiers := [ (system:="",value:="FAMILY-S") ],
       patients := {
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "male",
-          externalIdentifiers := [ (system:="",value:="A") ],
+          externalIdentifiers := [ (system:="",value:="A86") ],
+          # patient 86 is hooked into the dynamic consent system
+          consent := (INSERT consent::Consent {
+            statements := {
+              (INSERT consent::ConsentStatementDynamicDuo {
+                consentSystemIdentifier := "PID-TYT-00000"
+              })
+            }
+          }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00096") ],
+                externalIdentifiers := [ (system:="",value:="00000") ],
                 artifacts := aArtifacts
             }
           )
         }),
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "female",
-          externalIdentifiers := [ (system:="",value:="B") ],
+          externalIdentifiers := [ (system:="",value:="A99") ],
+          # patient 99 is hooked into the dynamic consent system
+          consent := (INSERT consent::Consent {
+            statements := {
+              (INSERT consent::ConsentStatementDynamicDuo {
+                consentSystemIdentifier := "PID-TYT-00001"
+              })
+            }
+          }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-              externalIdentifiers := [ (system:="",value:="HG00097") ],
-              # but B has a specific specimen level consent with no restrictions that will overrule all
-              consent := (INSERT consent::Consent {
-                statements := {
-                  (INSERT consent::ConsentStatementDuo {
-                    # no restrictions
-                    dataUseLimitation := <json>(code := "DUO:0000004")
-                  })
-                }
-              }),
+              externalIdentifiers := [ (system:="",value:="00001") ],
               artifacts := bArtifacts
             }
           )
         }),
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "male",
-          externalIdentifiers := [ (system:="",value:="C") ],
+          externalIdentifiers := [ (system:="",value:="K13") ],
+          # patient 13 is hooked into the dynamic consent system
+          consent := (INSERT consent::Consent {
+            statements := {
+              (INSERT consent::ConsentStatementDynamicDuo {
+                consentSystemIdentifier := "PID-TYT-00002"
+              })
+            }
+          }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00099") ],
+                externalIdentifiers := [ (system:="",value:="00002") ],
                 artifacts := cArtifacts
             }
           )
@@ -275,36 +276,20 @@ WITH
       externalIdentifiers := [ (system:="",value:="") ],
       patients := {
         (INSERT dataset::DatasetPatient {
-          sexAtBirth := "female",
-          externalIdentifiers := [ (system:="",value:="D") ],
-          # we have static consent at this patient allowing disease specific research
+          sexAtBirth := "male",
+          externalIdentifiers := [ (system:="",value:="A45") ],
+          # patient 45 is hooked into the dynamic consent system
           consent := (INSERT consent::Consent {
             statements := {
-              (INSERT consent::ConsentStatementDuo {
-                # SNOMED hereditary endocrine
-                dataUseLimitation := <json>(code := "DUO:0000007", diseaseSystem := "http://snomed.info/sct", diseaseCode := "363104002")
+              (INSERT consent::ConsentStatementDynamicDuo {
+                consentSystemIdentifier := "PID-TYT-00003"
               })
             }
           }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00171") ],
+                externalIdentifiers := [ (system:="",value:="00003") ],
                 artifacts := dArtifacts
-            }
-          )
-        }),
-      }
-    }),
-    (INSERT dataset::DatasetCase {
-      externalIdentifiers := [ (system:="",value:="") ],
-      patients := {
-        (INSERT dataset::DatasetPatient {
-          sexAtBirth := "female",
-          externalIdentifiers := [ (system:="",value:="E") ],
-          specimens := (
-            INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG01810") ],
-                artifacts := eArtifacts
             }
           )
         }),
