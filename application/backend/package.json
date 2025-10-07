@@ -111,7 +111,7 @@
     "mime-types": "2.1.35",
     "moo": "0.5.2",
     "node-fetch": "2.6.9",
-    "nodemailer": "6.9.16",
+    "nodemailer": "7.0.7",
     "openid-client": "5.7.1",
     "p-limit": "3.1.0",
     "p-throttle": "5.1.0",
