@@ -89,6 +89,20 @@ export type DataSharingAwsAccessPointType = Static<
   typeof DataSharingAwsAccessPointSchema
 >;
 
+export const DataSharingHtsgetAwsVpcLatticeAccessPointSchema = Type.Optional(
+  Type.Object({
+    name: Type.String(),
+    accountId: Type.String(),
+    vpcId: Type.String(),
+    installed: Type.Boolean(),
+    installedStackArn: Type.Optional(Type.String()),
+  }),
+);
+
+export type DataSharingHtsgetAwsVpcLatticeAccessPointType = Static<
+  typeof DataSharingHtsgetAwsVpcLatticeAccessPointSchema
+>;
+
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
 
@@ -166,6 +180,10 @@ export const ReleaseDetailSchema = Type.Object({
 
   // if enabled by the data custodian AND as a feature, this structure is present, else not
   dataSharingAwsAccessPoint: DataSharingAwsAccessPointSchema,
+
+  // if enabled by the data custodian AND as a feature, this structure is present, else not
+  dataSharingHtsgetAwsVpcLatticeAccessPoint:
+    DataSharingHtsgetAwsVpcLatticeAccessPointSchema,
 
   // if enabled by the data custodian AND as a feature, this structure is present, else not
   dataSharingGcpStorageIam: Type.Optional(

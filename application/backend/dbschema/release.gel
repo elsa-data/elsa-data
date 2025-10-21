@@ -271,6 +271,9 @@ module release {
         #      level activity
         required property awsAccessPointName -> str { default := "" };
 
+        required property htsgetAwsVpcLatticeAccessPointEnabled -> bool { default := false };
+        required property htsgetAwsVpcLatticeAccessPointName -> str { default := "" };
+
         required property gcpStorageIamEnabled -> bool { default := false };
         required property gcpStorageIamUsers -> array<str> { default := <array<str>>[] };
     }

@@ -52,6 +52,7 @@ export class SharerService {
             };
 
       case "aws-access-point":
+      case "htsget-aws-vpc-lattice-access-point":
         if (!(await this.awsEnabledService.isEnabled()))
           return {
             ...s,
@@ -67,6 +68,8 @@ export class SharerService {
         // is there anything we can check?? service up??
 
         return s;
+      default:
+        throw Error(`Unknown sharer: ${s}`);
     }
   }
   /**

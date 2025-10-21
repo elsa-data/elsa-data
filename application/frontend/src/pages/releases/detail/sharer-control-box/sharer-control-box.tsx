@@ -17,6 +17,7 @@ import { ObjectSigningAccordionContent } from "./object-signing-accordion-conten
 import { HtsgetAccordionContent } from "./htsget-accordion-content";
 import { AwsAccessPointAccordionContent } from "./aws-access-point-accordion-content";
 import { EagerErrorBoundary } from "../../../../components/errors";
+import { HtsgetAwsVpcLatticeAccessPointAccordionContent } from "./htsget-aws-vpc-lattice-access-point-accordion-content.tsx";
 
 type Props = {
   releaseKey: string;
@@ -49,6 +50,7 @@ export const SharerControlBox: React.FC<Props> = ({
     mutationFn: axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     onSuccess: async () => await queryClient.invalidateQueries(),
   });
+  console.log(sharers);
 
   // the settings come from the backend on login and tell us what is fundamentally enabled
   // in the system
@@ -60,12 +62,17 @@ export const SharerControlBox: React.FC<Props> = ({
   const awsAccessPointSetting = sharers.find(
     isDiscriminate("type", "aws-access-point"),
   );
+  const htsgetAwsVpcLatticeAccessPointSetting = sharers.find(
+    isDiscriminate("type", "htsget-aws-vpc-lattice-access-point"),
+  );
 
   // the "enabled" fields are whether the custodian has checked the checkbox..
   const objectSigningEnabled = !!releaseData.dataSharingObjectSigning;
   const copyOutEnabled = !!releaseData.dataSharingCopyOut;
   const htsgetEnabled = !!releaseData.dataSharingHtsget;
   const awsAccessPointEnabled = !!releaseData.dataSharingAwsAccessPoint;
+  const htsgetAwsVpcLatticeAccessPointEnabled =
+    !!releaseData.dataSharingHtsgetAwsVpcLatticeAccessPoint;
   // const gcpStorageIamEnabled = !!releaseData.dataSharingGcpStorageIam;
 
   const error = (releasePatchMutate.error as any)?.response?.data;
@@ -157,6 +164,30 @@ export const SharerControlBox: React.FC<Props> = ({
                     awsAccessPointSetting={awsAccessPointSetting}
                     awsAccessPointWorking={
                       !!awsAccessPointSetting.notWorkingReason
+                    }
+                  />
+                </SharingConfigurationAccordion>
+              )}
+
+              {htsgetAwsVpcLatticeAccessPointSetting && (
+                <SharingConfigurationAccordion
+                  mutator={releasePatchMutate}
+                  path="/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointEnabled"
+                  label="htsget AWS VPC Lattice Access Point"
+                  current={htsgetAwsVpcLatticeAccessPointEnabled}
+                  notWorkingReason={
+                    htsgetAwsVpcLatticeAccessPointSetting.notWorkingReason
+                  }
+                >
+                  <HtsgetAwsVpcLatticeAccessPointAccordionContent
+                    releaseKey={releaseKey}
+                    releaseData={releaseData}
+                    releasePatchMutator={releasePatchMutate}
+                    htsgetAwsVpcLatticeAccessPointSetting={
+                      htsgetAwsVpcLatticeAccessPointSetting
+                    }
+                    htsgetAwsVpcLatticeAccessPointWorking={
+                      !!htsgetAwsVpcLatticeAccessPointSetting.notWorkingReason
                     }
                   />
                 </SharingConfigurationAccordion>

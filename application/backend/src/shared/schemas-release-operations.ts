@@ -110,6 +110,20 @@ export const ReleasePatchOperationSchema = Type.Union([
   }),
   Type.Object({
     op: Type.Literal("replace"),
+    path: Type.Literal(
+      "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointEnabled",
+    ),
+    value: Type.Boolean(),
+  }),
+  Type.Object({
+    op: Type.Literal("replace"),
+    path: Type.Literal(
+      "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointName",
+    ),
+    value: Type.String(),
+  }),
+  Type.Object({
+    op: Type.Literal("replace"),
     path: Type.Literal("/dataSharingConfiguration/gcpStorageIamEnabled"),
     value: Type.Boolean(),
   }),
