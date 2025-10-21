@@ -1,10 +1,64 @@
-import { internalProcedure, router } from "../../trpc-bootstrap";
 import { z } from "zod";
+import { internalProcedure, router } from "../../trpc-bootstrap";
 import {
   inputReleaseKey,
   inputReleaseKeySingle,
   unorderedInputPaginationParameter,
 } from "../input-schemas-common";
+
+/**
+ * The TRPC mutation procedure that triggers install of an AWS Access Point
+ */
+const startAwsAccessPointInstallProcedure = internalProcedure
+  .input(
+    z.object({
+      awsAccessPointName: z.string(),
+      releaseKey: inputReleaseKey,
+    }),
+  )
+  .mutation(async ({ input, ctx }) => {
+    // create the cloud formation template and save it to temp S3 bucket
+    const s3HttpsUrl =
+      await ctx.awsAccessPointService.createAccessPointCloudFormationTemplate(
+        ctx.user,
+        input.releaseKey,
+        input.awsAccessPointName,
+      );
+
+    // start the job that actually installs the cloud formation
+    await ctx.jobCloudFormationCreateService.startCloudFormationInstallJob(
+      ctx.user,
+      input.releaseKey,
+      s3HttpsUrl,
+    );
+  });
+
+/**
+ * The TRPC mutation procedure that triggers install of an htsget AWS VPC Lattice Access Point
+ */
+const startHtsgetAwsVpcLatticeAccessPointInstallProcedure = internalProcedure
+  .input(
+    z.object({
+      releaseKey: inputReleaseKey,
+      destinationName: z.string(),
+    }),
+  )
+  .mutation(async ({ input, ctx }) => {
+    // create the cloud formation template and save it to temp S3 bucket
+    const s3HttpsUrl =
+      await ctx.htsgetAwsVpcLatticeAccessPointService.createHtsgetVpcLatticeAccessPointCloudFormationTemplate(
+        ctx.user,
+        input.releaseKey,
+        input.destinationName,
+      );
+
+    // start the job that actually installs the cloud formation
+    await ctx.jobCloudFormationCreateService.startCloudFormationInstallJob(
+      ctx.user,
+      input.releaseKey,
+      s3HttpsUrl,
+    );
+  });
 
 /**
  * RPC for release jobs
@@ -15,30 +69,18 @@ export const releaseJobRouter = router({
     .mutation(async ({ input, ctx }) => {
       await ctx.jobService.startSelectJob(ctx.user, input.releaseKey);
     }),
-  startAwsAccessPointInstall: internalProcedure
-    .input(
-      z.object({
-        awsAccessPointName: z.string(),
-        releaseKey: inputReleaseKey,
-      }),
-    )
+  startAwsAccessPointInstall: startAwsAccessPointInstallProcedure,
+  startAwsAccessPointUninstall: internalProcedure
+    .input(inputReleaseKeySingle)
     .mutation(async ({ input, ctx }) => {
-      // create the cloud formation template and save it to temp S3 bucket
-      const s3HttpsUrl =
-        await ctx.awsAccessPointService.createAccessPointCloudFormationTemplate(
-          ctx.user,
-          input.releaseKey,
-          input.awsAccessPointName,
-        );
-
-      // start the job that actually installs the cloud formation
-      await ctx.jobCloudFormationCreateService.startCloudFormationInstallJob(
+      await ctx.jobCloudFormationDeleteService.startCloudFormationDeleteJob(
         ctx.user,
         input.releaseKey,
-        s3HttpsUrl,
       );
     }),
-  startAwsAccessPointUninstall: internalProcedure
+  startHtsgetAwsVpcLatticeAccessPointInstall:
+    startHtsgetAwsVpcLatticeAccessPointInstallProcedure,
+  startHtsgetAwsVpcLatticeAccessPointUninstall: internalProcedure
     .input(inputReleaseKeySingle)
     .mutation(async ({ input, ctx }) => {
       await ctx.jobCloudFormationDeleteService.startCloudFormationDeleteJob(

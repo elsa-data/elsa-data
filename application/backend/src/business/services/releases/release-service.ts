@@ -724,7 +724,7 @@ ${release.applicantEmailAddresses}
             }
 
             fieldToSet = {
-              htsgetAwsVpcLatticeAccessPointName: e.str(value),
+              htsgetAwsVpcLatticeAccessPointDestinationName: e.str(value),
             };
             break;
 

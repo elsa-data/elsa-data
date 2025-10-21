@@ -5,10 +5,10 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
-import { SharerHtsgetAwsVpcLatticeAccessPointType } from "../../../../../../backend/src/config/config-schema-sharer";
-import type { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas-release-operations";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { useTRPC } from "../../../../helpers/trpc-modern.ts";
+import type { SharerHtsgetAwsVpcLatticeAccessPointType } from "../../../../../../backend/src/config/config-schema-sharer";
+import type { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas-release-operations";
 
 type Props = {
   releaseKey: string;
@@ -31,22 +31,6 @@ export const HtsgetAwsVpcLatticeAccessPointAccordionContent: React.FC<
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const [accessPointNameInput, setAccessPointNameInput] = useState<string>(
-    props.releaseData?.dataSharingHtsgetAwsVpcLatticeAccessPoint?.name ||
-      NONE_DISPLAY,
-  );
-  const accessPointConfig =
-    props.htsgetAwsVpcLatticeAccessPointSetting.destinations[
-      accessPointNameInput
-    ];
-
-  // There is a possibility that there is an active access point but it is no longer in the configuration
-  const isActiveAccessPointButNoConfig =
-    !Object.keys(props.htsgetAwsVpcLatticeAccessPointSetting.destinations).find(
-      (name) => name === accessPointNameInput,
-    ) &&
-    props.releaseData?.dataSharingHtsgetAwsVpcLatticeAccessPoint?.installed;
-
   const onSuccess = async () => {
     await queryClient.invalidateQueries();
     // once we have started the copy out and invalidated the release state - our next render
@@ -58,33 +42,54 @@ export const HtsgetAwsVpcLatticeAccessPointAccordionContent: React.FC<
     });
   };
 
-  const accessPointInstallTriggerOptions =
-    trpc.releaseJob.startAwsAccessPointInstall.mutationOptions({
+  const installTriggerMutate = useMutation(
+    trpc.releaseJob.startHtsgetAwsVpcLatticeAccessPointInstall.mutationOptions({
       onSuccess: onSuccess,
-    });
-  const accessPointInstallTriggerMutate = useMutation(
-    accessPointInstallTriggerOptions,
+    }),
   );
 
-  const accessPointUninstallTriggerOptions =
-    trpc.releaseJob.startAwsAccessPointUninstall.mutationOptions({
-      onSuccess: onSuccess,
-    });
-  const accessPointUninstallTriggerMutate = useMutation(
-    accessPointUninstallTriggerOptions,
+  const uninstallTriggerMutate = useMutation(
+    trpc.releaseJob.startHtsgetAwsVpcLatticeAccessPointUninstall.mutationOptions(
+      {
+        onSuccess: onSuccess,
+      },
+    ),
   );
+
+  // the actual settings of the destination AWS account to which we want to share
+  // come from the Elsa server config
+  // all we deal with on the client is the "name" of the destination config entry
+  const [destinationNameInput, setDestinationNameInput] = useState<string>(
+    props.releaseData?.dataSharingHtsgetAwsVpcLatticeAccessPoint?.name ??
+      NONE_DISPLAY,
+  );
+
+  // the config entry for what is shown in the user interface,
+  // or undefined if config entry was not found (or is not selected)
+  const destinationConfig =
+    props.htsgetAwsVpcLatticeAccessPointSetting.destinations[
+      destinationNameInput
+    ];
+
+  // there is a possibility that there is an active htsget vpc lattice access point
+  // but that it is no longer in the configuration
+  // (in which case we want the barest of functionality that lets the user
+  //  do the uninstalling)
+  const isActiveInstallButNoConfig =
+    !destinationConfig &&
+    props.releaseData?.dataSharingHtsgetAwsVpcLatticeAccessPoint?.installed;
 
   // ALL OUR boolean states that will go into enabling or disabling buttons
 
-  // does the backend have non-empty values for any fields
+  // does the backend have empty values for any fields
   const isCurrentlyMissingNeededValues =
-    !accessPointConfig?.vpcId || !accessPointConfig?.accountId;
+    !destinationConfig?.vpcId || !destinationConfig?.accountId;
 
   // if mutators are running then UI bits needs to be disabled until finished
   const isCurrentlyMutating =
     // can't be within our own trigger operation
-    accessPointInstallTriggerMutate.isPending ||
-    accessPointUninstallTriggerMutate.isPending ||
+    installTriggerMutate.isPending ||
+    uninstallTriggerMutate.isPending ||
     // can't be started whilst other fields are being mutated
     props.releasePatchMutator.isPending;
 
@@ -98,11 +103,11 @@ export const HtsgetAwsVpcLatticeAccessPointAccordionContent: React.FC<
   //  !props.awsAccessPointWorking;
 
   const isCurrentlyInactiveRelease =
-    // must be activated
+    // release must be activated
     !props.releaseData.activation;
 
   const isCurrentlyAlreadyInstalled =
-    props?.releaseData?.dataSharingHtsgetAwsVpcLatticeAccessPoint?.installed ||
+    props?.releaseData?.dataSharingHtsgetAwsVpcLatticeAccessPoint?.installed ??
     false;
 
   const isInstallDisabledDescriptions = new Set<string>();
@@ -150,12 +155,9 @@ export const HtsgetAwsVpcLatticeAccessPointAccordionContent: React.FC<
   const isUninstallDisabled = isUninstallDisabledDescription.size > 0;
   const isVPCOptionDisabled = isVPCOptionDisabledDescription.size > 0;
 
-  const error =
-    accessPointInstallTriggerMutate.error ??
-    accessPointUninstallTriggerMutate.error;
+  const error = installTriggerMutate.error ?? uninstallTriggerMutate.error;
   const isError =
-    accessPointInstallTriggerMutate.isError ||
-    accessPointUninstallTriggerMutate.isError;
+    installTriggerMutate.isError || uninstallTriggerMutate.isError;
 
   return (
     <>
@@ -172,19 +174,19 @@ export const HtsgetAwsVpcLatticeAccessPointAccordionContent: React.FC<
         </label>
         <select
           className="input-bordered input w-full"
-          value={accessPointNameInput}
+          value={destinationNameInput}
           onChange={(e) => {
-            setAccessPointNameInput(e.target.value);
+            setDestinationNameInput(e.target.value);
           }}
         >
           {/* We want to show the active access point despite no longer in the option/VPCconfig */}
-          {isActiveAccessPointButNoConfig && (
+          {isActiveInstallButNoConfig && (
             <option
               key="installed-but-removed"
-              value={accessPointNameInput}
+              value={destinationNameInput}
               disabled={isVPCOptionDisabled}
             >
-              {`${accessPointNameInput} *`}
+              {`${destinationNameInput} *`}
             </option>
           )}
           <option key="none" value={""} disabled={isVPCOptionDisabled}>
@@ -199,7 +201,7 @@ export const HtsgetAwsVpcLatticeAccessPointAccordionContent: React.FC<
           ))}
         </select>
 
-        {isActiveAccessPointButNoConfig && (
+        {isActiveInstallButNoConfig && (
           <span className="label-text-alt text-slate-400 mt-2">
             {`*This access point is installed but the configuration was removed`}
           </span>
@@ -220,7 +222,7 @@ export const HtsgetAwsVpcLatticeAccessPointAccordionContent: React.FC<
             type="text"
             disabled={true}
             className="input-bordered input input-disabled w-full"
-            value={accessPointConfig?.accountId ?? ""}
+            value={destinationConfig?.accountId ?? ""}
           />
         </div>
         <div className="form-control flex-grow">
@@ -231,7 +233,7 @@ export const HtsgetAwsVpcLatticeAccessPointAccordionContent: React.FC<
             type="text"
             disabled={true}
             className="input-bordered input input-disabled w-full"
-            value={accessPointConfig?.vpcId ?? ""}
+            value={destinationConfig?.vpcId ?? ""}
           />
         </div>
       </div>
@@ -243,9 +245,9 @@ export const HtsgetAwsVpcLatticeAccessPointAccordionContent: React.FC<
           type="button"
           className="btn-normal w-fit"
           onClick={() => {
-            accessPointInstallTriggerMutate.mutate({
+            installTriggerMutate.mutate({
               releaseKey: props.releaseKey,
-              awsAccessPointName: accessPointNameInput,
+              destinationName: destinationNameInput,
             });
           }}
           disabled={isInstallDisabled}
@@ -276,7 +278,7 @@ export const HtsgetAwsVpcLatticeAccessPointAccordionContent: React.FC<
           type="button"
           className="btn-normal w-fit"
           onClick={() => {
-            accessPointUninstallTriggerMutate.mutate({
+            uninstallTriggerMutate.mutate({
               releaseKey: props.releaseKey,
             });
           }}

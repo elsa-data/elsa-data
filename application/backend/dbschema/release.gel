@@ -271,8 +271,18 @@ module release {
         #      level activity
         required property awsAccessPointName -> str { default := "" };
 
+        # htsget aws vpc lattice access point sharing is a technique where we call htsget
+        # over a VPC Lattice and render data objects via an access point
+        #
+        # when enabled is true, we store the name of the destination from the server config,
+        # the values of vpc and account that were present in the server config at the time
+        # of installation, and a rendered JSON that is used by htsget for authorisation
+        #
         required property htsgetAwsVpcLatticeAccessPointEnabled -> bool { default := false };
-        required property htsgetAwsVpcLatticeAccessPointName -> str { default := "" };
+        required property htsgetAwsVpcLatticeAccessPointDestinationName -> str { default := "" };
+        optional property htsgetAwsVpcLatticeAccessPointInstalledVpcId -> str;
+        optional property htsgetAwsVpcLatticeAccessPointInstalledAccountId -> str;
+        optional property htsgetAwsVpcLatticeAccessPointInstalledHtsgetResponse -> json;
 
         required property gcpStorageIamEnabled -> bool { default := false };
         required property gcpStorageIamUsers -> array<str> { default := <array<str>>[] };

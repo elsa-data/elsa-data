@@ -417,7 +417,7 @@ export abstract class ReleaseBaseService {
             isAllowedHtsgetAwsVpcLatticeAccessPointConfig,
             releaseKey,
             releaseInfo.dataSharingConfiguration
-              .htsgetAwsVpcLatticeAccessPointName,
+              .htsgetAwsVpcLatticeAccessPointDestinationName,
           )
         : undefined;
 

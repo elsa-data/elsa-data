@@ -1,0 +1,313 @@
+import {
+  CloudFormationClient,
+  CreateStackCommand,
+  DescribeStacksCommand,
+} from "@aws-sdk/client-cloudformation";
+import * as gel from "gel";
+import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
+import e from "../../../../dbschema/edgeql-js";
+import type { ReleaseDetailType } from "../../../shared/schemas-releases";
+import { AuthenticatedUser } from "../../authenticated-user";
+import {
+  AuditEventService,
+  OUTCOME_MINOR_FAILURE,
+  OUTCOME_SUCCESS,
+} from "../audit-event-service";
+import { AwsEnabledService } from "../aws/aws-enabled-service";
+import { getReleaseInfo } from "../helpers";
+import { ReleaseService } from "../releases/release-service";
+import { SelectService } from "../select-service";
+import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
+import { JobService, NotAuthorisedToControlJob } from "./job-service";
+
+/**
+ * A service for performing long-running process of setting up a htsget
+ * VPC lattice access point share.
+ */
+@injectable()
+export class JobHtsgetAwsVpcLatticeAccessPointCreateService extends JobService {
+  constructor(
+    @inject("Database") readonly edgeDbClient: gel.Client,
+    @inject("Logger") readonly logger: Logger,
+    @inject(AuditEventService) readonly auditLogService: AuditEventService,
+    @inject(ReleaseService) readonly releaseService: ReleaseService,
+    @inject(SelectService) readonly selectService: SelectService,
+    @inject("CloudFormationClient")
+    private readonly cfnClient: CloudFormationClient,
+    @inject(AwsEnabledService)
+    private readonly awsEnabledService: AwsEnabledService,
+    @inject(AwsAccessPointService)
+    private readonly awsAccessPointService: AwsAccessPointService,
+  ) {
+    super(edgeDbClient, auditLogService, releaseService, selectService);
+  }
+
+  /**
+   * @param user the user attempting the install
+   * @param releaseKey the release to install in the context of
+   * @param s3HttpsUrl a https://s3.. URL that represents the cloud formation template to install
+   */
+  public async startJob(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    s3HttpsUrl: string,
+  ): Promise<ReleaseDetailType> {
+    await this.awsEnabledService.enabledGuard();
+
+    const { userRole } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey,
+      );
+
+    if (userRole != "Administrator")
+      throw new NotAuthorisedToControlJob(userRole, releaseKey);
+
+    const { releaseQuery } = await getReleaseInfo(
+      this.edgeDbClient,
+      releaseKey,
+    );
+
+    await this.startGenericJob(releaseKey, async (tx) => {
+      // by placing the audit event in the transaction I guess we miss out on
+      // the ability to audit jobs that don't start at all - but maybe we do that
+      // some other way
+      const newAuditEventId = await this.auditLogService.startReleaseAuditEvent(
+        user,
+        releaseKey,
+        "E",
+        "Install AWS Access Point",
+        new Date(),
+        tx,
+      );
+
+      // create a new cloud formation install entry
+      await e
+        .insert(e.job.HtsgetAwsVpcLatticeAccessPointInstallJob, {
+          forRelease: releaseQuery,
+          status: e.job.JobStatus.running,
+          started: e.datetime_current(),
+          percentDone: e.int16(0),
+          messages: e.literal(e.array(e.str), [
+            "Triggered install of stack in AWS",
+          ]),
+          auditEntry: e
+            .select(e.audit.ReleaseAuditEvent, (ae) => ({
+              filter: e.op(ae.id, "=", e.uuid(newAuditEventId)),
+            }))
+            .assert_single(),
+          s3HttpsUrl: s3HttpsUrl,
+          // we have not yet started the cloud formation create - our first step will be to get this stack id
+          // TODO: change schema to allow this to be optional
+          awsStackId: "",
+        })
+        .run(tx);
+    });
+
+    // return the status of the release - which now has a runningJob
+    return await this.releaseService.getBase(releaseKey, userRole);
+  }
+
+  /**
+   * Do the busy work of the cloud formation install job. As it turns out,
+   * the busy work just involves asking AWS if the script has finished installing - and
+   * returning a status.
+   *
+   * @param jobId
+   */
+  public async doWork(jobId: string): Promise<number> {
+    // TODO some security level here? does the user have permissions?
+
+    const cfInstallJobQuery = e
+      .select(e.job.HtsgetAwsVpcLatticeAccessPointInstallJob, (j) => ({
+        forRelease: {
+          releaseKey: true,
+        },
+        awsStackId: true,
+        s3HttpsUrl: true,
+        filter: e.op(j.id, "=", e.uuid(jobId)),
+      }))
+      .assert_single();
+
+    const cfInstallJob = await cfInstallJobQuery.run(this.edgeDbClient);
+
+    if (!cfInstallJob)
+      throw new Error("Job id passed in was not a Cloud Formation Install Job");
+
+    if (!cfInstallJob.awsStackId) {
+      const releaseStackName = AwsAccessPointService.getReleaseStackName(
+        cfInstallJob.forRelease.releaseKey,
+      );
+
+      const newReleaseStack = await this.cfnClient.send(
+        new CreateStackCommand({
+          StackName: releaseStackName,
+          TemplateURL: cfInstallJob.s3HttpsUrl,
+          Capabilities: ["CAPABILITY_IAM"],
+          OnFailure: "DELETE",
+          // need to determine this number - but creating access points is pretty simple so
+          // we only need to set this generously above the upper limit we see in practice
+          TimeoutInMinutes: 5,
+        }),
+      );
+
+      if (!newReleaseStack || !newReleaseStack.StackId) {
+        console.log("Failed to even trigger the cloud formation create");
+        return 0;
+      }
+
+      await this.edgeDbClient.transaction(async (tx) => {
+        const cloudFormationInstallQuery = e
+          .select(e.job.HtsgetAwsVpcLatticeAccessPointInstallJob, (j) => ({
+            auditEntry: true,
+            started: true,
+            filter: e.op(j.id, "=", e.uuid(jobId)),
+          }))
+          .assert_single();
+
+        await e
+          .update(cloudFormationInstallQuery, (sj) => ({
+            set: {
+              percentDone: 1,
+              awsStackId: newReleaseStack.StackId,
+            },
+          }))
+          .run(tx);
+      });
+
+      return 1;
+    }
+
+    const describeStacksResult = await this.cfnClient.send(
+      new DescribeStacksCommand({
+        StackName: cfInstallJob.awsStackId,
+      }),
+    );
+
+    if (
+      !describeStacksResult.Stacks ||
+      describeStacksResult.Stacks.length < 1
+    ) {
+      // the stack has disappeared.. abort the job
+      console.log("Stack has disappeared");
+      return 0;
+    }
+
+    if (describeStacksResult.Stacks.length > 1) {
+      throw new Error(
+        "Unexpected result of two cloud formation stacks with the same name",
+      );
+    }
+
+    const theStack = describeStacksResult.Stacks[0];
+
+    if (
+      theStack.StackStatus === "CREATE_IN_PROGRESS" ||
+      theStack.StackStatus === "DELETE_IN_PROGRESS"
+    ) {
+      return 1;
+    }
+    if (theStack.StackStatus === "CREATE_COMPLETE") {
+      return 0;
+    }
+
+    this.logger.debug(theStack.StackStatus);
+
+    return 0;
+  }
+
+  public async endJob(
+    jobId: string,
+    wasSuccessful: boolean,
+    isCancellation: boolean,
+  ): Promise<void> {
+    // basically at this point we believe the cloud formation is installed
+    // we just need to clean up the records
+    await this.edgeDbClient.transaction(async (tx) => {
+      const cloudFormationInstallQuery = e
+        .select(e.job.HtsgetAwsVpcLatticeAccessPointInstallJob, (j) => ({
+          auditEntry: true,
+          started: true,
+          forRelease: {
+            releaseKey: true,
+            activation: { accessPointArns: true },
+          },
+          filter: e.op(j.id, "=", e.uuid(jobId)),
+        }))
+        .assert_single();
+
+      const cloudFormationInstallJob = await cloudFormationInstallQuery.run(
+        this.edgeDbClient,
+      );
+
+      if (!cloudFormationInstallJob)
+        throw new Error(
+          "Job id passed in was not a Cloud Formation Install Job",
+        );
+
+      // The cloudformation install job is most likely for s3 access point (ap) installation
+      // We wanted to document all access point ever created in the release::activation schema
+      try {
+        // First we need to get the new installed AP then merge with existing one if any
+        const map =
+          await this.awsAccessPointService.getInstalledAccessPointObjectMap(
+            cloudFormationInstallJob.forRelease.releaseKey,
+          );
+
+        const apArn = new Set<string>(
+          Object.values(map)
+            .map((d) => d.accessPointArn)
+            .filter((d) => !!d) as string[],
+        );
+
+        // Append with existing one if any
+        cloudFormationInstallJob?.forRelease?.activation?.accessPointArns?.forEach(
+          (alias) => apArn.add(alias),
+        );
+
+        await e
+          .update(e.release.Activation, (a) => ({
+            filter: e.op(
+              a["<activation[is release::Release]"].releaseKey,
+              "=",
+              e.str(cloudFormationInstallJob.forRelease.releaseKey),
+            ),
+            set: {
+              accessPointArns: Array.from(apArn),
+            },
+          }))
+          .run(this.edgeDbClient);
+      } catch (error) {
+        // Possibly this CloudFormation install is not part of AccessPoint installation and
+        // it happens that no AP installed for this release
+        // But our first cut only uses this function on AP installation so wouldn't expect any error
+        // for not having AP
+        this.logger.error(error);
+      }
+
+      await this.auditLogService.completeReleaseAuditEvent(
+        cloudFormationInstallJob.auditEntry.id,
+        isCancellation ? OUTCOME_MINOR_FAILURE : OUTCOME_SUCCESS,
+        cloudFormationInstallJob.started,
+        new Date(),
+        { jobId: jobId },
+        tx,
+      );
+
+      await e
+        .update(cloudFormationInstallQuery, (sj) => ({
+          set: {
+            percentDone: 100,
+            ended: e.datetime_current(),
+            status: isCancellation
+              ? e.job.JobStatus.cancelled
+              : wasSuccessful
+                ? e.job.JobStatus.succeeded
+                : e.job.JobStatus.failed,
+          },
+        }))
+        .run(tx);
+    });
+  }
+}
