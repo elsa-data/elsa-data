@@ -1,12 +1,12 @@
-import React, { useRef, useId } from "react";
+import React, { useId } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { MondoChooser } from "../../../../components/concept-chooser/mondo-chooser";
 import { LeftDiv, RightDiv } from "../../../../components/rh/rh-structural";
-import { RhRadioItem, RhRadios } from "../../../../components/rh/rh-radios";
+import { RhRadios } from "../../../../components/rh/rh-radios";
 import { axiosPatchOperationMutationFn } from "../../queries";
 import { ReleaseTypeLocal } from "../../shared-types";
 import { RhCheckItem, RhChecks } from "../../../../components/rh/rh-checks";
 import { EagerErrorBoundary } from "../../../../components/errors";
+import { SnomedChooser } from "../../../../components/concept-chooser/snomed-chooser";
 
 type Props = {
   releaseKey: string;
@@ -26,7 +26,7 @@ type Props = {
   };
 };
 
-const malesQuery = {
+/*const malesQuery = {
   filters: [
     {
       scope: "individuals",
@@ -99,7 +99,7 @@ const femalesWithChr20VariantQuery = {
       alternateBases: "AATAAT",
     },
   },
-};
+}; */
 
 /**
  * The application coded box allows the data admin to clarify/encode details they
@@ -127,7 +127,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
     },
   });
 
-  const CountryTypeCheck = (label: string, value: string) => (
+  /*const CountryTypeCheck = (label: string, value: string) => (
     <label className="label">
       <input
         type="checkbox"
@@ -159,7 +159,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
       />
       {label}
     </label>
-  );
+  ); */
 
   {
     /*<RhCheckItem
@@ -206,7 +206,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
   />
 );*/
 
-  const ExampleBeaconQueryLink = (label: string, query: any) => (
+  /*const ExampleBeaconQueryLink = (label: string, query: any) => (
     <a
       className="cursor-pointer underline"
       onClick={() => {
@@ -224,14 +224,14 @@ export const ApplicationCodedBox: React.FC<Props> = ({
     </a>
   );
 
-  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null); */
 
   return (
     <div className="md:grid md:grid-cols-5 md:gap-6">
       <LeftDiv
         heading={"Application Coding"}
         extra={
-          "The more application detail are coded, the more the engine can safely bulk select cases by their individual sharing preferences"
+          "The more application detail are coded, the more accurately the engine can build cohorts"
         }
       />
       <RightDiv>
@@ -240,13 +240,38 @@ export const ApplicationCodedBox: React.FC<Props> = ({
             {releasePatchMutate.isError && (
               <EagerErrorBoundary error={releasePatchMutate.error} />
             )}
-            <RhChecks label={"Assertions"}>
-              <RhCheckItem
-                disabled={true}
-                checked={true}
-                label={"Applicant Has Documented Ethics Approval"}
+
+            <RhRadios label={"Nature of Study"}>
+              {ApplicationTypeRadio(
+                "Health or Medical or Biomedical Research (DS, HMB)",
+                "HMB",
+              )}
+              <SnomedChooser
+                className="ml-8 mb-2"
+                label="Diseases in Study"
+                selected={applicationCoded.diseases}
+                addToSelected={(c) =>
+                  releasePatchMutate.mutate({
+                    op: "add",
+                    path: "/applicationCoded/diseases",
+                    value: c,
+                  })
+                }
+                removeFromSelected={(c) =>
+                  releasePatchMutate.mutate({
+                    op: "remove",
+                    path: "/applicationCoded/diseases",
+                    value: c,
+                  })
+                }
+                disabled={applicationCoded.type !== "HMB"}
               />
-              <RhCheckItem
+              {ApplicationTypeRadio("Other (POA, GRU)", "GRU")}
+            </RhRadios>
+
+            <RhChecks label={"Assertions"}>
+              <RhCheckItem disabled={false} label={"Study is Commercial"} />
+              {/*<RhCheckItem
                 disabled={true}
                 label={"Applicant Has Agreed to Publish the Results"}
               />
@@ -273,12 +298,11 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                 label={
                   "Applicant Asserts the Study Involves Method Development (e.g software or algorithms)"
                 }
-              />
+              /> */}
             </RhChecks>
 
-            <div className="grid grid-cols-2 gap-4">
+            {/* <div className="grid grid-cols-2 gap-4">
               <RhRadios label={"Study Type"}>
-                {/*ApplicationTypeRadio("Unspecified", "UN")*/}
                 {ApplicationTypeRadio(
                   "Population Origins or Ancestry Research Only",
                   "POA",
@@ -290,31 +314,9 @@ export const ApplicationCodedBox: React.FC<Props> = ({
                 )}
                 {ApplicationTypeRadio("Disease Specific Research", "DS")}
               </RhRadios>
-              {applicationCoded.type && applicationCoded.type === "DS" && (
-                <MondoChooser
-                  className="self-end"
-                  label="Disease/Condition(s)"
-                  selected={applicationCoded.diseases}
-                  addToSelected={(c) =>
-                    releasePatchMutate.mutate({
-                      op: "add",
-                      path: "/applicationCoded/diseases",
-                      value: c,
-                    })
-                  }
-                  removeFromSelected={(c) =>
-                    releasePatchMutate.mutate({
-                      op: "remove",
-                      path: "/applicationCoded/diseases",
-                      value: c,
-                    })
-                  }
-                  disabled={false}
-                />
-              )}
-            </div>
+            </div> */}
 
-            <RhChecks label={"Superpopulation"}>
+            {/*<RhChecks label={"Superpopulation"}>
               {CountryTypeCheck("European", "EUR")}
               {CountryTypeCheck("East Asian", "EAS")}
               {CountryTypeCheck("South Asian", "SAS")}
@@ -322,7 +324,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
               {CountryTypeCheck("American", "AMR")}
             </RhChecks>
 
-            {/*<div>
+            <div>
               <RhTextArea
                 label={"Beacon v2 Query"}
                 className="w-full rounded-md border border-gray-300 font-mono"

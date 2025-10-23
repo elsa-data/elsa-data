@@ -251,6 +251,17 @@ export class JobService {
               ...e.dataset.Dataset["*"],
             },
             patients: {
+              consent: {
+                ...e.consent.Consent["*"],
+                statements: (s) => ({
+                  ...e.is(e.consent.ConsentStatementDynamicDuo, {
+                    consentSystemIdentifier: true,
+                  }),
+                  ...e.is(e.consent.ConsentStatementDuo, {
+                    dataUseLimitation: true,
+                  }),
+                }),
+              },
               ...e.dataset.DatasetPatient["*"],
               specimens: {
                 ...e.dataset.DatasetSpecimen["*"],
@@ -259,6 +270,8 @@ export class JobService {
             limit: 1,
           }))
           .run(tx);
+
+        console.log(JSON.stringify(casesFromQueue, null, 2));
 
         // todo: need to work out the magic of how EdgeDb wants us to type this kind of stuff...
         // (it can't be like this??)

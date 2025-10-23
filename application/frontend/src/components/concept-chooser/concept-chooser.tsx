@@ -3,53 +3,9 @@ import { useCombobox } from "downshift";
 import axios from "axios";
 import classNames from "classnames";
 import _ from "lodash";
-import { CodingType } from "@umccr/elsa-types";
-import { doLookup } from "../../helpers/ontology-helper";
+import type { CodingType } from "./concept-chooser-types";
 import { useEnvRelay } from "../../providers/env-relay-provider";
-
-const Chip: React.FC<{
-  c: CodingType;
-  removeFromSelected: (c: CodingType) => void;
-}> = ({ c, removeFromSelected }) => {
-  const [display, setDisplay] = useState<string | undefined>(undefined);
-
-  const envRelay = useEnvRelay();
-  const terminologyFhirUrl = envRelay.terminologyFhirUrl;
-
-  React.useEffect(() => {
-    const fetchData = async () => {
-      const display = (await doLookup(terminologyFhirUrl, c))?.display;
-      setDisplay(display);
-    };
-    fetchData().catch();
-  });
-
-  return (
-    <li className="align-center ease flex w-max flex-none cursor-pointer rounded-full bg-gray-200 px-4 py-2 text-sm text-gray-500 transition duration-300 active:bg-gray-300">
-      {display ?? c.code}
-      <button
-        className="hover bg-transparent focus:outline-none"
-        onClick={() => removeFromSelected(c)}
-      >
-        <svg
-          aria-hidden="true"
-          focusable="false"
-          data-prefix="fas"
-          data-icon="times"
-          className="ml-3 w-3"
-          role="img"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 352 512"
-        >
-          <path
-            fill="currentColor"
-            d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"
-          ></path>
-        </svg>
-      </button>
-    </li>
-  );
-};
+import { Chip } from "./concept-chooser-chip.tsx";
 
 type Props = {
   className?: string;
@@ -89,7 +45,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
 
   // TODO: THIS IS WRONG.. NEEDS FIXING..
 
-  const listItemBadge = (cn: string) => {};
+  // const listItemBadge = (cn: string) => {};
 
   // given the number of display terms is likely to be small, and is very stable - we aggressively
   // cache them locally and use those values rather than go to the network
@@ -118,7 +74,7 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
     fetchData().catch();
   }, [props.selected]); */
 
-  const stateReducer = (state: any, actionAndChanges: any) => {
+  const stateReducer = (_state: any, actionAndChanges: any) => {
     const { type, changes } = actionAndChanges;
     switch (type) {
       case useCombobox.stateChangeTypes.ItemClick:
@@ -201,7 +157,9 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
   };
 
   return (
-    <div className={props.className}>
+    <div
+      className={classNames(props.className, { "opacity-50": props.disabled })}
+    >
       <label
         {...getLabelProps()}
         className="block text-sm font-medium text-gray-700"

@@ -1,4 +1,5 @@
-import { type Static, Type } from "@sinclair/typebox";
+import Type from "typebox";
+import { DuoLimitationCodedSchema } from "../business/services/consent/duo/duo-schemas";
 import { CodingSchema } from "./schemas-coding";
 import { Nullable, StringUnion, TypeDate } from "./typebox-helpers";
 
@@ -27,7 +28,7 @@ export const ReleaseSummarySchema = Type.Object({
   roleInRelease: Type.String(),
 });
 
-export type ReleaseSummaryType = Static<typeof ReleaseSummarySchema>;
+export type ReleaseSummaryType = Type.Static<typeof ReleaseSummarySchema>;
 
 /**
  * An enum type for participant roles in the release
@@ -85,7 +86,7 @@ export const DataSharingAwsAccessPointSchema = Type.Optional(
   }),
 );
 
-export type DataSharingAwsAccessPointType = Static<
+export type DataSharingAwsAccessPointType = Type.Static<
   typeof DataSharingAwsAccessPointSchema
 >;
 
@@ -99,7 +100,7 @@ export const DataSharingHtsgetAwsVpcLatticeAccessPointSchema = Type.Optional(
   }),
 );
 
-export type DataSharingHtsgetAwsVpcLatticeAccessPointType = Static<
+export type DataSharingHtsgetAwsVpcLatticeAccessPointType = Type.Static<
   typeof DataSharingHtsgetAwsVpcLatticeAccessPointSchema
 >;
 
@@ -202,12 +203,30 @@ export const ReleaseNodeStatusSchema = StringUnion([
   "unselected",
 ]);
 
+export const ConsentStatementDuoSchema = Type.Object({
+  type: Type.Literal("consent::ConsentStatementDuo"), // note this is exposing the underlying Gel type
+
+  dataUseLimitation: DuoLimitationCodedSchema,
+});
+
+export const ConsentStatementDynamicDuoSchema = Type.Object({
+  type: Type.Literal("consent::ConsentStatementDynamicDuo"), // note this is exposing the underlying Gel type
+
+  consentSystemIdentifier: Type.String(),
+});
+
+export const ConsentStatementSchema = Type.Union([
+  ConsentStatementDuoSchema,
+  ConsentStatementDynamicDuoSchema,
+]);
+
 export const ReleaseSpecimenSchema = Type.Object({
   id: Type.String(),
   externalId: Type.String(), // TODO: fix this
   // the node status of whether this specimen is released
   nodeStatus: ReleaseNodeStatusSchema,
   // whether there is specimen specific consent statements
+  consentStatements: Type.Optional(Type.Array(ConsentStatementSchema)),
   customConsent: Type.Boolean(),
 });
 
@@ -233,6 +252,7 @@ export const ReleasePatientSchema = Type.Object({
   // the node status of whether this patient is released
   nodeStatus: ReleaseNodeStatusSchema,
   // whether there is patient specific consent statements
+  consentStatements: Type.Optional(Type.Array(ConsentStatementSchema)),
   customConsent: Type.Boolean(),
 });
 
@@ -248,6 +268,8 @@ export const ReleaseCaseSchema = Type.Object({
   fromDatasetId: Type.String(),
   // the node status of whether this case is released
   nodeStatus: ReleaseNodeStatusSchema,
+
+  consentStatements: Type.Optional(Type.Array(ConsentStatementSchema)),
   // whether there is case specific consent statements
   customConsent: Type.Boolean(),
 });
@@ -261,7 +283,9 @@ export const ReleasePreviousJobSchema = Type.Object({
   requestedCancellation: Type.Boolean(),
   details: Type.String(),
 });
-export type ReleasePreviousJobType = Static<typeof ReleasePreviousJobSchema>;
+export type ReleasePreviousJobType = Type.Static<
+  typeof ReleasePreviousJobSchema
+>;
 
 // Schema for manually creating a release instead importing it from a DAC
 export const ReleaseManualSchema = Type.Object({
@@ -273,7 +297,7 @@ export const ReleaseManualSchema = Type.Object({
   datasetUris: Type.Array(Type.String()),
   applicantEmailAddresses: Type.String(),
 });
-export type ReleaseManualType = Static<typeof ReleaseManualSchema>;
+export type ReleaseManualType = Type.Static<typeof ReleaseManualSchema>;
 
 /**
  * A schema representing the participation of someone in a release.
@@ -299,7 +323,9 @@ export const ReleaseParticipantSchema = Type.Object({
   // The role options for that participant from the logged in user
   roleAlterOptions: Nullable(Type.Array(StringUnion(ReleaseParticipantRole))),
 });
-export type ReleaseParticipantType = Static<typeof ReleaseParticipantSchema>;
+export type ReleaseParticipantType = Type.Static<
+  typeof ReleaseParticipantSchema
+>;
 
 /**
  * A schema representing the operation to add a user to a release with
@@ -309,14 +335,22 @@ export const ReleaseParticipantAddSchema = Type.Object({
   email: Type.String(),
   role: Type.String(),
 });
-export type ReleaseParticipantAddType = Static<
+export type ReleaseParticipantAddType = Type.Static<
   typeof ReleaseParticipantAddSchema
 >;
 
-export type ReleaseNodeStatusType = Static<typeof ReleaseNodeStatusSchema>;
+export type ReleaseNodeStatusType = Type.Static<typeof ReleaseNodeStatusSchema>;
 
-export type ReleaseSpecimenType = Static<typeof ReleaseSpecimenSchema>;
-export type ReleasePatientType = Static<typeof ReleasePatientSchema>;
-export type ReleaseCaseType = Static<typeof ReleaseCaseSchema>;
+export type ReleaseSpecimenType = Type.Static<typeof ReleaseSpecimenSchema>;
+export type ReleasePatientType = Type.Static<typeof ReleasePatientSchema>;
+export type ReleaseCaseType = Type.Static<typeof ReleaseCaseSchema>;
 
-export type ReleaseDetailType = Static<typeof ReleaseDetailSchema>;
+export type ReleaseDetailType = Type.Static<typeof ReleaseDetailSchema>;
+
+export type ConsentStatementType = Type.Static<typeof ConsentStatementSchema>;
+export type ConsentStatementDuoType = Type.Static<
+  typeof ConsentStatementDuoSchema
+>;
+export type ConsentStatementDynamicDuoType = Type.Static<
+  typeof ConsentStatementDynamicDuoSchema
+>;

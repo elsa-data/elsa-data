@@ -165,7 +165,7 @@ export const CasesBox: React.FC<Props> = ({
   const onParseSelectCsv = async (externalIdentifierValues: string[]) => {
     setIsSelectAllIndeterminate(true);
 
-    await specimenMutate.mutate({
+    specimenMutate.mutate({
       op: "add",
       releaseKey: releaseKey,
       args: { externalIdentifierValues },
@@ -175,7 +175,7 @@ export const CasesBox: React.FC<Props> = ({
   const onParseUnselectCsv = async (externalIdentifierValues: string[]) => {
     setIsSelectAllIndeterminate(true);
 
-    await specimenMutate.mutate({
+    specimenMutate.mutate({
       op: "remove",
       releaseKey: releaseKey,
       args: { externalIdentifierValues },

@@ -1,7 +1,6 @@
-import { Concept, ConceptDictionary } from "./concept-chooser-types";
-import React, { Dispatch } from "react";
+import React from "react";
 import { ConceptChooser } from "./concept-chooser";
-import { CodingType } from "@umccr/elsa-types";
+import type { CodingType } from "./concept-chooser-types";
 
 type Props = {
   label: string;

@@ -43,7 +43,7 @@ export const ReleasesDetailSubPage: React.FC = () => {
         isAllowAdminView={releaseData.permissionViewSelections ?? false}
         pageSize={pageSize}
         releaseIsActivated={releaseIsActivated}
-        showConsent={false}
+        showConsent={true}
       />
 
       {releaseData.permissionViewSelections && (

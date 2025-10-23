@@ -3,6 +3,7 @@ import _ from "lodash";
 import { Issuer } from "openid-client";
 import * as path from "path";
 import type { ElsaConfigurationType } from "./config/config-schema";
+import type { ConsenterType } from "./config/config-schema-consenter.ts";
 import type { OidcType } from "./config/config-schema-oidc";
 import type { SharerType } from "./config/config-schema-sharer";
 import type { ElsaSettings } from "./config/elsa-settings";
@@ -112,16 +113,37 @@ export async function bootstrapSettings(
   // (for instance to support multiple htsget endpoints) - for the moment we have not thought
   // this through and hence limit it to one of each
   const sharers: SharerType[] = _.get(config, "sharers");
-  const sharerTypes = sharers.map((s) => s.type);
 
-  const sharerDuplicates = sharerTypes.filter(
-    (item, index) => sharerTypes.indexOf(item) !== index,
-  );
+  {
+    const sharerTypes = sharers.map((s) => s.type);
 
-  if (sharerDuplicates.length > 0)
-    throw new Error(
-      `For the moment, only a single sharer of each type can be specified. The following sharers types are duplicated -> ${sharerDuplicates}`,
+    const sharerDuplicates = sharerTypes.filter(
+      (item, index) => sharerTypes.indexOf(item) !== index,
     );
+
+    if (sharerDuplicates.length > 0)
+      throw new Error(
+        `For the moment, only a single sharer of each type can be specified. The following sharers types are duplicated -> ${sharerDuplicates}`,
+      );
+  }
+
+  const consenters: ConsenterType[] = _.get(config, "consenters");
+
+  // similarly for consenters we currently only allow one of each type until we work out
+  // what the ramifications are.. more than likely we will need a way of linking a dataset to
+  // a specific consenter which might make this redundant
+  {
+    const consenterTypes = consenters.map((s) => s.type);
+
+    const consenterDuplicates = consenterTypes.filter(
+      (item, index) => consenterTypes.indexOf(item) !== index,
+    );
+
+    if (consenterDuplicates.length > 0)
+      throw new Error(
+        `For the moment, only a single consenter of each type can be specified. The following consenter types are duplicated -> ${consenterDuplicates}`,
+      );
+  }
 
   return {
     deployedUrl: deployedUrl,
@@ -152,6 +174,7 @@ export async function bootstrapSettings(
       : undefined,
     dacs: _.get(config, "dacs"),
     sharers: sharers,
+    consenters: consenters,
     logger: {
       name: "elsa-data",
       level: logLevel,

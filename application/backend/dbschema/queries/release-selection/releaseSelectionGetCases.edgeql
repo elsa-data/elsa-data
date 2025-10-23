@@ -31,21 +31,49 @@ WITH
   cases := (
     SELECT dataset::DatasetCase {
       dataset: {
-        consent: { },
+        consent: {
+          statements: {
+            type := .__type__.name,
+            **,
+            [is consent::ConsentStatementDuo].**,
+            [is consent::ConsentStatementDynamicDuo].**
+          }
+        },
       },
-      consent: { },
+      consent: {
+        statements: {
+          type := .__type__.name,
+          **,
+          [is consent::ConsentStatementDuo].**,
+          [is consent::ConsentStatementDynamicDuo].**
+        }
+      },
       patients: {
-        consent: { },
+        consent: {
+          statements: {
+            type := .__type__.name,
+            **,
+            [is consent::ConsentStatementDuo].**,
+            [is consent::ConsentStatementDynamicDuo].**
+          }
+        },
         specimens: {
-          consent: { },
+          consent: {
+            statements: {
+              type := .__type__.name,
+              **,
+              [is consent::ConsentStatementDuo].**,
+              [is consent::ConsentStatementDynamicDuo].**
+            }
+          },
           isSelected := .id IN release.selectedSpecimens.id
-        } FILTER (paramIsAllowedViewAllCases OR .id IN release.selectedSpecimens.id)
-      } FILTER (paramIsAllowedViewAllCases OR .specimens IN release.selectedSpecimens)
+        } FILTER paramIsAllowedViewAllCases OR any(.id IN release.selectedSpecimens.id)
+      } FILTER paramIsAllowedViewAllCases OR any(.specimens IN release.selectedSpecimens)
     }
     FILTER
-      .dataset IN datasets
+      any(.dataset IN datasets)
       AND
-      (paramIsAllowedViewAllCases OR .patients.specimens IN release.selectedSpecimens)
+      (paramIsAllowedViewAllCases OR any(.patients.specimens IN release.selectedSpecimens))
       AND
       (
         # if we are doing a text search and we want to find those identifiers using query IN
@@ -65,15 +93,15 @@ SELECT {
   data := (
       SELECT cases {
         *,
+        consent: { statements: { * } },
         dataset: { *,
-                   consent: { * } },
-        consent: { * },
+          consent: { statements: { * } } },
         patients: { *,
-                    consent: { * },
-                    specimens: { *,
-                                 consent: { * }
-                               }
-                  },
+          consent: { statements: { * } },
+          specimens: { *,
+            consent: { statements: { * } }
+          }
+        },
       }
       ORDER BY
         .dataset.uri ASC THEN

@@ -1,5 +1,5 @@
 {
-  ontoFhirUrl: "https://api.healthterminologies.gov.au/integration/R4/fhir",
+  ontoFhirUrl: "https://tx.ontoserver.csiro.au/fhir",
   releaseKeyPrefix: "R",
   ipLookup: { maxMindDbPath: "config/Geoacumen-Country.mmdb" },
   feature: {

@@ -1,4 +1,4 @@
-import { type Static, Type } from "@sinclair/typebox";
+import Type from "typebox";
 import { ReleasePatientBirthSexSchema } from "./schemas-releases";
 import { TypeDate } from "./typebox-helpers";
 /**
@@ -83,6 +83,6 @@ export const DatasetSchemaDeep = Type.Intersect([
   DatasetArtifactCount,
 ]);
 
-export type DatasetLightType = Static<typeof DatasetSchemaLight>;
-export type DatasetDeepType = Static<typeof DatasetSchemaDeep>;
-export type DatasetCaseType = Static<typeof DatasetCaseSchema>;
+export type DatasetLightType = Type.Static<typeof DatasetSchemaLight>;
+export type DatasetDeepType = Type.Static<typeof DatasetSchemaDeep>;
+export type DatasetCaseType = Type.Static<typeof DatasetCaseSchema>;

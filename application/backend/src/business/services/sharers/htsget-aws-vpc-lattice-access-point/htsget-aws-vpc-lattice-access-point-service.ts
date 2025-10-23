@@ -6,8 +6,10 @@ import {
 } from "@aws-sdk/client-cloudformation";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import assert from "assert";
-import * as gel from "gel";
+import { stringify } from "csv-stringify";
+import streamConsumers from "node:stream/consumers";
 import type { Logger } from "pino";
+import { Readable } from "stream";
 import { inject, injectable } from "tsyringe";
 import type { ElsaSettings } from "../../../../config/elsa-settings";
 import { AuthenticatedUser } from "../../../authenticated-user";
@@ -30,13 +32,12 @@ export class HtsgetAwsVpcLatticeAccessPointService {
    * @param releaseKey
    */
   public static getReleaseStackName(releaseKey: string): string {
-    return `elsa-data-release-${releaseKey}`;
+    return `elsa-data-release-${releaseKey}-htsget-ap`;
   }
 
   constructor(
     @inject("Logger") private readonly logger: Logger,
     @inject("Settings") private readonly settings: ElsaSettings,
-    @inject("Database") private readonly edgeDbClient: gel.Client,
     @inject("CloudFormationClient")
     private readonly cfnClient: CloudFormationClient,
     @inject("S3Client") private readonly s3Client: S3Client,
@@ -88,6 +89,81 @@ export class HtsgetAwsVpcLatticeAccessPointService {
     if (!releaseStack.Stacks || releaseStack.Stacks.length != 1) return null;
 
     return releaseStack.Stacks[0];
+  }
+
+  /**
+   * Returns the TSV file manifest for this release but with paths corrected
+   * for the access point.
+   *
+   * @param user
+   * @param releaseKey
+   * @param tsvColumns an array of column names that will be used to construct the TSV columns (matching order)
+   * @returns a proposed filename and the content of a TSV
+   */
+  public async getHtsgetVpcLatticeAccessPointBucketKeyManifest(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    tsvColumns: string[],
+  ) {
+    const { userRole, isActivated } =
+      await this.releaseService.getBoundaryInfoWithThrowOnFailure(
+        user,
+        releaseKey,
+      );
+
+    if (!this.permissionService.canAccessData(userRole))
+      throw new ReleaseViewError(releaseKey);
+
+    if (!isActivated) throw new Error("needs to be activated");
+
+    await this.awsEnabledService.enabledGuard();
+
+    const bucketKeyManifest =
+      await this.manifestService.getActiveBucketKeyManifest(releaseKey, ["s3"]);
+
+    assert(
+      bucketKeyManifest,
+      "Active manifest appeared to be null even though this release has been activated",
+    );
+
+    //const map = await this.getInstalledAccessPointObjectMap(releaseKey);
+
+    //for (const o of bucketKeyManifest.objects) {
+    //  if (o.objectStoreUrl in map) {
+    //    o.objectStoreBucket = map[o.objectStoreUrl].objectStoreBucket;
+    //    o.objectStoreUrl = map[o.objectStoreUrl].objectStoreUrl;
+    //  }
+    // }
+
+    // setup a TSV stream
+    const stringifyColumnOptions = [];
+
+    for (const header of tsvColumns) {
+      stringifyColumnOptions.push({
+        key: header,
+        header: header.toUpperCase(),
+      });
+    }
+    const stringifier = stringify({
+      header: true,
+      columns: stringifyColumnOptions,
+      delimiter: "\t",
+    });
+
+    const readableStream = Readable.from(bucketKeyManifest.objects);
+    const buf = await streamConsumers.text(readableStream.pipe(stringifier));
+
+    const counter = await this.releaseService.getIncrementingCounter(
+      user,
+      releaseKey,
+    );
+
+    const filename = `release-${releaseKey.replaceAll("-", "")}-${counter}.tsv`;
+
+    return {
+      filename: filename,
+      content: buf,
+    };
   }
 
   /**

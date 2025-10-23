@@ -194,8 +194,45 @@ WITH
             } unless conflict on .url else (select storage::File)
           )
         }
-      )
-  },
+      ),
+    },
+
+    fArtifacts := {
+      (INSERT lab::ArtifactBam {
+            bamFile := (
+              INSERT storage::File {
+                url := "s3://blah/foo17.bam",
+                size := 12324324,
+                checksums := [ (type:="MD5",value:="123435456") ]
+              } unless conflict on .url else (select storage::File)
+            ),
+            baiFile := (
+              INSERT storage::File {
+                url := "s3://blah/foo17.bam.bai",
+                size := 12324324,
+                checksums := [ (type:="MD5",value:="123435456") ]
+              } unless conflict on .url else (select storage::File)
+            )
+          }
+        ),
+        (INSERT lab::ArtifactVcf {
+            vcfFile := (
+              INSERT storage::File {
+                url := "s3://blah/foo18.vcf.gz",
+                size := 12324324,
+                checksums := [ (type:="MD5",value:="123435456") ]
+              } unless conflict on .url else (select storage::File)
+            ),
+            tbiFile := (
+              INSERT storage::File {
+                url := "s3://blah/foo18.vcf.gz.tbi",
+                size := 12324324,
+                checksums := [ (type:="MD5",value:="123435456") ]
+              } unless conflict on .url else (select storage::File)
+            )
+          }
+        ),
+    },
 
 
   run := {
@@ -208,17 +245,18 @@ WITH
         cArtifacts,
         dArtifacts,
         eArtifacts,
+        fArtifacts,
       }
     })
   },
 
   cases := {
     (INSERT dataset::DatasetCase {
-      externalIdentifiers := [ (system:="",value:="FAMILY-S") ],
+      externalIdentifiers := [ (system:="",value:="FAMILY-SMART") ],
       patients := {
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "male",
-          externalIdentifiers := [ (system:="",value:="A86") ],
+          externalIdentifiers := [ (system:="",value:="AGENT-86") ],
           # patient 86 is hooked into the dynamic consent system
           consent := (INSERT consent::Consent {
             statements := {
@@ -229,14 +267,14 @@ WITH
           }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="00000") ],
+                externalIdentifiers := [ (system:="",value:="HG01122") ],
                 artifacts := aArtifacts
             }
           )
         }),
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "female",
-          externalIdentifiers := [ (system:="",value:="A99") ],
+          externalIdentifiers := [ (system:="",value:="AGENT-99") ],
           # patient 99 is hooked into the dynamic consent system
           consent := (INSERT consent::Consent {
             statements := {
@@ -247,14 +285,14 @@ WITH
           }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-              externalIdentifiers := [ (system:="",value:="00001") ],
+              externalIdentifiers := [ (system:="",value:="HG01123") ],
               artifacts := bArtifacts
             }
           )
         }),
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "male",
-          externalIdentifiers := [ (system:="",value:="K13") ],
+          externalIdentifiers := [ (system:="",value:="AGENT-K13") ],
           # patient 13 is hooked into the dynamic consent system
           consent := (INSERT consent::Consent {
             statements := {
@@ -265,7 +303,7 @@ WITH
           }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="00002") ],
+                externalIdentifiers := [ (system:="",value:="HG01124") ],
                 artifacts := cArtifacts
             }
           )
@@ -277,8 +315,8 @@ WITH
       patients := {
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "male",
-          externalIdentifiers := [ (system:="",value:="A45") ],
-          # patient 45 is hooked into the dynamic consent system
+          externalIdentifiers := [ (system:="",value:="AGENT-44") ],
+          # patient 44 is hooked into the dynamic consent system
           consent := (INSERT consent::Consent {
             statements := {
               (INSERT consent::ConsentStatementDynamicDuo {
@@ -288,13 +326,37 @@ WITH
           }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="00003") ],
+                externalIdentifiers := [ (system:="",value:="HG01125") ],
                 artifacts := dArtifacts
             }
           )
         }),
       }
-    })
+    }),
+    (INSERT dataset::DatasetCase {
+          externalIdentifiers := [ (system:="",value:="") ],
+          patients := {
+            (INSERT dataset::DatasetPatient {
+              sexAtBirth := "female",
+              externalIdentifiers := [ (system:="",value:="AGENT-66") ],
+              # patient 66 is hooked into the dynamic consent system
+              consent := (INSERT consent::Consent {
+                statements := {
+                  (INSERT consent::ConsentStatementDynamicDuo {
+                    consentSystemIdentifier := "PID-TYT-00004"
+                  })
+                }
+              }),
+              specimens := (
+                INSERT dataset::DatasetSpecimen {
+                    externalIdentifiers := [ (system:="",value:="HG01126") ],
+                    artifacts := eArtifacts
+                }
+              )
+            }),
+          }
+        })
+
   }
 
 INSERT dataset::Dataset {

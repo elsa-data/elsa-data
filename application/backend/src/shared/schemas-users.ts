@@ -1,4 +1,4 @@
-import { type Static, Type } from "@sinclair/typebox";
+import Type from "typebox";
 import { TypeDate } from "./typebox-helpers";
 
 export const UserSummarySchema = Type.Object({
@@ -15,7 +15,7 @@ export const UserSummarySchema = Type.Object({
   isAllowedOverallAdministratorView: Type.Boolean(),
 });
 
-export type UserSummaryType = Static<typeof UserSummarySchema>;
+export type UserSummaryType = Type.Static<typeof UserSummarySchema>;
 
 export const PotentialUserSummarySchema = Type.Object({
   id: Type.String(),
@@ -29,7 +29,7 @@ export const PotentialUserSummarySchema = Type.Object({
   isAllowedOverallAdministratorView: Type.Boolean(),
 });
 
-export type PotentialUserSummaryType = Static<
+export type PotentialUserSummaryType = Type.Static<
   typeof PotentialUserSummarySchema
 >;
 

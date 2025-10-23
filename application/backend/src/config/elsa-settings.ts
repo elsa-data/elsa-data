@@ -87,6 +87,8 @@ export type ElsaSettings = {
 
   sharers: SharerType[];
 
+  consenters: ConsenterType[];
+
   emailer?: EmailerType;
 
   branding?: BrandingType & { logoUriRelative?: string };

@@ -154,8 +154,12 @@ export const PatientsFlexRow: React.FC<Props> = ({
           <label className="label space-x-1">
             <span className="label-text">{patient.externalId}</span>
             {patientIcon}
-            {showConsent && patient.customConsent && (
-              <ConsentPopup releaseKey={releaseKey} nodeId={patient.id} />
+            {showConsent && patient.consentStatements && (
+              <span className="space-x-1">
+                {patient.consentStatements.map((s) => (
+                  <ConsentPopup statement={s} />
+                ))}
+              </span>
             )}
           </label>
         </div>
@@ -165,15 +169,14 @@ export const PatientsFlexRow: React.FC<Props> = ({
               {showCheckboxes && (
                 <div className="form-control">
                   <label className="label cursor-pointer space-x-1">
-                    <FontAwesomeIcon icon={faDna} />
-                    {showConsent && spec.customConsent && (
-                      <>
-                        <ConsentPopup
-                          releaseKey={releaseKey}
-                          nodeId={spec.id}
-                        />
-                      </>
+                    {showConsent && spec.consentStatements && (
+                      <span className="space-x-1">
+                        {spec.consentStatements.map((s) => (
+                          <ConsentPopup statement={s} />
+                        ))}
+                      </span>
                     )}
+                    <FontAwesomeIcon icon={faDna} />
                     <span className="label-text">{spec.externalId}</span>
                     <input
                       disabled={releaseIsActivated}
@@ -212,8 +215,12 @@ export const PatientsFlexRow: React.FC<Props> = ({
           />
           <div className="flex space-x-1">
             <span>{row.externalId}</span>
-            {showConsent && row.customConsent && (
-              <ConsentPopup releaseKey={releaseKey} nodeId={row.id} />
+            {showConsent && row.consentStatements && (
+              <span className="space-x-1">
+                {row.consentStatements.map((s) => (
+                  <ConsentPopup statement={s} />
+                ))}
+              </span>
             )}
           </div>
         </label>
