@@ -25,6 +25,14 @@ export const CHARLES_CASE_SYSTEMLESS = "SINGLETONCHARLES";
 export const CHARLES_PATIENT_SYSTEMLESS = "CHARLES";
 export const CHARLES_SPECIMEN_SYSTEMLESS = "HG00096";
 
+export const MARY_CASE_SYSTEMLESS = "SINGLETONMARY";
+export const MARY_PATIENT_SYSTEMLESS = "MARY";
+export const MARY_SPECIMEN_SYSTEMLESS = "HG00097";
+
+export const JANE_CASE_SYSTEMLESS = "SINGLETONJANE";
+export const JANE_PATIENT_SYSTEMLESS = "JANE";
+export const JANE_SPECIMEN_SYSTEMLESS = "HG00099";
+
 /**
  * The master definition of our 10G dataset. We can turn this direct into
  * db insertions or make a fake AG file based dataset to index/load.
@@ -46,10 +54,10 @@ export const masterCases10g: MasterRareDiseaseCase[] = [
     ],
   },
   {
-    caseId: "SINGLETONMARY",
-    patientId: "MARY",
+    caseId: MARY_CASE_SYSTEMLESS,
+    patientId: MARY_PATIENT_SYSTEMLESS,
     patientSexAtBirth: "female",
-    specimenId: "HG00097",
+    specimenId: MARY_SPECIMEN_SYSTEMLESS,
     bamSize: 51388476731,
     bamEtag: "06b1c646338fa079dd6d7cb5f9dd67ed-3063", // pragma: allowlist secret
     bamMd5: "a6e072e3831fbdad4b790b9655d03301", // pragma: allowlist secret
@@ -68,10 +76,10 @@ export const masterCases10g: MasterRareDiseaseCase[] = [
     ],
   },
   {
-    caseId: "SINGLETONJANE",
-    patientId: "JANE",
+    caseId: JANE_CASE_SYSTEMLESS,
+    patientId: JANE_PATIENT_SYSTEMLESS,
     patientSexAtBirth: "female",
-    specimenId: "HG00099",
+    specimenId: JANE_SPECIMEN_SYSTEMLESS,
     bamSize: 60287609330,
     bamEtag: "7f2c808df51490657f374b9d50abf6b1-3594", // pragma: allowlist secret
     bamMd5: "8335ad513b0c22f32d558302448e69c8", // pragma: allowlist secret

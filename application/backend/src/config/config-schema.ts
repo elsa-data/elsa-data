@@ -24,7 +24,7 @@ export const configZodDefinition = z.object({
     .optional(z.string())
     .default("elsa-data")
     .describe(
-      "The name of the root artifact used for dynamic service discovery - this will differ for each deployment environment. For AWS - it refers to a CloudMap namespace",
+      "The name of the root artifact used for dynamic service discovery - the discovery technique will differ for each deployment environment. For AWS - it refers to a CloudMap namespace",
     ),
   // all production deployments will require this to be set - though the logic for this check is elsewhere
   deployedUrl: z.optional(
@@ -45,6 +45,11 @@ export const configZodDefinition = z.object({
         .optional(z.string())
         .describe(
           "A bucket that can be used for storing temporary artifacts - can have a Lifecycle that removes files after a day",
+        ),
+      vpcId: z
+        .optional(z.string())
+        .describe(
+          "The VPC id that the Elsa Data code is running in - is used for crafting some resource policies for sharing",
         ),
     }),
   ),

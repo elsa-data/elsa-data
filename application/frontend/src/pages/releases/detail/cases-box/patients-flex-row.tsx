@@ -13,6 +13,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 type Props = {
   releaseKey: string;
+
+  // the case to be displayed
+  cas: ReleaseCaseType;
+
+  // the patients of the case to be displayed in this row
   patients: ReleasePatientType[];
 
   // whether to show checkboxes or not - though we note there are other fields
@@ -32,26 +37,28 @@ type Props = {
   baseColumnClasses: string;
 
   isAllowEdit: boolean;
-
-  row: ReleaseCaseType;
 };
 
 /**
- * The patient flex row is a flex row div that displays all the individuals in
+ * The patient flex row is a flex row div that displays _some_ of the individuals in
  * a case, including listing their sample ids. It also draws icons to give extra
  * data about the patient/samples in a compact form.
  *
- * @param releaseKey
+ * @param releaseKey the release key
+ * @param cas
  * @param patients
  * @param showCheckboxes
  * @param onCheckboxClicked
  * @param releaseIsActivated
  * @param showConsent
+ * @param baseColumnClasses
+ * @param isAllowEdit
  *
  * @constructor
  */
 export const PatientsFlexRow: React.FC<Props> = ({
   releaseKey,
+  cas,
   patients,
   showCheckboxes,
   onCheckboxClicked,
@@ -59,7 +66,6 @@ export const PatientsFlexRow: React.FC<Props> = ({
   showConsent,
   baseColumnClasses,
   isAllowEdit,
-  row,
 }) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
@@ -197,6 +203,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
   };
 
   // TODO: possibly chose the number of grid columns based on the number of patients
+  // TODO: possibly remove the cases column if signalled from the parent that they are essentially unused
 
   return (
     <>
@@ -206,18 +213,18 @@ export const PatientsFlexRow: React.FC<Props> = ({
             disabled={
               specimenMutate.isPending || releaseIsActivated || !isAllowEdit
             }
-            checked={row.nodeStatus === "selected"}
-            indeterminate={row.nodeStatus === "indeterminate"}
+            checked={cas.nodeStatus === "selected"}
+            indeterminate={cas.nodeStatus === "indeterminate"}
             onChange={onChangeCasesCheckbox(
-              row.externalId,
-              row.nodeStatus !== "selected",
+              cas.externalId,
+              cas.nodeStatus !== "selected",
             )}
           />
           <div className="flex space-x-1">
-            <span>{row.externalId}</span>
-            {showConsent && row.consentStatements && (
+            <span>{cas.externalId}</span>
+            {showConsent && cas.consentStatements && (
               <span className="space-x-1">
-                {row.consentStatements.map((s) => (
+                {cas.consentStatements.map((s) => (
                   <ConsentPopup statement={s} />
                 ))}
               </span>

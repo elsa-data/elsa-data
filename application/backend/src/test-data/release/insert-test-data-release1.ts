@@ -12,6 +12,10 @@ import {
   MARGE_SPECIMEN,
 } from "../dataset/insert-test-data-10f-simpsons";
 import {
+  JANE_SPECIMEN_SYSTEMLESS,
+  MARY_SPECIMEN_SYSTEMLESS,
+} from "../dataset/teng-master-data.ts";
+import {
   findSpecimenQuery,
   makeDoubleCodeArray,
   makeIdentifierTuple,
@@ -118,6 +122,7 @@ export async function insertRelease1(
         awsAccessPointEnabled: true,
         // gcpStorageIamEnabled: true,
         copyOutEnabled: true,
+        htsgetAwsVpcLatticeAccessPointEnabled: true,
       }),
       releasePassword: "ABCDEFGHIJKL", // pragma: allowlist secret
       datasetUris: datasetUris,
@@ -135,6 +140,10 @@ export async function insertRelease1(
         findSpecimenQuery(MARGE_SPECIMEN),
         // and just the proband of another trio
         findSpecimenQuery(ELROY_SPECIMEN),
+        // and some singletons
+        //findSpecimenQuery(CHARLES_SPECIMEN_SYSTEMLESS),
+        findSpecimenQuery(MARY_SPECIMEN_SYSTEMLESS),
+        findSpecimenQuery(JANE_SPECIMEN_SYSTEMLESS),
       ),
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {

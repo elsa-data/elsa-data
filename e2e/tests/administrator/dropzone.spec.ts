@@ -8,7 +8,7 @@ test.beforeEach(async ({ page }) => {
 
 test("Upload (un)select CSV", async ({ page }) => {
   await page
-    .getByRole("row", {
+    .getByRole("cas", {
       name: "A Working Release of Data on Google Storage R005 GS Administrator",
     })
     .getByRole("button", { name: "view" })

@@ -10,6 +10,7 @@ import { HtsgetForm } from "./htsget-form";
 import { ObjectSigningForm } from "./object-signing-form";
 import { useLoggedInUserConfigRelay } from "../../../../providers/logged-in-user-config-relay-provider";
 import { isDiscriminate } from "../../../../../../backend/src/shared/typescript";
+import { HtsgetAwsVpcLatticeAccessPointForm } from "./htsget-aws-vpc-lattice-access-point-form.tsx";
 
 type Props = {
   releaseKey: string;
@@ -32,6 +33,9 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   const htsgetSetting = sharers.find(isDiscriminate("type", "htsget"));
   const awsAccessPointSetting = sharers.find(
     isDiscriminate("type", "aws-access-point"),
+  );
+  const htsgetAwsVpcLatticeAccessPointSettings = sharers.find(
+    isDiscriminate("type", "htsget-aws-vpc-lattice-access-point"),
   );
 
   // there can theoretically be a disconnect between what is enabled in
@@ -58,6 +62,7 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
     !!releaseData.dataSharingAwsAccessPoint &&
     !awsAccessPointSetting?.notWorkingReason;
   // const dataSharingGcpStorageIam = !!releaseData.dataSharingGcpStorageIam;
+  const dataSharingAwsVpcLatticeAccessPoint = true;
 
   const tabHeadings: string[] = ["Manifest"];
 
@@ -65,6 +70,8 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   if (dataSharingCopyOut) tabHeadings.push("Copy Out");
   if (dataSharingHtsget) tabHeadings.push("htsget");
   if (dataSharingAwsAccessPoint) tabHeadings.push("AWS Access Point");
+  if (dataSharingAwsVpcLatticeAccessPoint)
+    tabHeadings.push("htsget AWS VPC Lattice Access Point");
   // if (dataSharingGcpStorageIam) tabHeadings.push("GCP Storage IAM");
 
   return (
@@ -98,6 +105,12 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
         {/* {dataSharingGcpStorageIam && (
           <GcpStorageIamShareForm releaseKey={releaseKey} />
         )} */}
+        {dataSharingAwsVpcLatticeAccessPoint && (
+          <HtsgetAwsVpcLatticeAccessPointForm
+            releaseKey={releaseKey}
+            releaseData={releaseData}
+          />
+        )}
       </VerticalTabs>
     </Box>
   );

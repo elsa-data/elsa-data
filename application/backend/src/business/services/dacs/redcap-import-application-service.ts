@@ -173,7 +173,7 @@ export class RedcapImportApplicationService {
         "No datasets that exist in this Elsa Data instance were applied for by this application CSV",
       );
 
-    // the release number is the unique number in the redcap database describing each row
+    // the release number is the unique number in the redcap database describing each cas
     // we use this number in a variety of places
     const releaseNumber = parseInt(
       csvAsJsonObject[dacConfiguration.identifierValueColumnHeader],

@@ -455,7 +455,7 @@ export type ExpanderIndicatorProps = {
 };
 
 /**
- * An indicator for when a row is expanded.
+ * An indicator for when a cas is expanded.
  */
 export const ExpandedIndicator = ({
   isExpanded,

@@ -18,9 +18,9 @@ export type AccessPointEntry = Pick<
   accessPointUnique?: string;
 };
 
-const VPC_ID_KEY = "VpcId";
+export const VPC_LATTICE_ACCESS_POINT_ALIAS_KEY_SUFFIX = "Alias";
 
-const ACCOUNT_IDS_KEY = "AccountIds";
+export const VPC_LATTICE_ACCESS_POINT_BUCKET_KEY_SUFFIX = "Bucket";
 
 /**
  * Create an access point share resource
@@ -28,32 +28,35 @@ const ACCOUNT_IDS_KEY = "AccountIds";
  * a cloud formation template.
  *
  * We note that this access point uses a principal of
- * the account that it is installed into (not a principal
- * from the account where the VPC is) - the only
- * thing that says "where" it is to be shared is the VPC id.
- * This is because the htsget endpoint will be handing
- * out pre-signed S3 URLs signed by itself, not signed
- * by a principal in the destination account.
- * So the VPC id condition is all that is used.
+ * the account that it is installed into.
+ * GetObject will then be called two ways:
+ * as it is expected
+ * to be used with pre-signed URLs signed by the object
+ * signer in our installed account.
+ * HOWEVER, it then adds a condition requiring the use of
+ * the URLs from either the VPC of the signer OR from the
+ * destination VPC we are sharing to.
  *
  * @param bucketName
+ * @param accessPointName
  * @param shareToVpcId
+ * @param signingVpcId
  */
 function createAccessPointResourceForBucket(
   bucketName: string,
+  accessPointName: string,
   shareToVpcId: string,
+  signingVpcId: string,
 ) {
   // note that we need to refer to the access point in the policy - so we can't let CloudFormation
   // choose the name
-  // instead we use random
-  const accessPointName = randomBytes(16).toString("hex");
 
   // note the subtle difference between the substitutions we want NodeJs to make versus the substitutions we want
   // CloudFormation to make - ${} vs \${ }
 
-  // our Access Point policy statements MUST have the region and account in order to give context
+  // our Access Point policy statements MUST have the region and account listed in the ARNs in order to give context
   // to the access point name (which is per account/region)
-  const r: any = {
+  return {
     Type: "AWS::S3::AccessPoint",
     Properties: {
       Bucket: bucketName,
@@ -74,7 +77,7 @@ function createAccessPointResourceForBucket(
             },
             Condition: {
               StringEquals: {
-                "aws:sourceVpc": shareToVpcId,
+                "aws:sourceVpc": [shareToVpcId, signingVpcId],
               },
             },
           },
@@ -82,8 +85,6 @@ function createAccessPointResourceForBucket(
       },
     },
   };
-
-  return r;
 }
 
 /**
@@ -93,26 +94,24 @@ function createAccessPointResourceForBucket(
  * @param logger
  * @param templateBucket the bucket where the template will eventually live
  * @param templateRegion the region where the template will eventually be installed
- * @param releaseKey a friendly named identifier for the release
  * @param objects the list of S3 objects that we are sharing
- * @param shareToAccountIds an array of account ids that the access point should share to
- * @param shareToVpcId the specific VPC id that should be specified in the access point
+ * @param shareDestinationVpcId the specific destination VPC id that should be specified in the access point
+ * @param signingVpcId the specific VPC id that will be where the signing principal lives
  */
 export function createCloudFormationTemplateFromObjects(
   logger: Logger,
   templateBucket: string,
   templateRegion: string,
-  releaseKey: string,
   objects: ManifestBucketKeyObjectType[],
-  shareToAccountIds: string[],
-  shareToVpcId: string,
+  shareDestinationVpcId: string,
+  signingVpcId: string,
 ): AccessPointTemplateToSave {
   // for the S3 paths of the resulting templates - we want to make sure every time we do this it is in someway unique
   // (these end up going into a temporary bucket and are later removed)
   const stackId = randomBytes(8).toString("hex");
 
-  // the only limit we need to worry about for this is the 1MB cloud formation template limit
-  // - which will take *a lot* of nested stack to reach - so for the moment we are not tracking
+  // the only limit we need to worry about for this is the 1MB cloud formation template
+  // and for the moment the number of buckets we are likely to be sharing is well below
   // this.
   const rootStack: any = {
     AWSTemplateFormatVersion: "2010-09-09",
@@ -120,6 +119,7 @@ export function createCloudFormationTemplateFromObjects(
     Outputs: {},
   };
 
+  // we need to make an access point per bucket
   const bucketSet = new Set<string>();
 
   for (const o of objects) {
@@ -127,23 +127,33 @@ export function createCloudFormationTemplateFromObjects(
   }
 
   for (const bucket of bucketSet) {
-    const bucketId = randomBytes(8).toString("hex");
+    // we choose a random name for the access point to refer to it both internally
+    // to the cloudformation (the resource name) and to be the name of the access
+    // point itself (which we have to set because a fixed name is required by the resource policy
+    // for access points)
+    // it is probably not necessary that both these random strings are the same string,
+    // but can't see how it hurts if they are
+    const accessPointName = randomBytes(8).toString("hex");
 
-    rootStack.Resources[bucketId] = createAccessPointResourceForBucket(
+    rootStack.Resources[accessPointName] = createAccessPointResourceForBucket(
       bucket,
-      shareToVpcId,
+      accessPointName,
+      shareDestinationVpcId,
+      signingVpcId,
     );
-    rootStack.Outputs[bucketId + "Alias"] = {
+    rootStack.Outputs[
+      accessPointName + VPC_LATTICE_ACCESS_POINT_ALIAS_KEY_SUFFIX
+    ] = {
       Value: {
-        "Fn::GetAtt": [bucketId, "Alias"],
+        "Fn::GetAtt": [accessPointName, "Alias"],
       },
     };
-    rootStack.Outputs[bucketId + "Bucket"] = {
+    rootStack.Outputs[
+      accessPointName + VPC_LATTICE_ACCESS_POINT_BUCKET_KEY_SUFFIX
+    ] = {
       Value: bucket,
     };
   }
-
-  console.log(JSON.stringify(rootStack, null, 2));
 
   return {
     root: true,

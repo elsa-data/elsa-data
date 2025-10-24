@@ -10,6 +10,7 @@ import {
   ManifestHtsgetResponseSchema,
   type ManifestHtsgetResponseType,
 } from "../../../business/services/manifests/htsget/manifest-htsget-types";
+import { HtsgetAwsVpcLatticeAccessPointService } from "../../../business/services/sharers/htsget-aws-vpc-lattice-access-point/htsget-aws-vpc-lattice-access-point-service";
 
 export const manifestRoutes = async (
   fastify: FastifyInstance,
@@ -17,6 +18,10 @@ export const manifestRoutes = async (
     container: DependencyContainer;
   },
 ) => {
+  const htsgetAwsVpcLatticeAccessPointService = opts.container.resolve(
+    HtsgetAwsVpcLatticeAccessPointService,
+  );
+
   // TODO note that we have not yet established a auth layer and so are unclear in what user
   //      context this work is happening
   fastify.get<{
@@ -57,81 +62,24 @@ export const manifestRoutes = async (
   );
 
   fastify.get("/integration/htsget-rs", {}, async function (request, reply) {
-    reply
-      //.header(
-      //  "Cache-Control",
-      //  `public, max-age=${output.maxAge}, must-revalidate, immutable`,
-      // )
-      .send({
-        version: 1,
-        htsgetAuth: [
-          {
-            location: {
-              id: "HG00096",
-              backend: "s3://umccr-10g-data-dev/HG00096/HG00096",
-            },
-            rules: [
-              {
-                format: "BAM",
-              },
-            ],
-          },
-          {
-            location: {
-              id: "HG00096",
-              backend: "s3://umccr-10g-data-dev/HG00096/HG00096.hard-filtered",
-            },
-            rules: [
-              {
-                format: "VCF",
-              },
-            ],
-          },
-          {
-            location: {
-              id: "HG00097",
-              backend: "s3://umccr-10g-data-dev/HG00097/HG00097",
-            },
-            rules: [
-              {
-                format: "BAM",
-              },
-            ],
-          },
-          {
-            location: {
-              id: "HG00097",
-              backend: "s3://umccr-10g-data-dev/HG00097/HG00097.hard-filtered",
-            },
-            rules: [
-              {
-                format: "VCF",
-              },
-            ],
-          },
-          {
-            location: {
-              id: "HG00099",
-              backend: "s3://umccr-10g-data-dev/HG00099/HG00099"
-            },
-            rules: [
-              {
-                format: "BAM",
-              },
-            ],
-          },
-          {
-            location: {
-              id: "HG00099",
-              backend: "s3://umccr-10g-data-dev/HG00099/HG00099.hard-filtered",
-            },
-            rules: [
-              {
-                format: "VCF",
-              },
-            ],
-          },
-        ],
-      });
+    const d =
+      await htsgetAwsVpcLatticeAccessPointService.getInstalledHtsgetAwsVpcLatticeAccessPoint(
+        "R001",
+      );
+
+    if (!d) reply.send({ error: `No access point installed for release` });
+    else {
+      const auth =
+        await htsgetAwsVpcLatticeAccessPointService.getHtsgetVpcLatticeAccessPointAuthorisation(
+          d,
+        );
+
+      reply
+        //.header(
+        //  "Cache-Control",
+        //  `public, max-age=${output.maxAge}, must-revalidate, immutable`,
+        // )
+        .send(auth);
+    }
   });
 };

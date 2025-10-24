@@ -43,7 +43,7 @@ async function jobHandler(configJson: any) {
 
   let lastEmptyInProgressMessageDateTime = minTime;
 
-  // @ts-ignore: statement cannot complete without throwing an exception
+  // @ts-ignore: 'while' statement cannot complete without throwing an exception
   while (true) {
     try {
       // moved here due to not sure we want a super long lived job service (AWS credentials??)

@@ -235,7 +235,7 @@ WITH
           externalIdentifiers := [ (system:="",value:="A") ],
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00096") ],
+                externalIdentifiers := [ (system:="",value:="HG00296") ],
                 artifacts := aArtifacts
             }
           )
@@ -245,7 +245,7 @@ WITH
           externalIdentifiers := [ (system:="",value:="B") ],
           specimens := (
             INSERT dataset::DatasetSpecimen {
-              externalIdentifiers := [ (system:="",value:="HG00097") ],
+              externalIdentifiers := [ (system:="",value:="HG00297") ],
               # but B has a specific specimen level consent with no restrictions that will overrule all
               consent := (INSERT consent::Consent {
                 statements := {
@@ -264,7 +264,7 @@ WITH
           externalIdentifiers := [ (system:="",value:="C") ],
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00099") ],
+                externalIdentifiers := [ (system:="",value:="HG00299") ],
                 artifacts := cArtifacts
             }
           )

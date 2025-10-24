@@ -4,7 +4,7 @@ import { useTRPC } from "../../helpers/trpc-modern.ts";
 import { useQuery } from "@tanstack/react-query";
 
 /**
- * Props for the details row.
+ * Props for the details cas.
  */
 export type DetailsRowProps = {
   /**
@@ -14,7 +14,7 @@ export type DetailsRowProps = {
 };
 
 /**
- * The details row shown when clicking on a row in an audit event table.
+ * The details cas shown when clicking on a cas in an audit event table.
  */
 export const DetailsRow = ({ objectId }: DetailsRowProps): JSX.Element => {
   const trpc = useTRPC();

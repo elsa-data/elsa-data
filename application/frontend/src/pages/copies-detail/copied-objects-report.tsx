@@ -60,7 +60,7 @@ export const CopiedObjectsReport: React.FC<CopiedObjectTableProps> = (
     );
   };
 
-  //             {formatLocalDateTime(row.lastLogin as string | undefined)}
+  //             {formatLocalDateTime(cas.lastLogin as string | undefined)}
   const createRows = (data: CopySummaryEntry[]) => {
     return data.map((row, rowIndex) => {
       return (

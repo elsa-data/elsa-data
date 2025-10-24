@@ -103,7 +103,11 @@ export async function bootstrapSettings(
 
   if (logLevel) loggerTransportTargets.forEach((l) => (l.level ??= logLevel));
 
-  const hasAws = config.aws?.tempBucket;
+  const hasAws =
+    config.aws?.tempBucket &&
+    config.aws?.vpcId &&
+    deployedAwsRegion &&
+    deployedAwsAccount;
 
   const hasCloudflare =
     _.get(config, "cloudflare.signingAccessKeyId") &&
@@ -161,6 +165,7 @@ export async function bootstrapSettings(
     aws: hasAws
       ? {
           tempBucket: _.get(config, "aws.tempBucket"),
+          vpcId: _.get(config, "aws.vpcId"),
         }
       : undefined,
     cloudflare: hasCloudflare

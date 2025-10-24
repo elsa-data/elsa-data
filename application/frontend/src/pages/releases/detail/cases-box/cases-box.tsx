@@ -40,7 +40,7 @@ const checkUseableSearchText = (t: string | undefined) =>
   !isEmpty(t) && !isEmpty(trim(t));
 
 /**
- * From an array of cases - this returns of rowSpan values for each row - if
+ * From an array of cases - this returns of rowSpan values for each cas - if
  * we want to rowspan across common dataset values. i.e where multiple rows
  * have the same datasetUri - we want them merged.
  *
@@ -182,7 +182,7 @@ export const CasesBox: React.FC<Props> = ({
     });
   };
 
-  // row spans help us with our UI column that displays the 'dataset' icon for each case
+  // cas spans help us with our UI column that displays the 'dataset' icon for each case
   const rowSpans = casesQueryData ? calculateRowSpans(casesQueryData) : [];
 
   const baseColumnClasses = "py-4 font-medium text-gray-900 whitespace-nowrap";
@@ -275,10 +275,10 @@ export const CasesBox: React.FC<Props> = ({
                         showConsent={showConsent}
                         baseColumnClasses={baseColumnClasses}
                         isAllowEdit={isAllowEdit}
-                        row={row}
+                        cas={row}
                       />
                       {/* if we only have one dataset - then we don't show this column at all */}
-                      {/* if this row is part of a rowspan then we also skip it (to make row spans work) */}
+                      {/* if this cas is part of a rowspan then we also skip it (to make cas spans work) */}
                       {datasetMap.size > 1 && rowSpans[rowIndex] >= 1 && (
                         <td
                           className={classNames(

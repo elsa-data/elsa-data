@@ -1,9 +1,4 @@
-import {
-  Type,
-  type Static,
-  type TLiteral,
-  type TUnion,
-} from "@sinclair/typebox";
+import Type from "typebox";
 import { TypeDate } from "./typebox-helpers";
 
 /**
@@ -45,12 +40,13 @@ export const ObjectStoreRecordKey = [
   "md5",
 ] as const;
 
-const ObjectStoreRecordKeySchema: TLiteral<
+const ObjectStoreRecordKeySchema: Type.TLiteral<
   (typeof ObjectStoreRecordKey)[number]
 >[] = ObjectStoreRecordKey.map((header) => Type.Literal(header));
 
-const FileRecordHeaderElementSchema: TUnion<typeof ObjectStoreRecordKeySchema> =
-  Type.Union(ObjectStoreRecordKeySchema);
+const FileRecordHeaderElementSchema: Type.TUnion<
+  typeof ObjectStoreRecordKeySchema
+> = Type.Union(ObjectStoreRecordKeySchema);
 
 export const FileRecordHeader = Type.Union([
   Type.Array(FileRecordHeaderElementSchema),
@@ -72,13 +68,13 @@ export const ReleaseSizeSchema = Type.Object({
   numBytes: Type.Number(),
 });
 
-export type ReleaseSizeType = Static<typeof ReleaseSizeSchema>;
+export type ReleaseSizeType = Type.Static<typeof ReleaseSizeSchema>;
 
 export type FileRecordHeaderType = (typeof ObjectStoreRecordKey)[number];
-export type ReleasePresignRequestType = Static<
+export type ReleasePresignRequestType = Type.Static<
   typeof ReleasePresignRequestSchema
 >;
-export type ReleasePresignResponseType = Static<
+export type ReleasePresignResponseType = Type.Static<
   typeof ReleasePresignResponseSchema
 >;
 
@@ -87,7 +83,7 @@ export const ReleaseMasterAccessRequestSchema = Type.Object({
   end: Type.Optional(TypeDate),
 });
 
-export type ReleaseMasterAccessRequestType = Static<
+export type ReleaseMasterAccessRequestType = Type.Static<
   typeof ReleaseMasterAccessRequestSchema
 >;
 
@@ -99,6 +95,6 @@ export const RemsApprovedApplicationSchema = Type.Object({
   when: Type.String(),
 });
 
-export type RemsApprovedApplicationType = Static<
+export type RemsApprovedApplicationType = Type.Static<
   typeof RemsApprovedApplicationSchema
 >;
