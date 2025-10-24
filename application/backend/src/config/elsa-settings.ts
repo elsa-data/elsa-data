@@ -1,6 +1,7 @@
 import { Issuer } from "openid-client";
 import type { LoggerOptions } from "pino";
 import type { BrandingType } from "./config-schema-branding";
+import type { ConsenterType } from "./config-schema-consenter";
 import type { DacType } from "./config-schema-dac";
 import type { DataEgressConfigType } from "./config-schema-data-egress";
 import type { DatasetType } from "./config-schema-dataset";
@@ -11,7 +12,6 @@ import type { HttpHostingType } from "./config-schema-http-hosting";
 import type { OidcType } from "./config-schema-oidc";
 import type { PermissionType } from "./config-schema-permission";
 import type { SharerType } from "./config-schema-sharer";
-import type { ConsenterType } from "./config-schema-consenter";
 
 /**
  * The rich, well-typed settings for Elsa.

@@ -46,7 +46,7 @@ function createAccessPointResourceForBucket(
   bucketName: string,
   accessPointName: string,
   shareToVpcId: string,
-  signingVpcId: string
+  signingVpcId: string,
 ) {
   // note that we need to refer to the access point in the policy - so we can't let CloudFormation
   // choose the name
@@ -104,7 +104,7 @@ export function createCloudFormationTemplateFromObjects(
   templateRegion: string,
   objects: ManifestBucketKeyObjectType[],
   shareDestinationVpcId: string,
-  signingVpcId: string
+  signingVpcId: string,
 ): AccessPointTemplateToSave {
   // for the S3 paths of the resulting templates - we want to make sure every time we do this it is in someway unique
   // (these end up going into a temporary bucket and are later removed)
@@ -141,12 +141,16 @@ export function createCloudFormationTemplateFromObjects(
       shareDestinationVpcId,
       signingVpcId,
     );
-    rootStack.Outputs[accessPointName + VPC_LATTICE_ACCESS_POINT_ALIAS_KEY_SUFFIX] = {
+    rootStack.Outputs[
+      accessPointName + VPC_LATTICE_ACCESS_POINT_ALIAS_KEY_SUFFIX
+    ] = {
       Value: {
         "Fn::GetAtt": [accessPointName, "Alias"],
       },
     };
-    rootStack.Outputs[accessPointName + VPC_LATTICE_ACCESS_POINT_BUCKET_KEY_SUFFIX] = {
+    rootStack.Outputs[
+      accessPointName + VPC_LATTICE_ACCESS_POINT_BUCKET_KEY_SUFFIX
+    ] = {
       Value: bucket,
     };
   }

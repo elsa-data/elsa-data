@@ -33,7 +33,6 @@ export const JANE_CASE_SYSTEMLESS = "SINGLETONJANE";
 export const JANE_PATIENT_SYSTEMLESS = "JANE";
 export const JANE_SPECIMEN_SYSTEMLESS = "HG00099";
 
-
 /**
  * The master definition of our 10G dataset. We can turn this direct into
  * db insertions or make a fake AG file based dataset to index/load.

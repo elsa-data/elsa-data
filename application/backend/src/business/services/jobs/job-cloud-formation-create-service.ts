@@ -1,25 +1,25 @@
-import * as gel from "gel";
-import e from "../../../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../../authenticated-user";
-import { getReleaseInfo } from "../helpers";
-import type { ReleaseDetailType } from "../../../shared/schemas-releases";
-import { inject, injectable } from "tsyringe";
-import { SelectService } from "../select-service";
-import { ReleaseService } from "../releases/release-service";
-import {
-  AuditEventService,
-  OUTCOME_MINOR_FAILURE,
-  OUTCOME_SUCCESS,
-} from "../audit-event-service";
 import {
   CloudFormationClient,
   CreateStackCommand,
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
+import * as gel from "gel";
+import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
+import e from "../../../../dbschema/edgeql-js";
+import type { ReleaseDetailType } from "../../../shared/schemas-releases";
+import { AuthenticatedUser } from "../../authenticated-user";
+import {
+  AuditEventService,
+  OUTCOME_MINOR_FAILURE,
+  OUTCOME_SUCCESS,
+} from "../audit-event-service";
+import { AwsEnabledService } from "../aws/aws-enabled-service";
+import { getReleaseInfo } from "../helpers";
+import { ReleaseService } from "../releases/release-service";
+import { SelectService } from "../select-service";
 import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
 import { JobService, NotAuthorisedToControlJob } from "./job-service";
-import { AwsEnabledService } from "../aws/aws-enabled-service";
-import type { Logger } from "pino";
 
 /**
  * A service for performing long-running operations creating new

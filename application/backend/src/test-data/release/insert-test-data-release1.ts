@@ -12,17 +12,16 @@ import {
   MARGE_SPECIMEN,
 } from "../dataset/insert-test-data-10f-simpsons";
 import {
+  JANE_SPECIMEN_SYSTEMLESS,
+  MARY_SPECIMEN_SYSTEMLESS,
+} from "../dataset/teng-master-data.ts";
+import {
   findSpecimenQuery,
   makeDoubleCodeArray,
   makeIdentifierTuple,
   makeSingleCodeArray,
 } from "../util/test-data-helpers";
 import { type InsertReleaseProps, insertRole } from "./helpers";
-import {
-  CHARLES_SPECIMEN_SYSTEMLESS,
-  JANE_SPECIMEN_SYSTEMLESS,
-  MARY_SPECIMEN_SYSTEMLESS,
-} from "../dataset/teng-master-data.ts";
 
 const applicationDetails = `
 #### Origin
@@ -123,7 +122,7 @@ export async function insertRelease1(
         awsAccessPointEnabled: true,
         // gcpStorageIamEnabled: true,
         copyOutEnabled: true,
-        htsgetAwsVpcLatticeAccessPointEnabled: true
+        htsgetAwsVpcLatticeAccessPointEnabled: true,
       }),
       releasePassword: "ABCDEFGHIJKL", // pragma: allowlist secret
       datasetUris: datasetUris,
