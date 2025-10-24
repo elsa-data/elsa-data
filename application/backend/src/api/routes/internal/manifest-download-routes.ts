@@ -4,12 +4,14 @@ import { S3ManifestHtsgetService } from "../../../business/services/manifests/ht
 import { ManifestService } from "../../../business/services/manifests/manifest-service";
 import { PresignedUrlService } from "../../../business/services/presigned-url-service";
 import { AwsAccessPointService } from "../../../business/services/sharers/aws-access-point/aws-access-point-service";
-import { HtsgetAwsVpcLatticeAccessPointService } from "../../../business/services/sharers/htsget-aws-vpc-lattice-access-point/htsget-aws-vpc-lattice-access-point-service.ts";
 import {
   ReleasePresignRequestSchema,
   type ReleasePresignRequestType,
 } from "../../../shared/schemas";
 import { authenticatedRouteOnEntryHelper } from "../../api-internal-routes";
+import {
+  HtsgetAwsVpcLatticeAccessPointService
+} from "../../../business/services/sharers/htsget-aws-vpc-lattice-access-point/htsget-aws-vpc-lattice-access-point-service.ts";
 
 /**
  * We want to allow manifests to be downloaded with kind of native browser
@@ -28,9 +30,7 @@ export const manifestDownloadRoutes = async (
   const presignedUrlService = _opts.container.resolve(PresignedUrlService);
   const awsAccessPointService = _opts.container.resolve(AwsAccessPointService);
   const htsgetService = _opts.container.resolve(S3ManifestHtsgetService);
-  const htsgetAwsVpcLatticeAccessPointService = _opts.container.resolve(
-    HtsgetAwsVpcLatticeAccessPointService,
-  );
+  const htsgetAwsVpcLatticeAccessPointService = _opts.container.resolve(HtsgetAwsVpcLatticeAccessPointService);
   const manifestService = _opts.container.resolve(ManifestService);
 
   // this TSV manifest is available to everyone involved in the project
@@ -176,12 +176,11 @@ export const manifestDownloadRoutes = async (
         ? request.body.presignHeader
         : [request.body.presignHeader];
 
-      const htsgetTsv =
-        await htsgetAwsVpcLatticeAccessPointService.getHtsgetVpcLatticeAccessPointBucketKeyManifest(
-          authenticatedUser,
-          releaseKey,
-          presignHeaderArray,
-        );
+      const htsgetTsv = await htsgetAwsVpcLatticeAccessPointService.getHtsgetVpcLatticeAccessPointBucketKeyManifest(
+        authenticatedUser,
+        releaseKey,
+        presignHeaderArray,
+      );
 
       reply.header(
         "Content-disposition",

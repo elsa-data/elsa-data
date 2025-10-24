@@ -44,9 +44,8 @@ const ObjectStoreRecordKeySchema: Type.TLiteral<
   (typeof ObjectStoreRecordKey)[number]
 >[] = ObjectStoreRecordKey.map((header) => Type.Literal(header));
 
-const FileRecordHeaderElementSchema: Type.TUnion<
-  typeof ObjectStoreRecordKeySchema
-> = Type.Union(ObjectStoreRecordKeySchema);
+const FileRecordHeaderElementSchema: Type.TUnion<typeof ObjectStoreRecordKeySchema> =
+  Type.Union(ObjectStoreRecordKeySchema);
 
 export const FileRecordHeader = Type.Union([
   Type.Array(FileRecordHeaderElementSchema),

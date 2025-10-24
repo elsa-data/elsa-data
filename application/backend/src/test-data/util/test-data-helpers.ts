@@ -225,10 +225,15 @@ export function findPatient(id: string) {
 }
 
 export function findSpecimenQuery(id: string) {
-  return e.select(e.dataset.DatasetSpecimen, (dp) => ({
-    filter: e.op(id, "in", e.set(e.array_unpack(dp.externalIdentifiers).value)),
-  }));
-  //.assert_single();
+  return e
+    .select(e.dataset.DatasetSpecimen, (dp) => ({
+      filter: e.op(
+        id,
+        "in",
+        e.set(e.array_unpack(dp.externalIdentifiers).value),
+      ),
+    }));
+    //.assert_single();
 }
 
 /**

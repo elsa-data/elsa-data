@@ -37,6 +37,7 @@ type Props = {
   baseColumnClasses: string;
 
   isAllowEdit: boolean;
+
 };
 
 /**
@@ -65,7 +66,7 @@ export const PatientsFlexRow: React.FC<Props> = ({
   releaseIsActivated,
   showConsent,
   baseColumnClasses,
-  isAllowEdit,
+  isAllowEdit
 }) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();

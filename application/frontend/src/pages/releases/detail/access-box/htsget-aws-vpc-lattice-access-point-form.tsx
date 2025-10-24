@@ -34,10 +34,7 @@ export const HtsgetAwsVpcLatticeAccessPointForm: React.FC<Props> = ({
             </span>
             . The VPC lives in AWS account{" "}
             <span className="font-mono">
-              {
-                releaseData?.dataSharingHtsgetAwsVpcLatticeAccessPoint
-                  ?.accountId
-              }
+              {releaseData?.dataSharingHtsgetAwsVpcLatticeAccessPoint?.accountId}
             </span>
             .
           </p>

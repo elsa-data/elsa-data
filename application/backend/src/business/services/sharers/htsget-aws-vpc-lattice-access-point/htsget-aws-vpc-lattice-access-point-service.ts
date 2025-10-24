@@ -7,7 +7,6 @@ import {
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import assert from "assert";
 import { stringify } from "csv-stringify";
-import { cloneDeep } from "lodash";
 import streamConsumers from "node:stream/consumers";
 import type { Logger } from "pino";
 import { Readable } from "stream";
@@ -27,6 +26,7 @@ import {
   VPC_LATTICE_ACCESS_POINT_ALIAS_KEY_SUFFIX,
   VPC_LATTICE_ACCESS_POINT_BUCKET_KEY_SUFFIX,
 } from "./_vpc-lattice-access-point-template-helper";
+import { cloneDeep } from "lodash";
 
 type InstalledHtsgetAwsVpcLatticeAccessPoint = {
   releaseKey: string;
@@ -45,7 +45,7 @@ export class HtsgetAwsVpcLatticeAccessPointService {
    * @param releaseKey
    */
   public static getReleaseStackName(releaseKey: string): string {
-    return `elsa-data-release-${releaseKey}`; //;-htsget-ap`;
+    return `elsa-data-release-${releaseKey}` //;-htsget-ap`;
   }
 
   constructor(
@@ -168,10 +168,7 @@ export class HtsgetAwsVpcLatticeAccessPointService {
 
         // non-index files (and anything not bam or vcf) shouldn't appear in the htsget manifest
         // TODO: improve our detection of these types - better than us doing string compares
-        if (
-          obj.objectStoreKey.endsWith("bam") ||
-          obj.objectStoreKey.endsWith("vcf.gz")
-        )
+        if (obj.objectStoreKey.endsWith("bam") || obj.objectStoreKey.endsWith("vcf.gz"))
           htsgetAuth.push({
             location: {
               id: obj.specimenId,
@@ -227,8 +224,7 @@ export class HtsgetAwsVpcLatticeAccessPointService {
       "Active manifest appeared to be null even though this release has been activated",
     );
 
-    const installedInfo =
-      await this.getInstalledHtsgetAwsVpcLatticeAccessPoint(releaseKey);
+    const installedInfo = await this.getInstalledHtsgetAwsVpcLatticeAccessPoint(releaseKey);
 
     const newHtsgetObjects: any[] = [];
 
@@ -239,10 +235,7 @@ export class HtsgetAwsVpcLatticeAccessPointService {
 
         // non-index files (and anything not bam or vcf) shouldn't appear in the htsget manifest
         // TODO: improve our detection of these types - better than us doing string compares
-        if (
-          obj.objectStoreKey.endsWith("bam") ||
-          obj.objectStoreKey.endsWith("vcf.gz")
-        ) {
+        if (obj.objectStoreKey.endsWith("bam") || obj.objectStoreKey.endsWith("vcf.gz")) {
           const newHtsgetObject = cloneDeep(obj);
 
           if (obj.objectStoreKey.endsWith("bam")) {

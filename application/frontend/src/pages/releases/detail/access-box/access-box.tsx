@@ -36,7 +36,7 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   );
   const htsgetAwsVpcLatticeAccessPointSettings = sharers.find(
     isDiscriminate("type", "htsget-aws-vpc-lattice-access-point"),
-  );
+  )
 
   // there can theoretically be a disconnect between what is enabled in
   // the database (i.e. releaseData.dataSharing*)
@@ -70,8 +70,7 @@ export const AccessBox: React.FC<Props> = ({ releaseKey, releaseData }) => {
   if (dataSharingCopyOut) tabHeadings.push("Copy Out");
   if (dataSharingHtsget) tabHeadings.push("htsget");
   if (dataSharingAwsAccessPoint) tabHeadings.push("AWS Access Point");
-  if (dataSharingAwsVpcLatticeAccessPoint)
-    tabHeadings.push("htsget AWS VPC Lattice Access Point");
+  if (dataSharingAwsVpcLatticeAccessPoint) tabHeadings.push("htsget AWS VPC Lattice Access Point");
   // if (dataSharingGcpStorageIam) tabHeadings.push("GCP Storage IAM");
 
   return (
