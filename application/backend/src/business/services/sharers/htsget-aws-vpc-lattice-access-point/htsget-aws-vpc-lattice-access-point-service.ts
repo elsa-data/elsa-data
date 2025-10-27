@@ -146,7 +146,7 @@ export class HtsgetAwsVpcLatticeAccessPointService {
    */
   public async getHtsgetVpcLatticeAccessPointAuthorisation(
     installedInfo: InstalledHtsgetAwsVpcLatticeAccessPoint,
-    prefix: string,
+    prefix: string
   ): Promise<any> {
     await this.awsEnabledService.enabledGuard();
 
@@ -174,7 +174,7 @@ export class HtsgetAwsVpcLatticeAccessPointService {
           htsgetAuth.push({
             location: {
               id: `${prefix}/${obj.specimenId}`,
-              backend: `s3://${newBucketAlias}/${obj.objectStoreKey.slice(0, -7)}`,
+              backend: `s3://${newBucketAlias}/${obj.objectStoreKey.slice(0,-7)}`,
             },
             rules: [
               {
@@ -183,11 +183,13 @@ export class HtsgetAwsVpcLatticeAccessPointService {
             ],
           });
 
-        if (obj.objectStoreKey.endsWith(".bam"))
+        if (
+          obj.objectStoreKey.endsWith(".bam")
+        )
           htsgetAuth.push({
             location: {
               id: `${prefix}/${obj.specimenId}`,
-              backend: `s3://${newBucketAlias}/${obj.objectStoreKey.slice(0, -4)}`,
+              backend: `s3://${newBucketAlias}/${obj.objectStoreKey.slice(0,-4)}`,
             },
             rules: [
               {
