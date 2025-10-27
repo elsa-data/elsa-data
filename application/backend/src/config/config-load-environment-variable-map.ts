@@ -23,6 +23,7 @@ export const environmentVariableMap = {
   SERVICE_DISCOVERY_NAMESPACE: "serviceDiscoveryNamespace",
 
   AWS_TEMP_BUCKET: "aws.tempBucket",
+  AWS_VPC_ID: "aws.vpcId",
 
   DEPLOYED_URL: "deployedUrl",
 
