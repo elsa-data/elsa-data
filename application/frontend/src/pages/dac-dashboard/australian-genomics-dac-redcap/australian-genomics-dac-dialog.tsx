@@ -82,7 +82,7 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
                       onClick={() => {
                         // clear any previous errors
                         setLastError(undefined);
-                        // change the row index
+                        // change the cas index
                         setSelectedRowIndex(paIndex);
                       }}
                     />
@@ -124,8 +124,8 @@ export const AustralianGenomicsDacDialog: React.FC<Props> = ({
                 },
               );
             else {
-              // this should not be possible as the button is disabled whilst the row index is null
-              setLastError("Selected row index is null");
+              // this should not be possible as the button is disabled whilst the cas index is null
+              setLastError("Selected cas index is null");
             }
           }}
           cancelButtonLabel={"Cancel"}

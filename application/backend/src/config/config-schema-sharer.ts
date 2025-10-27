@@ -42,11 +42,23 @@ export const SharerAwsAccessPointSchema = z.object({
     .describe("A dictionary of access point target names and their details"),
 });
 
+export const SharerHtsgetAwsVpcLatticeAccessPointSchema = z.object({
+  id: z.string(),
+  type: z.literal("htsget-aws-vpc-lattice-access-point"),
+  domainName: z.string().describe("The domain name for the htsget endpoint"),
+  destinations: z
+    .record(SharerAwsAccessPointTargetSchema)
+    .describe(
+      "A dictionary of target accounts/VPCs that can access the htsget endpoint",
+    ),
+});
+
 export const SharerSchema = z.discriminatedUnion("type", [
   SharerObjectSigningSchema,
   SharerCopyOutSchema,
   SharerHtsgetSchema,
   SharerAwsAccessPointSchema,
+  SharerHtsgetAwsVpcLatticeAccessPointSchema,
 ]);
 
 export type SharerType = z.infer<typeof SharerSchema>;
@@ -56,4 +68,7 @@ export type SharerCopyOutType = z.infer<typeof SharerCopyOutSchema>;
 export type SharerHtsgetType = z.infer<typeof SharerHtsgetSchema>;
 export type SharerAwsAccessPointType = z.infer<
   typeof SharerAwsAccessPointSchema
+>;
+export type SharerHtsgetAwsVpcLatticeAccessPointType = z.infer<
+  typeof SharerHtsgetAwsVpcLatticeAccessPointSchema
 >;

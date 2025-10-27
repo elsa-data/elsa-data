@@ -251,6 +251,17 @@ export class JobService {
               ...e.dataset.Dataset["*"],
             },
             patients: {
+              consent: {
+                ...e.consent.Consent["*"],
+                statements: (s) => ({
+                  ...e.is(e.consent.ConsentStatementDynamicDuo, {
+                    consentSystemIdentifier: true,
+                  }),
+                  ...e.is(e.consent.ConsentStatementDuo, {
+                    dataUseLimitation: true,
+                  }),
+                }),
+              },
               ...e.dataset.DatasetPatient["*"],
               specimens: {
                 ...e.dataset.DatasetSpecimen["*"],
@@ -271,26 +282,8 @@ export class JobService {
         for (const cas of casesFromQueue) {
           for (const pat of cas.patients || []) {
             for (const spec of pat.specimens || []) {
-              // TODO: fix this
-              //const r = await vcfArtifactUrlsBySpecimenQuery.run(tx, {
-              //  specimenId: spec.id,
-              //});
-              // [
-              //   {
-              //     vcfs: [
-              //       's3://umccr-10g-data-dev/HG00097/HG00097.hard-filtered.vcf.gz',
-              //       's3://umccr-10g-data-dev/HG00097/HG00097.hard-filtered.vcf.gz.tbi'
-              //     ]
-              //   }
-              // ]
               let vcf = undefined,
                 index = undefined;
-              //if (r && r.length > 0) {
-              //  if (r[0].vcfs && r[0].vcfs.length === 2) {
-              //    vcf = r[0].vcfs[0];
-              //    index = r[0].vcfs[1];
-              //  }
-              // }
 
               if (
                 await this.selectService.isSelectable(
@@ -512,9 +505,9 @@ export class JobService {
       pageOfEntries.map((entry) => ({
         objectId: entry.id,
         type: entry.__type__.name.split("::").at(-1) ?? "",
-        created: entry.created,
-        started: entry.started,
-        ended: entry.ended,
+        created: entry.created.toISOString(),
+        started: entry.started.toISOString(),
+        ended: entry.ended?.toISOString(),
         requestedCancellation: entry.requestedCancellation,
         details: JSON.stringify(
           _(entry)

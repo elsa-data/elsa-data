@@ -10,7 +10,7 @@
   "author": "UMCCR",
   "license": "MIT",
   "devDependencies": {
-    "@playwright/test": "1.38.1",
+    "@playwright/test": "1.56.1",
     "@types/node-7z": "2.1.6"
   },
   "dependencies": {

@@ -102,7 +102,7 @@ export class ReleaseService extends ReleaseBaseService {
       total: allReleasesByUser.total,
       data: allReleasesByUser.data.map((a) => ({
         releaseKey: a.releaseKey,
-        lastUpdatedDateTime: a.lastUpdated,
+        lastUpdatedDateTime: a.lastUpdated.toISOString(),
         lastUpdatedUserSubjectId: a.lastUpdatedSubjectId,
         datasetUris: a.datasetUris,
         applicationDacIdentifierSystem: a.applicationDacIdentifier.system,
@@ -577,6 +577,8 @@ ${release.applicantEmailAddresses}
       | "/dataSharingConfiguration/htsgetEnabled"
       | "/dataSharingConfiguration/awsAccessPointEnabled"
       | "/dataSharingConfiguration/awsAccessPointName"
+      | "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointEnabled"
+      | "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointName"
       | "/dataSharingConfiguration/gcpStorageIamEnabled"
       | "/dataSharingConfiguration/gcpStorageIamUsers",
     value: any,
@@ -645,11 +647,6 @@ ${release.applicantEmailAddresses}
               awsAccessPointEnabled: e.bool(value),
             };
             break;
-          case "/dataSharingConfiguration/awsAccessPointEnabled":
-            fieldToSet = {
-              awsAccessPointEnabled: e.bool(value),
-            };
-            break;
           case "/dataSharingConfiguration/awsAccessPointName":
             //  We need some check before allowing any updates prevent the app to lose any context
 
@@ -687,6 +684,50 @@ ${release.applicantEmailAddresses}
               awsAccessPointName: e.str(value),
             };
             break;
+
+          case "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointEnabled":
+            fieldToSet = {
+              htsgetAwsVpcLatticeAccessPointEnabled: e.bool(value),
+            };
+            break;
+          case "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointName":
+            //  We need some check before allowing any updates prevent the app to lose any context
+
+            // Currently only 1 AP can be installed at time as multiple AP causes duplicate CF stack name
+            // error. Might support multi AP for each release in the future.
+            // Ref: https://github.com/elsa-data/elsa-data/issues/514
+            if (releaseInfo.dataSharingAwsAccessPoint?.installed) {
+              throw new Error(
+                `Only 1 access point can be installed at a time. ` +
+                  `Access Point '${releaseInfo.dataSharingAwsAccessPoint?.name}' is currently installed`,
+              );
+            }
+
+            // We need to make sure the access point given is correct
+            const allowedHtsgetAwsVpcLatticeAccessPointConfig =
+              this.configForHtsgetAwsVpcLatticeAccessPointFeature();
+
+            if (!allowedHtsgetAwsVpcLatticeAccessPointConfig) {
+              throw new ReleaseConfigurationError(
+                "No htsget AWS VPC Lattice Access Point configuration for this release",
+              );
+            }
+
+            const isHtsgetAwsVpcLatticeAccessPointNameValid = Object.keys(
+              allowedHtsgetAwsVpcLatticeAccessPointConfig?.destinations,
+            ).find((name) => name === value);
+
+            if (!isHtsgetAwsVpcLatticeAccessPointNameValid) {
+              throw new ReleaseConfigurationError(
+                `The htsget AWS VPC Lattice Access Point named '${value}' does not match with configuration`,
+              );
+            }
+
+            fieldToSet = {
+              htsgetAwsVpcLatticeAccessPointDestinationName: e.str(value),
+            };
+            break;
+
           case "/dataSharingConfiguration/gcpStorageIamEnabled":
             fieldToSet = {
               gcpStorageIamEnabled: e.bool(value),

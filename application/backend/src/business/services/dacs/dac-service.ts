@@ -94,7 +94,7 @@ export class DacService {
       if (d.id === id) {
         switch (d.type) {
           case "redcap-australian-genomics-csv":
-            // a redcap create takes in the body which is the single row of
+            // a redcap create takes in the body which is the single cas of
             // CSV data from redcap as a single JSON object
             return await this.redcapImportApplicationService.startNewRelease(
               user,

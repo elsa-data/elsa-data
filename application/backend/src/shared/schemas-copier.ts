@@ -1,4 +1,4 @@
-import { type Static, Type } from "@sinclair/typebox";
+import Type from "typebox";
 
 /**
  * We use typebox to provide us with JSON schema compatible definitions
@@ -23,4 +23,4 @@ export const CopyInvokeEntry = Type.Object({
   ),
 });
 
-export type CopyInvokeEntryType = Static<typeof CopyInvokeEntry>;
+export type CopyInvokeEntryType = Type.Static<typeof CopyInvokeEntry>;

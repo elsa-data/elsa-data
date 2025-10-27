@@ -12,6 +12,7 @@ import {
 import { createPagedResult } from "../../../api/helpers/pagination-helpers";
 import type { ElsaSettings } from "../../../config/elsa-settings";
 import type {
+  ConsentStatementType,
   ReleaseCaseType,
   ReleaseDetailType,
   ReleaseNodeStatusType,
@@ -131,6 +132,8 @@ export class ReleaseSelectionService extends ReleaseBaseService {
         nodeStatus: ((spec as any).isSelected
           ? "selected"
           : "unselected") as ReleaseNodeStatusType,
+        consentStatements: spec.consent
+          ?.statements as unknown as ConsentStatementType[],
         customConsent: isObjectLike(spec.consent),
       };
     };
@@ -148,6 +151,8 @@ export class ReleaseSelectionService extends ReleaseBaseService {
         externalId: collapseExternalIds(pat.externalIdentifiers),
         externalIdSystem: "",
         nodeStatus: calcNodeStatus(specimensMapped),
+        consentStatements: pat.consent
+          ?.statements as unknown as ConsentStatementType[],
         customConsent: isObjectLike(pat.consent),
         specimens: specimensMapped,
       };
@@ -165,6 +170,8 @@ export class ReleaseSelectionService extends ReleaseBaseService {
         fromDatasetId: cas.dataset?.id!,
         fromDatasetUri: cas.dataset?.uri!,
         nodeStatus: calcNodeStatus(patientsMapped),
+        consentStatements: cas.consent
+          ?.statements as unknown as ConsentStatementType[],
         customConsent: isObjectLike(cas.consent),
         patients: patientsMapped,
       };

@@ -7,6 +7,7 @@ import e from "../../../../dbschema/edgeql-js";
 import { releaseGetBoundaryInfo } from "../../../../dbschema/queries";
 import type {
   SharerAwsAccessPointType,
+  SharerHtsgetAwsVpcLatticeAccessPointType,
   SharerHtsgetType,
 } from "../../../config/config-schema-sharer";
 import type { ElsaSettings } from "../../../config/elsa-settings";
@@ -189,6 +190,22 @@ export abstract class ReleaseBaseService {
   }
 
   /**
+   * Get the config for the htsget AWS VPC lattice access point feature or undefined if this
+   * sharer is not in the config.
+   */
+  public configForHtsgetAwsVpcLatticeAccessPointFeature():
+    | SharerHtsgetAwsVpcLatticeAccessPointType
+    | undefined {
+    const h = this.settings.sharers.filter(
+      (s) => s.type === "htsget-aws-vpc-lattice-access-point",
+    ) as SharerHtsgetAwsVpcLatticeAccessPointType[];
+
+    if (h.length === 1) return h[0];
+
+    return undefined;
+  }
+
+  /**
    * Where the AWS access point feature is enabled we check to see what the
    * current access point status is.
    *
@@ -264,6 +281,81 @@ export abstract class ReleaseBaseService {
   }
 
   /**
+   * Where the htsget AWS VPC lattice access point feature is enabled we check to see what the
+   * current status is.
+   *
+   * @param config
+   * @param releaseKey
+   * @param htsgetAwsVpcLatticeAccessPointName
+   *
+   * NOTE we only call this method when we are
+   * sure that the access point mechanism is configured - else it would just be a
+   * wasted unnecessary call to CloudFormation
+   */
+  public async getHtsgetAwsVpcLatticeAccessPointDetail(
+    config: SharerHtsgetAwsVpcLatticeAccessPointType,
+    releaseKey: string,
+    htsgetAwsVpcLatticeAccessPointName?: string,
+  ): Promise<DataSharingAwsAccessPointType | undefined> {
+    // NOTE we need to calculate the installation status *independent* of the config lookups
+    //      - because we need the ability to "uninstall" an access point stack after the config
+    //        changes (i.e. if I remove the config for a "Nextflow VPC" - I still need the ability
+    //        to remove previously installed access points that used that config)
+    let isAwsAccessPointInstalled = false;
+    let isAwsAccessPointArn: string | undefined = undefined;
+
+    try {
+      // TODO FIX - first need to refactor the release base into a mixin - so do in another PR
+      //            we have a circular dependency otherwise
+      const releaseStackName = `elsa-data-release-${releaseKey}`;
+      const releaseStackResult = await this.cfnClient.send(
+        new DescribeStacksCommand({
+          StackName: releaseStackName,
+        }),
+      );
+      if (
+        releaseStackResult &&
+        releaseStackResult.Stacks &&
+        releaseStackResult.Stacks.length == 1
+      ) {
+        isAwsAccessPointInstalled = true;
+        isAwsAccessPointArn = releaseStackResult.Stacks[0].StackId;
+      }
+    } catch (e) {
+      // TODO tighten the error code here so we don't gobble up other "unexpected" errors
+      // describing a stack that is not present throws an exception so we take that to mean it is
+      // not present
+    }
+
+    const firstNameMatch = Object.entries(config.destinations).find(
+      (n) => n[0] === htsgetAwsVpcLatticeAccessPointName,
+    );
+
+    if (firstNameMatch) {
+      return {
+        name: firstNameMatch[0],
+        accountId: firstNameMatch[1].accountId,
+        vpcId: firstNameMatch[1].vpcId,
+        installed: isAwsAccessPointInstalled,
+        installedStackArn: isAwsAccessPointArn,
+      };
+    } else {
+      return {
+        // We need some info (name) about the active AccessPoint to show in FE
+        // This could be possible if this Access Point details is removed from the config
+        name:
+          isAwsAccessPointInstalled && htsgetAwsVpcLatticeAccessPointName
+            ? htsgetAwsVpcLatticeAccessPointName
+            : "",
+        accountId: "",
+        vpcId: "",
+        installed: isAwsAccessPointInstalled,
+        installedStackArn: isAwsAccessPointArn,
+      };
+    }
+  }
+
+  /**
    * Get a single release assuming the user definitely has the role
    * passed in and that the release exists (otherwise how could they have a role?).
    * This is the base level fetch that can be used after
@@ -316,10 +408,23 @@ export abstract class ReleaseBaseService {
         )
       : undefined;
 
+    const isAllowedHtsgetAwsVpcLatticeAccessPointConfig =
+      this.configForHtsgetAwsVpcLatticeAccessPointFeature();
+
+    const dataSharingHtsgetAwsVpcLatticeAccessPoint =
+      isAllowedHtsgetAwsVpcLatticeAccessPointConfig
+        ? await this.getHtsgetAwsVpcLatticeAccessPointDetail(
+            isAllowedHtsgetAwsVpcLatticeAccessPointConfig,
+            releaseKey,
+            releaseInfo.dataSharingConfiguration
+              .htsgetAwsVpcLatticeAccessPointDestinationName,
+          )
+        : undefined;
+
     return {
       id: releaseInfo.id,
       roleInRelease: userRole,
-      lastUpdatedDateTime: releaseInfo.lastUpdated,
+      lastUpdatedDateTime: releaseInfo.lastUpdated.toISOString(),
       lastUpdatedUserSubjectId: releaseInfo.lastUpdatedSubjectId,
       datasetUris: releaseInfo.datasetUris,
       applicationDacDetails: releaseInfo.applicationDacDetails!,
@@ -393,6 +498,10 @@ export abstract class ReleaseBaseService {
       dataSharingAwsAccessPoint: releaseInfo.dataSharingConfiguration
         .awsAccessPointEnabled
         ? dataSharingAwsAccessPoint
+        : undefined,
+      dataSharingHtsgetAwsVpcLatticeAccessPoint: releaseInfo
+        .dataSharingConfiguration.htsgetAwsVpcLatticeAccessPointEnabled
+        ? dataSharingHtsgetAwsVpcLatticeAccessPoint
         : undefined,
       dataSharingGcpStorageIam: releaseInfo.dataSharingConfiguration
         .gcpStorageIamEnabled

@@ -18,6 +18,7 @@ import { ReleaseParticipationService } from "../../business/services/releases/re
 import { ReleaseSelectionService } from "../../business/services/releases/release-selection-service";
 import { ReleaseService } from "../../business/services/releases/release-service";
 import { AwsAccessPointService } from "../../business/services/sharers/aws-access-point/aws-access-point-service";
+import { HtsgetAwsVpcLatticeAccessPointService } from "../../business/services/sharers/htsget-aws-vpc-lattice-access-point/htsget-aws-vpc-lattice-access-point-service.ts";
 import { SharerService } from "../../business/services/sharers/sharer-service";
 import { UserService } from "../../business/services/user-service";
 import { getServices } from "../../di-helpers";
@@ -121,6 +122,9 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       ),
       jobCopyOutService: ctx.container.resolve(JobCopyOutService),
       awsAccessPointService: ctx.container.resolve(AwsAccessPointService),
+      htsgetAwsVpcLatticeAccessPointService: ctx.container.resolve(
+        HtsgetAwsVpcLatticeAccessPointService,
+      ),
       awsCloudTrailLakeService: ctx.container.resolve(AwsCloudTrailLakeService),
       //      agS3IndexService: ctx.container.resolve(S3IndexApplicationService),
       sharerService: ctx.container.resolve(SharerService),

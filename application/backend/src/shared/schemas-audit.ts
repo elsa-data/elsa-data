@@ -1,4 +1,4 @@
-import { type Static, Type } from "@sinclair/typebox";
+import Type from "typebox";
 import { TypeDate } from "./typebox-helpers";
 
 export const ActionCategorySchema = Type.Union([
@@ -8,7 +8,7 @@ export const ActionCategorySchema = Type.Union([
   Type.Literal("D"),
   Type.Literal("E"),
 ]);
-export type ActionCategoryType = Static<typeof ActionCategorySchema>;
+export type ActionCategoryType = Type.Static<typeof ActionCategorySchema>;
 
 const AuditEventBaseSchema = Type.Object({
   objectId: Type.String(),
@@ -27,20 +27,20 @@ export const AuditEventSchema = Type.Object({
   ...AuditEventBaseSchema.properties,
   hasDetails: Type.Boolean(),
 });
-export type AuditEventType = Static<typeof AuditEventSchema>;
+export type AuditEventType = Type.Static<typeof AuditEventSchema>;
 
 export const AuditEventDetailsSchema = Type.Object({
   objectId: Type.String(),
   details: Type.Optional(Type.String()),
   truncated: Type.Optional(Type.Boolean()),
 });
-export type AuditEventDetailsType = Static<typeof AuditEventDetailsSchema>;
+export type AuditEventDetailsType = Type.Static<typeof AuditEventDetailsSchema>;
 
 export const AuditEventFullSchema = Type.Object({
   ...AuditEventBaseSchema.properties,
   details: Type.Optional(Type.Any()),
 });
-export type AuditEventFullType = Static<typeof AuditEventFullSchema>;
+export type AuditEventFullType = Type.Static<typeof AuditEventFullSchema>;
 
 export namespace RouteValidation {
   export const AuditEventUserFilterSchema = Type.Union([
@@ -49,7 +49,7 @@ export namespace RouteValidation {
     Type.Literal("system"),
     Type.Literal("all"),
   ]);
-  export type AuditEventUserFilterType = Static<
+  export type AuditEventUserFilterType = Type.Static<
     typeof AuditEventUserFilterSchema
   >;
 
@@ -61,12 +61,14 @@ export namespace RouteValidation {
     orderAscending: Type.Optional(Type.Boolean()),
     filter: Type.Optional(Type.Array(AuditEventUserFilterSchema)),
   });
-  export type AuditEventForQueryType = Static<typeof AuditEventForQuerySchema>;
+  export type AuditEventForQueryType = Type.Static<
+    typeof AuditEventForQuerySchema
+  >;
 
   export const AuditEventByIdQuerySchema = Type.Object({
     id: Type.String(),
   });
-  export type AuditEventFullQueryType = Static<
+  export type AuditEventFullQueryType = Type.Static<
     typeof AuditEventByIdQuerySchema
   >;
 
@@ -75,7 +77,7 @@ export namespace RouteValidation {
     start: Type.Optional(Type.Number()),
     end: Type.Optional(Type.Number()),
   });
-  export type AuditEventDetailsQueryType = Static<
+  export type AuditEventDetailsQueryType = Type.Static<
     typeof AuditEventDetailsQuerySchema
   >;
 }

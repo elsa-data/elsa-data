@@ -1,4 +1,4 @@
-CREATE MIGRATION m1j7iwxobulrwf5txjmogozxuk6ktfwoqxy3pxe7fpdd3ogtx3we2a
+CREATE MIGRATION m1fra7wuc2yghs77r6axsltdtwrvrrjwpihrtbkqxfldurcllaudfq
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -63,18 +63,21 @@ CREATE MIGRATION m1j7iwxobulrwf5txjmogozxuk6ktfwoqxy3pxe7fpdd3ogtx3we2a
           CREATE CONSTRAINT std::exclusive;
       };
   };
-  CREATE ABSTRACT TYPE lab::ArtifactBase;
-  CREATE TYPE dataset::DatasetSpecimen EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
-      CREATE MULTI LINK artifacts: lab::ArtifactBase;
-      CREATE OPTIONAL PROPERTY sampleType: std::str;
-  };
   CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
-      CREATE MULTI LINK specimens: dataset::DatasetSpecimen {
+      CREATE OPTIONAL PROPERTY sexAtBirth: dataset::SexAtBirthType;
+  };
+  ALTER TYPE dataset::DatasetCase {
+      CREATE MULTI LINK patients: dataset::DatasetPatient {
           ON SOURCE DELETE DELETE TARGET;
           ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
-      CREATE OPTIONAL PROPERTY sexAtBirth: dataset::SexAtBirthType;
+      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
+  };
+  CREATE ABSTRACT TYPE lab::ArtifactBase;
+  CREATE TYPE dataset::DatasetSpecimen EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
+      CREATE MULTI LINK artifacts: lab::ArtifactBase;
+      CREATE OPTIONAL PROPERTY sampleType: std::str;
   };
   CREATE TYPE storage::File {
       CREATE REQUIRED PROPERTY checksums: array<tuple<type: storage::ChecksumType, value: std::str>>;
@@ -170,6 +173,15 @@ CREATE MIGRATION m1j7iwxobulrwf5txjmogozxuk6ktfwoqxy3pxe7fpdd3ogtx3we2a
       CREATE REQUIRED PROPERTY gcpStorageIamUsers: array<std::str> {
           SET default := (<array<std::str>>[]);
       };
+      CREATE REQUIRED PROPERTY htsgetAwsVpcLatticeAccessPointDestinationName: std::str {
+          SET default := '';
+      };
+      CREATE REQUIRED PROPERTY htsgetAwsVpcLatticeAccessPointEnabled: std::bool {
+          SET default := false;
+      };
+      CREATE OPTIONAL PROPERTY htsgetAwsVpcLatticeAccessPointInstalledAccountId: std::str;
+      CREATE OPTIONAL PROPERTY htsgetAwsVpcLatticeAccessPointInstalledHtsgetResponse: std::json;
+      CREATE OPTIONAL PROPERTY htsgetAwsVpcLatticeAccessPointInstalledVpcId: std::str;
       CREATE REQUIRED PROPERTY htsgetEnabled: std::bool {
           SET default := false;
       };
@@ -314,6 +326,10 @@ CREATE MIGRATION m1j7iwxobulrwf5txjmogozxuk6ktfwoqxy3pxe7fpdd3ogtx3we2a
   CREATE TYPE job::CopyOutJob EXTENDING job::Job {
       CREATE REQUIRED PROPERTY awsExecutionArn: std::str;
   };
+  CREATE TYPE job::HtsgetAwsVpcLatticeAccessPointInstallJob EXTENDING job::Job {
+      CREATE REQUIRED PROPERTY awsStackId: std::str;
+      CREATE REQUIRED PROPERTY s3HttpsUrl: std::str;
+  };
   CREATE TYPE job::SelectJob EXTENDING job::Job {
       CREATE MULTI LINK todoQueue: dataset::DatasetCase {
           ON TARGET DELETE ALLOW;
@@ -351,16 +367,13 @@ CREATE MIGRATION m1j7iwxobulrwf5txjmogozxuk6ktfwoqxy3pxe7fpdd3ogtx3we2a
   CREATE TYPE consent::ConsentStatementDynamicDuo EXTENDING consent::ConsentStatement {
       CREATE REQUIRED PROPERTY consentSystemIdentifier: std::str;
   };
-  ALTER TYPE dataset::DatasetCase {
-      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
-      CREATE MULTI LINK patients: dataset::DatasetPatient {
+  ALTER TYPE dataset::DatasetPatient {
+      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
+      CREATE MULTI LINK specimens: dataset::DatasetSpecimen {
           ON SOURCE DELETE DELETE TARGET;
           ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
-  };
-  ALTER TYPE dataset::DatasetPatient {
-      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
   };
   ALTER TYPE dataset::DatasetSpecimen {
       CREATE LINK dataset := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);

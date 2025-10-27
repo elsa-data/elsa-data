@@ -1,6 +1,7 @@
 import { Issuer } from "openid-client";
 import type { LoggerOptions } from "pino";
 import type { BrandingType } from "./config-schema-branding";
+import type { ConsenterType } from "./config-schema-consenter";
 import type { DacType } from "./config-schema-dac";
 import type { DataEgressConfigType } from "./config-schema-data-egress";
 import type { DatasetType } from "./config-schema-dataset";
@@ -23,6 +24,7 @@ export type ElsaSettings = {
   // if deployed to AWS - the region and account the stack is running in
   // many services need to know our deployed region/account in order to make sensible decisions about
   // data egress etc
+  // NOTE that these are derived automatically and cannot be set in configuration
   deployedAwsRegion?: string;
   deployedAwsAccount?: string;
 
@@ -43,6 +45,7 @@ export type ElsaSettings = {
   // details that are required if running in AWS
   aws?: {
     tempBucket: string;
+    vpcId: string;
   };
 
   // optional signing details to allow sharing of objects in CloudFlare R2
@@ -86,6 +89,8 @@ export type ElsaSettings = {
   datasets: DatasetType[];
 
   sharers: SharerType[];
+
+  consenters: ConsenterType[];
 
   emailer?: EmailerType;
 

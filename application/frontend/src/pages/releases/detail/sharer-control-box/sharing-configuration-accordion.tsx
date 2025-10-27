@@ -11,6 +11,7 @@ type SharingConfigurationAccordionProps = {
     | "/dataSharingConfiguration/copyOutEnabled"
     | "/dataSharingConfiguration/htsgetEnabled"
     | "/dataSharingConfiguration/awsAccessPointEnabled"
+    | "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointEnabled"
     | "/dataSharingConfiguration/gcpStorageIamEnabled";
   current: boolean;
   notWorkingReason: string | undefined;
@@ -56,7 +57,7 @@ export const SharingConfigurationAccordion: React.FC<
           <input
             type="checkbox"
             className={classNames("checkbox-accent checkbox checkbox-sm mr-2", {
-              "opacity-50": props.mutator.isLoading,
+              "opacity-50": props.mutator.isPending,
             })}
             checked={props.current}
             onChange={() => {

@@ -89,7 +89,7 @@ export class UserService {
       subjectIdentifier: currentUser.subjectId,
       email: currentUser.email,
       displayName: currentUser.displayName,
-      lastLogin: currentUser.lastLoginDateTime,
+      lastLogin: currentUser.lastLoginDateTime.toString(),
 
       // Write Access
       isAllowedChangeUserPermission: this.isConfiguredSuperAdmin(
@@ -132,7 +132,7 @@ export class UserService {
         subjectIdentifier: a.subjectId,
         email: a.email,
         displayName: a.displayName,
-        lastLogin: a.lastLoginDateTime,
+        lastLogin: a.lastLoginDateTime.toISOString(),
 
         // Write Access
         isAllowedChangeUserPermission: this.isConfiguredSuperAdmin(a.subjectId),
@@ -170,7 +170,7 @@ export class UserService {
         id: a.id,
         email: a.email,
         displayName: a.displayName ?? "",
-        createdDateTime: a.createdDateTime,
+        createdDateTime: a.createdDateTime.toISOString(),
 
         isAllowedRefreshDatasetIndex: a.isAllowedRefreshDatasetIndex,
         isAllowedCreateRelease: a.isAllowedCreateRelease,

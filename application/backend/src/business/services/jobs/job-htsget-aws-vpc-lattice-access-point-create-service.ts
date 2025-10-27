@@ -22,11 +22,11 @@ import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-po
 import { JobService, NotAuthorisedToControlJob } from "./job-service";
 
 /**
- * A service for performing long-running operations creating new
- * Cloud Formation stacks.
+ * A service for performing long-running process of setting up a htsget
+ * VPC lattice access point share.
  */
 @injectable()
-export class JobCloudFormationCreateService extends JobService {
+export class JobHtsgetAwsVpcLatticeAccessPointCreateService extends JobService {
   constructor(
     @inject("Database") readonly edgeDbClient: gel.Client,
     @inject("Logger") readonly logger: Logger,
@@ -48,7 +48,7 @@ export class JobCloudFormationCreateService extends JobService {
    * @param releaseKey the release to install in the context of
    * @param s3HttpsUrl a https://s3.. URL that represents the cloud formation template to install
    */
-  public async startCloudFormationInstallJob(
+  public async startJob(
     user: AuthenticatedUser,
     releaseKey: string,
     s3HttpsUrl: string,
@@ -84,7 +84,7 @@ export class JobCloudFormationCreateService extends JobService {
 
       // create a new cloud formation install entry
       await e
-        .insert(e.job.CloudFormationInstallJob, {
+        .insert(e.job.HtsgetAwsVpcLatticeAccessPointInstallJob, {
           forRelease: releaseQuery,
           status: e.job.JobStatus.running,
           started: e.datetime_current(),
@@ -116,11 +116,11 @@ export class JobCloudFormationCreateService extends JobService {
    *
    * @param jobId
    */
-  public async doCloudFormationInstallJob(jobId: string): Promise<number> {
+  public async doWork(jobId: string): Promise<number> {
     // TODO some security level here? does the user have permissions?
 
     const cfInstallJobQuery = e
-      .select(e.job.CloudFormationInstallJob, (j) => ({
+      .select(e.job.HtsgetAwsVpcLatticeAccessPointInstallJob, (j) => ({
         forRelease: {
           releaseKey: true,
         },
@@ -159,7 +159,7 @@ export class JobCloudFormationCreateService extends JobService {
 
       await this.edgeDbClient.transaction(async (tx) => {
         const cloudFormationInstallQuery = e
-          .select(e.job.CloudFormationInstallJob, (j) => ({
+          .select(e.job.HtsgetAwsVpcLatticeAccessPointInstallJob, (j) => ({
             auditEntry: true,
             started: true,
             filter: e.op(j.id, "=", e.uuid(jobId)),
@@ -217,7 +217,7 @@ export class JobCloudFormationCreateService extends JobService {
     return 0;
   }
 
-  public async endCloudFormationInstallJob(
+  public async endJob(
     jobId: string,
     wasSuccessful: boolean,
     isCancellation: boolean,
@@ -226,7 +226,7 @@ export class JobCloudFormationCreateService extends JobService {
     // we just need to clean up the records
     await this.edgeDbClient.transaction(async (tx) => {
       const cloudFormationInstallQuery = e
-        .select(e.job.CloudFormationInstallJob, (j) => ({
+        .select(e.job.HtsgetAwsVpcLatticeAccessPointInstallJob, (j) => ({
           auditEntry: true,
           started: true,
           forRelease: {
@@ -248,7 +248,7 @@ export class JobCloudFormationCreateService extends JobService {
 
       // The cloudformation install job is most likely for s3 access point (ap) installation
       // We wanted to document all access point ever created in the release::activation schema
-      /*try {
+      try {
         // First we need to get the new installed AP then merge with existing one if any
         const map =
           await this.awsAccessPointService.getInstalledAccessPointObjectMap(
@@ -284,7 +284,7 @@ export class JobCloudFormationCreateService extends JobService {
         // But our first cut only uses this function on AP installation so wouldn't expect any error
         // for not having AP
         this.logger.error(error);
-      } */
+      }
 
       await this.auditLogService.completeReleaseAuditEvent(
         cloudFormationInstallJob.auditEntry.id,

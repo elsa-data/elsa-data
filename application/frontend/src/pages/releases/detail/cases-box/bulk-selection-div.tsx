@@ -41,7 +41,7 @@ export const BulkSelectionDiv: React.FC<Props> = ({
       const value = parsed.map((row) => row["specimen_id"]).filter(Boolean);
 
       if (!value) {
-        setParseError("CSV needs to contain at least one row");
+        setParseError("CSV needs to contain at least one cas");
         return;
       }
 

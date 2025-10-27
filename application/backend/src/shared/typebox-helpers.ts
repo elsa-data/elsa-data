@@ -1,28 +1,24 @@
-import {
-  type TLiteral,
-  type TSchema,
-  type TString,
-  type TUnion,
-  Type,
-} from "@sinclair/typebox";
+import Type from "typebox";
 
 export const DateKind = Symbol("DateKind");
-export interface TDate extends TSchema {
+export interface TDate extends Type.TSchema {
   type: "string";
   $static: Date;
   kind: typeof DateKind;
 }
-export const TypeDate = Type.String({ format: "date-time" }) as TString | TDate;
+export const TypeDate = Type.String({ format: "date-time" }) as
+  | Type.TString
+  | TDate;
 
 export type IntoStringUnion<T> = {
-  [K in keyof T]: T[K] extends string ? TLiteral<T[K]> : never;
+  [K in keyof T]: T[K] extends string ? Type.TLiteral<T[K]> : never;
 };
 
 export function StringUnion<T extends string[]>(
   values: [...T],
-): TUnion<IntoStringUnion<T>> {
+): Type.TUnion<IntoStringUnion<T>> {
   return { enum: values } as any;
 }
 
-export const Nullable = <T extends TSchema>(schema: T) =>
+export const Nullable = <T extends Type.TSchema>(schema: T) =>
   Type.Union([schema, Type.Null()]);

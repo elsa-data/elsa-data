@@ -128,7 +128,7 @@ export class DatasetService {
       datasetSummaryQuery.data.map((r) => ({
         uri: r.uri,
         description: r.description,
-        updatedDateTime: r.updatedDateTime,
+        updatedDateTime: r.updatedDateTime?.toISOString(),
         isInConfig: r.isInConfig,
         totalCaseCount: r.totalCaseCount,
         totalPatientCount: r.totalPatientCount,

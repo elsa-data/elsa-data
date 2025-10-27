@@ -4,6 +4,7 @@ import { S3ManifestHtsgetService } from "../../../business/services/manifests/ht
 import { ManifestService } from "../../../business/services/manifests/manifest-service";
 import { PresignedUrlService } from "../../../business/services/presigned-url-service";
 import { AwsAccessPointService } from "../../../business/services/sharers/aws-access-point/aws-access-point-service";
+import { HtsgetAwsVpcLatticeAccessPointService } from "../../../business/services/sharers/htsget-aws-vpc-lattice-access-point/htsget-aws-vpc-lattice-access-point-service.ts";
 import {
   ReleasePresignRequestSchema,
   type ReleasePresignRequestType,
@@ -27,6 +28,9 @@ export const manifestDownloadRoutes = async (
   const presignedUrlService = _opts.container.resolve(PresignedUrlService);
   const awsAccessPointService = _opts.container.resolve(AwsAccessPointService);
   const htsgetService = _opts.container.resolve(S3ManifestHtsgetService);
+  const htsgetAwsVpcLatticeAccessPointService = _opts.container.resolve(
+    HtsgetAwsVpcLatticeAccessPointService,
+  );
   const manifestService = _opts.container.resolve(ManifestService);
 
   // this TSV manifest is available to everyone involved in the project
@@ -40,7 +44,7 @@ export const manifestDownloadRoutes = async (
     async function (request, reply) {
       const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
 
-      const presignHeader = request.body?.presignHeader ?? [];
+      const presignHeader: any = request.body?.presignHeader ?? [];
       const presignHeaderArray = Array.isArray(presignHeader)
         ? presignHeader
         : [presignHeader];
@@ -151,6 +155,42 @@ export const manifestDownloadRoutes = async (
     },
   );
 
+  // this TSV manifest contains object represented at a particular htsget endpoint
+  // because the security is baked into the htsget protocol - this can be downloaded as plain text
+  // (users still would need to auth to the htsget endpoint before getting the data)
+  fastify.post<{
+    Body: ReleasePresignRequestType;
+    Params: { rid: string };
+  }>(
+    "/releases/:rid/tsv-manifest-htsget-aws-vpc-lattice-access-point",
+    {
+      schema: {
+        body: ReleasePresignRequestSchema,
+      },
+    },
+    async function (request, reply) {
+      const { authenticatedUser } = authenticatedRouteOnEntryHelper(request);
+
+      const releaseKey = request.params.rid;
+      const presignHeaderArray = Array.isArray(request.body.presignHeader)
+        ? request.body.presignHeader
+        : [request.body.presignHeader];
+
+      const htsgetTsv =
+        await htsgetAwsVpcLatticeAccessPointService.getHtsgetVpcLatticeAccessPointBucketKeyManifest(
+          authenticatedUser,
+          releaseKey,
+          presignHeaderArray,
+        );
+
+      reply.header(
+        "Content-disposition",
+        `attachment; filename=${htsgetTsv.filename}`,
+      );
+      reply.type("text/tab-separated-values");
+      reply.send(htsgetTsv.content);
+    },
+  );
   // this TSV manifest contains signed URLS that give access to the genomic data for up to 7 days
   // because possession of this file is the same as possessing the data - we encrypt the TSV into
   // a password protected zip (which ensures that the basic download left in a Downloads folder

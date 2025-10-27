@@ -3,7 +3,7 @@ import React from "react";
 import { Pagination } from "react-headless-pagination";
 
 type Props = {
-  // the word that describes each row (i.e. "cases", "patients", "datasets")
+  // the word that describes each cas (i.e. "cases", "patients", "datasets")
   rowWord: string;
 
   // the total number of rows that we will be scrolling/paging through

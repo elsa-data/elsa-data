@@ -1,4 +1,4 @@
-import { type Static, Type } from "@sinclair/typebox";
+import Type from "typebox";
 import { CodingSchema } from "./schemas-coding";
 import { StringUnion } from "./typebox-helpers";
 
@@ -110,6 +110,20 @@ export const ReleasePatchOperationSchema = Type.Union([
   }),
   Type.Object({
     op: Type.Literal("replace"),
+    path: Type.Literal(
+      "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointEnabled",
+    ),
+    value: Type.Boolean(),
+  }),
+  Type.Object({
+    op: Type.Literal("replace"),
+    path: Type.Literal(
+      "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointName",
+    ),
+    value: Type.String(),
+  }),
+  Type.Object({
+    op: Type.Literal("replace"),
     path: Type.Literal("/dataSharingConfiguration/gcpStorageIamEnabled"),
     value: Type.Boolean(),
   }),
@@ -120,7 +134,7 @@ export const ReleasePatchOperationSchema = Type.Union([
   }),
 ]);
 
-export type ReleasePatchOperationType = Static<
+export type ReleasePatchOperationType = Type.Static<
   typeof ReleasePatchOperationSchema
 >;
 
@@ -128,6 +142,6 @@ export const ReleasePatchOperationsSchema = Type.Array(
   ReleasePatchOperationSchema,
 );
 
-export type ReleasePatchOperationsType = Static<
+export type ReleasePatchOperationsType = Type.Static<
   typeof ReleasePatchOperationsSchema
 >;

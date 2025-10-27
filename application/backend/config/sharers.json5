@@ -16,6 +16,17 @@
       maxAgeInSeconds: 600,
     },
     {
+      id: "umccr-seqera",
+      type: "htsget-aws-vpc-lattice-access-point",
+      domainName: "htsgetvpclatt-htsgetvpclatt-dfjxkb0wq0mk-04e8459079fec5d74.7d67968.vpc-lattice-svcs.ap-southeast-2.on.aws",
+      destinations: {
+        "Seqera Demo": {
+          accountId: "534840902377",
+          vpcId: "vpc-031e3d24ea0e50664",
+        },
+      },
+    },
+    {
       id: "parkville-ap",
       type: "aws-access-point",
       allowedVpcs: {

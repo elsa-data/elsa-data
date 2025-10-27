@@ -92,6 +92,25 @@ module job {
         required property awsStackId -> str;
     }
 
+    type HtsgetAwsVpcLatticeAccessPointInstallJob extending Job {
+
+        # the S3 location of a cloud formation template we are creating/installing
+        #
+        required property s3HttpsUrl -> str;
+
+        # the stack id of the cloud formation we are creating
+        # NOTE after the installation process finishes - we do not use this binding any more
+        #      i.e. a stack could be replaced with a different one of a similar name outside Elsa Data and
+        #      we would not notice
+        #      this is solely used *during* the install to track progress
+        #
+        required property awsStackId -> str;
+    }
+
+
+
+
+
     type CloudFormationDeleteJob extending Job {
         # the stack id of the cloud formation we are delete
         # THIS MUST BE DETERMINED BEFORE STARTING THE DELETE AS ONLY Stack Ids can be used for tracking

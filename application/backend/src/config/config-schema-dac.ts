@@ -46,7 +46,7 @@ export const DacRedcapAustralianGenomicsCsvSchema = z.object({
     .string()
     .min(1)
     .describe(
-      "The column header name of the column with an integer uniquely identifying each row - this will be fed as input into the release key printf",
+      "The column header name of the column with an integer uniquely identifying each cas - this will be fed as input into the release key printf",
     ),
   releaseKeyPrintf: z
     .string()
