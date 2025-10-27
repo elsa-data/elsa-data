@@ -61,25 +61,47 @@ export const manifestRoutes = async (
     },
   );
 
+  /**
+   * This is an integration with htsget-rs that sets up Elsa as a source of authorisation information
+   * and sample mapping.
+   */
   fastify.get("/integration/htsget-rs", {}, async function (request, reply) {
-    const d =
-      await htsgetAwsVpcLatticeAccessPointService.getInstalledHtsgetAwsVpcLatticeAccessPoint(
-        "R001",
-      );
+    if ("htsget-context-id" in request.headers) {
+      const htsgetId = request.headers["htsget-context-id"];
 
-    if (!d) reply.send({ error: `No access point installed for release` });
-    else {
-      const auth =
-        await htsgetAwsVpcLatticeAccessPointService.getHtsgetVpcLatticeAccessPointAuthorisation(
-          d,
-        );
+      if (typeof htsgetId === "string") {
+        const parts = htsgetId.split("/");
 
-      reply
-        //.header(
-        //  "Cache-Control",
-        //  `public, max-age=${output.maxAge}, must-revalidate, immutable`,
-        // )
-        .send(auth);
+        // the first part of the id we take to be a Release Key - whether there are slashes or not...
+        if (parts.length > 0) {
+          // TODO: check the active sharers for this and check the auth VPC ids
+
+          const d =
+            await htsgetAwsVpcLatticeAccessPointService.getInstalledHtsgetAwsVpcLatticeAccessPoint(
+              parts[0],
+            );
+
+          if (d) {
+            const auth =
+              await htsgetAwsVpcLatticeAccessPointService.getHtsgetVpcLatticeAccessPointAuthorisation(
+                d,
+              );
+
+            reply
+              //.header(
+              //  "Cache-Control",
+              //  `public, max-age=${output.maxAge}, must-revalidate, immutable`,
+              // )
+              .send(auth);
+
+            return;
+          }
+        }
+      }
     }
+
+    reply.send({
+      error: `No authorisation information - possibly reasons can be mismatched release ids, inactivated access points etc`,
+    });
   });
 };
