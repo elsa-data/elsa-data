@@ -48,6 +48,15 @@ export const ReleaseParticipantRole: ReleaseParticipantRoleType[] = [
   "Member",
 ];
 
+// seems like there is a bug in the Typebox union stuff - so have had to add this
+// literal repetition (as opposed to the broken StringUnion)
+export const TempReleaseParticipantRole = Type.Union([
+  Type.Literal("AdminView"),
+  Type.Literal("Administrator"),
+  Type.Literal("Manager"),
+  Type.Literal("Member"),
+]);
+
 export const ReleaseApplicationCodedTypeSchema = StringUnion([
   "HMB",
   "DS",
@@ -107,11 +116,12 @@ export type DataSharingHtsgetAwsVpcLatticeAccessPointType = Type.Static<
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
 
-  roleInRelease: Type.Union(
-    ReleaseParticipantRole.map((r: ReleaseParticipantRoleType) =>
-      Type.Literal(r),
-    ),
-  ),
+  roleInRelease: TempReleaseParticipantRole,
+  //Type.Union(
+  //  ReleaseParticipantRole.map((r: ReleaseParticipantRoleType) =>
+  //    Type.Literal(r),
+  //  ),
+  //),
 
   lastUpdatedDateTime: TypeDate,
   lastUpdatedUserSubjectId: Type.String(),
@@ -142,7 +152,7 @@ export const ReleaseDetailSchema = Type.Object({
 
   // Permission for the current user that allowed to edit other user's role within the release.
   rolesAllowedToAlterParticipant: Nullable(
-    Type.Array(StringUnion(ReleaseParticipantRole)),
+    Type.Array(TempReleaseParticipantRole),
   ),
 
   // if present, means that this release has been activated for data sharing

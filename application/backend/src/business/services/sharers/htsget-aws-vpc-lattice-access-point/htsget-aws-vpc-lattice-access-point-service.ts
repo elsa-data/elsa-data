@@ -230,6 +230,9 @@ export class HtsgetAwsVpcLatticeAccessPointService {
     const installedInfo =
       await this.getInstalledHtsgetAwsVpcLatticeAccessPoint(releaseKey);
 
+    if (!installedInfo)
+      throw new Error("needs to have an access point installed");
+
     const newHtsgetObjects: any[] = [];
 
     for (const obj of bucketKeyManifest.objects) {

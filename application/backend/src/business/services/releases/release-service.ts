@@ -102,7 +102,7 @@ export class ReleaseService extends ReleaseBaseService {
       total: allReleasesByUser.total,
       data: allReleasesByUser.data.map((a) => ({
         releaseKey: a.releaseKey,
-        lastUpdatedDateTime: a.lastUpdated,
+        lastUpdatedDateTime: a.lastUpdated.toISOString(),
         lastUpdatedUserSubjectId: a.lastUpdatedSubjectId,
         datasetUris: a.datasetUris,
         applicationDacIdentifierSystem: a.applicationDacIdentifier.system,

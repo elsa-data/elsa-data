@@ -1,6 +1,5 @@
 import Type from "typebox";
 import { ReleasePatientBirthSexSchema } from "./schemas-releases";
-import { TypeDate } from "./typebox-helpers";
 /**
  * We use typebox to provide us with JSON schema compatible definitions
  * AND Typescript compatible types.
@@ -56,7 +55,7 @@ export const DatasetCaseSchema = Type.Object({
 export const DatasetSchemaLight = Type.Object({
   uri: Type.String(),
   description: Type.String(),
-  updatedDateTime: TypeDate,
+  updatedDateTime: Type.Optional(Type.String({ format: "date-time" })),
   isInConfig: Type.Boolean(),
   totalCaseCount: Type.Number(),
   totalPatientCount: Type.Number(),
