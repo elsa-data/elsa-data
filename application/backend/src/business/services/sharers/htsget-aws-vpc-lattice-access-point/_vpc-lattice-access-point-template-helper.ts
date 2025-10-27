@@ -61,6 +61,7 @@ function createAccessPointResourceForBucket(
     Properties: {
       Bucket: bucketName,
       Name: accessPointName,
+      DeletionPolicy: "Delete",
       Policy: {
         Version: "2012-10-17",
         Statement: [

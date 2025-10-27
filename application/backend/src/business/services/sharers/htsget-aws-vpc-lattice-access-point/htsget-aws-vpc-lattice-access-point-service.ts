@@ -142,9 +142,11 @@ export class HtsgetAwsVpcLatticeAccessPointService {
    * IDENTITY SOME OTHER WAY.
    *
    * @param installedInfo
+   * @param prefix
    */
   public async getHtsgetVpcLatticeAccessPointAuthorisation(
     installedInfo: InstalledHtsgetAwsVpcLatticeAccessPoint,
+    prefix: string
   ): Promise<any> {
     await this.awsEnabledService.enabledGuard();
 
@@ -168,18 +170,30 @@ export class HtsgetAwsVpcLatticeAccessPointService {
 
         // non-index files (and anything not bam or vcf) shouldn't appear in the htsget manifest
         // TODO: improve our detection of these types - better than us doing string compares
-        if (
-          obj.objectStoreKey.endsWith("bam") ||
-          obj.objectStoreKey.endsWith("vcf.gz")
-        )
+        if (obj.objectStoreKey.endsWith(".vcf.gz"))
           htsgetAuth.push({
             location: {
-              id: obj.specimenId,
-              backend: `s3://${newBucketAlias}/${obj.objectStoreKey}`,
+              id: `${prefix}/${obj.specimenId}`,
+              backend: `s3://${newBucketAlias}/${obj.objectStoreKey.slice(0,-7)}`,
             },
             rules: [
               {
-                format: obj.objectType,
+                format: "VCF",
+              },
+            ],
+          });
+
+        if (
+          obj.objectStoreKey.endsWith(".bam")
+        )
+          htsgetAuth.push({
+            location: {
+              id: `${prefix}/${obj.specimenId}`,
+              backend: `s3://${newBucketAlias}/${obj.objectStoreKey.slice(0,-4)}`,
+            },
+            rules: [
+              {
+                format: "BAM",
               },
             ],
           });

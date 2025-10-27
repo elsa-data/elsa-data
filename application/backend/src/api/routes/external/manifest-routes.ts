@@ -85,6 +85,7 @@ export const manifestRoutes = async (
             const auth =
               await htsgetAwsVpcLatticeAccessPointService.getHtsgetVpcLatticeAccessPointAuthorisation(
                 d,
+                parts[0],
               );
 
             reply
