@@ -115,7 +115,8 @@ export class HtsgetAwsVpcLatticeAccessPointService {
     let vpcId: string | undefined = undefined;
 
     for (const o of stack.Outputs) {
-      if (o.OutputKey === VPC_LATTICE_ACCESS_POINT_VPC_ID) vpcId = o.OutputKey!;
+      if (o.OutputKey === VPC_LATTICE_ACCESS_POINT_VPC_ID)
+        vpcId = o.OutputValue!;
     }
 
     if (!vpcId) return null;
