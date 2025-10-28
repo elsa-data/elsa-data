@@ -42,14 +42,19 @@ export const SharerAwsAccessPointSchema = z.object({
     .describe("A dictionary of access point target names and their details"),
 });
 
+export const SharerHtsgetAwsVpcLatticeAccessPointDestinationSchema = z.object({
+  accountId: z.string().regex(/^\d{12}$/),
+  vpcId: z.string().startsWith("vpc-"),
+});
+
 export const SharerHtsgetAwsVpcLatticeAccessPointSchema = z.object({
   id: z.string(),
   type: z.literal("htsget-aws-vpc-lattice-access-point"),
   domainName: z.string().describe("The domain name for the htsget endpoint"),
   destinations: z
-    .record(SharerAwsAccessPointTargetSchema)
+    .record(SharerHtsgetAwsVpcLatticeAccessPointDestinationSchema)
     .describe(
-      "A dictionary of target accounts/VPCs that can access the htsget endpoint",
+      "A dictionary of details of the sharing destinations that can access the htsget endpoint",
     ),
 });
 
