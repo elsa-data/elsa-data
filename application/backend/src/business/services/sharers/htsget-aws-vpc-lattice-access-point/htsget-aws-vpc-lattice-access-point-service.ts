@@ -26,13 +26,20 @@ import {
   createCloudFormationTemplateFromObjects,
   VPC_LATTICE_ACCESS_POINT_ALIAS_KEY_SUFFIX,
   VPC_LATTICE_ACCESS_POINT_BUCKET_KEY_SUFFIX,
+  VPC_LATTICE_ACCESS_POINT_VPC_ID,
 } from "./_vpc-lattice-access-point-template-helper";
 
 type InstalledHtsgetAwsVpcLatticeAccessPoint = {
+  // the release this access point was installed for
   releaseKey: string;
 
+  // the stack information direct from AWS
   stack: Stack;
 
+  // the VPC id that this is being shared to
+  vpcId: string;
+
+  // a dictionary of bucket names and the corresponding S3 access point aliases
   bucketsToAlias: Record<string, string>;
 };
 
@@ -105,9 +112,18 @@ export class HtsgetAwsVpcLatticeAccessPointService {
 
     if (!stack.Outputs) return null;
 
+    let vpcId: string | undefined = undefined;
+
+    for (const o of stack.Outputs) {
+      if (o.OutputKey === VPC_LATTICE_ACCESS_POINT_VPC_ID) vpcId = o.OutputKey!;
+    }
+
+    if (!vpcId) return null;
+
     const result: InstalledHtsgetAwsVpcLatticeAccessPoint = {
       releaseKey: releaseKey,
       stack: stack,
+      vpcId: vpcId,
       bucketsToAlias: {},
     };
 
@@ -146,7 +162,7 @@ export class HtsgetAwsVpcLatticeAccessPointService {
    */
   public async getHtsgetVpcLatticeAccessPointAuthorisation(
     installedInfo: InstalledHtsgetAwsVpcLatticeAccessPoint,
-    prefix: string
+    prefix: string,
   ): Promise<any> {
     await this.awsEnabledService.enabledGuard();
 
@@ -174,7 +190,7 @@ export class HtsgetAwsVpcLatticeAccessPointService {
           htsgetAuth.push({
             location: {
               id: `${prefix}/${obj.specimenId}`,
-              backend: `s3://${newBucketAlias}/${obj.objectStoreKey.slice(0,-7)}`,
+              backend: `s3://${newBucketAlias}/${obj.objectStoreKey.slice(0, -7)}`,
             },
             rules: [
               {
@@ -183,13 +199,11 @@ export class HtsgetAwsVpcLatticeAccessPointService {
             ],
           });
 
-        if (
-          obj.objectStoreKey.endsWith(".bam")
-        )
+        if (obj.objectStoreKey.endsWith(".bam"))
           htsgetAuth.push({
             location: {
               id: `${prefix}/${obj.specimenId}`,
-              backend: `s3://${newBucketAlias}/${obj.objectStoreKey.slice(0,-4)}`,
+              backend: `s3://${newBucketAlias}/${obj.objectStoreKey.slice(0, -4)}`,
             },
             rules: [
               {

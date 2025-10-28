@@ -10,17 +10,11 @@ export type AccessPointTemplateToSave = {
   content: string;
 };
 
-// for access point work we are only interested in the following fields of our manifest objects
-export type AccessPointEntry = Pick<
-  ManifestBucketKeyObjectType,
-  "objectStoreUrl" | "objectStoreBucket" | "objectStoreKey" | "accessPointArn"
-> & {
-  accessPointUnique?: string;
-};
-
 export const VPC_LATTICE_ACCESS_POINT_ALIAS_KEY_SUFFIX = "Alias";
 
 export const VPC_LATTICE_ACCESS_POINT_BUCKET_KEY_SUFFIX = "Bucket";
+
+export const VPC_LATTICE_ACCESS_POINT_VPC_ID = "VpcId";
 
 /**
  * Create an access point share resource
@@ -66,18 +60,25 @@ function createAccessPointResourceForBucket(
         Version: "2012-10-17",
         Statement: [
           {
-            Action: ["s3:GetObject"],
-            Effect: "Allow",
+            // we deny all operations through this access point on both the access points
+            // and the objects
+
+            // the only exception is for requests coming from the VPCs that are whitelisted
+            // which means in that case they will get to do any operations passed through
+            // from the base bucket delegation
+            Effect: "Deny",
+            Action: "*",
+            Principal: "*",
             Resource: [
+              {
+                "Fn::Sub": `arn:aws:s3:\${AWS::Region}:\${AWS::AccountId}:accesspoint/${accessPointName}`,
+              },
               {
                 "Fn::Sub": `arn:aws:s3:\${AWS::Region}:\${AWS::AccountId}:accesspoint/${accessPointName}/object/*`,
               },
             ],
-            Principal: {
-              AWS: { "Fn::Sub": `arn:aws:iam::\${AWS::AccountId}:root` },
-            },
             Condition: {
-              StringEquals: {
+              StringNotEquals: {
                 "aws:sourceVpc": [shareToVpcId, signingVpcId],
               },
             },
@@ -117,10 +118,14 @@ export function createCloudFormationTemplateFromObjects(
   const rootStack: any = {
     AWSTemplateFormatVersion: "2010-09-09",
     Resources: {},
-    Outputs: {},
+    Outputs: {
+      [VPC_LATTICE_ACCESS_POINT_VPC_ID]: {
+        Value: shareDestinationVpcId,
+      },
+    },
   };
 
-  // we need to make an access point per bucket
+  // we need to make an access point per bucket so lets compute the unique bucket names
   const bucketSet = new Set<string>();
 
   for (const o of objects) {
