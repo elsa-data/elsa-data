@@ -422,6 +422,71 @@ ${release.applicantEmailAddresses}
     );
   }
 
+  /**
+   * Change the result of a boolean is question in the application coding.
+   *
+   * @param user the user performing the action
+   * @param releaseKey the key of the release
+   * @param type the type of isAllowed field to be changed
+   * @param value the boolean value to set
+   *
+   * Note: this is an arbitrary grouping of a set of otherwise identical service
+   * level operations into a single function. This could have been split in
+   * multiple functions.
+   */
+  public async setApplicationCodedBooleanQuestion(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    type: "/applicationCoded/isNotCommercial",
+    value: boolean,
+  ): Promise<ReleaseDetailType> {
+    const { userRole, isActivated } =
+      await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
+
+    return await this.auditEventService.transactionalUpdateInReleaseAuditPattern(
+      user,
+      releaseKey,
+      "set isQuestion in the release",
+      async () => {
+        if (userRole != "Administrator")
+          throw new ReleaseSelectionPermissionError(releaseKey);
+
+        if (isActivated)
+          throw new ReleaseNoEditingWhilstActivatedError(releaseKey);
+      },
+      async (tx, a) => {
+        // map the booleans fields to the clause needed in gel
+        // (acts as a protection from passing arbitrary strings into gel)
+        const fieldToSet = {
+          ["/applicationCoded/isNotCommercial"]: {
+            studyIsNotCommercial: e.bool(value),
+          },
+        }[type];
+
+        await this.edgeDbClient.transaction(async (tx) => {
+          await e
+            .update(e.release.Release.applicationCoded, (ac) => ({
+              filter_single: e.op(
+                ac["<applicationCoded[is release::Release]"].releaseKey,
+                "=",
+                releaseKey,
+              ),
+              set: fieldToSet,
+            }))
+            .run(tx);
+        });
+
+        return {
+          field: type,
+          newValue: value,
+        };
+      },
+      async () => {
+        return await this.getBase(releaseKey, userRole);
+      },
+    );
+  }
+
   public async setBeaconQuery(
     user: AuthenticatedUser,
     releaseKey: string,

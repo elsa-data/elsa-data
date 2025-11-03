@@ -122,10 +122,7 @@ export class JobCopyOutService extends JobService {
 
     if (!stepsArn) throw new CopyOutServiceNotInstalled();
 
-    const { releaseQuery } = await getReleaseInfo(
-      this.edgeDbClient,
-      releaseKey,
-    );
+    const { releaseQuery } = await getReleaseInfo(this.gelDbClient, releaseKey);
 
     await this.startGenericJob(releaseKey, async (tx) => {
       // by placing the audit event in the transaction I guess we miss out on
@@ -234,7 +231,7 @@ export class JobCopyOutService extends JobService {
     // TODO some security level here? does the user have permissions?
     //      this method is only ever called by the job handler which acts with system level permissions??
 
-    return await this.edgeDbClient.transaction(async (tx) => {
+    return await this.gelDbClient.transaction(async (tx) => {
       const copyOutJob = await this.getCurrentJobWithExceptionForInvalid(
         tx,
         jobId,
@@ -320,7 +317,7 @@ export class JobCopyOutService extends JobService {
     jobId: string,
     wasSuccessful: boolean,
   ): Promise<void> {
-    await this.edgeDbClient.transaction(async (tx) => {
+    await this.gelDbClient.transaction(async (tx) => {
       const copyOutJob = await this.getCurrentJobWithExceptionForInvalid(
         tx,
         jobId,

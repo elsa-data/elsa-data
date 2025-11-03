@@ -123,6 +123,16 @@ export const releaseRoutes = async (
                   ),
                 );
                 return;
+              case "/applicationCoded/isNotCommercial":
+                reply.send(
+                  await releaseService.setApplicationCodedBooleanQuestion(
+                    authenticatedUser,
+                    releaseKey,
+                    op.path,
+                    op.value,
+                  ),
+                );
+                return;
               case "/applicationCoded/beacon":
                 reply.send(
                   await releaseService.setBeaconQuery(

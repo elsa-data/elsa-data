@@ -17,9 +17,18 @@ import {
   type ConsentDuoContext,
   ConsentDuoService,
 } from "./consent/duo/consent-duo-service.ts";
+import {
+  DUO_DS,
+  DUO_GRU,
+  DUO_HMB,
+  DUO_NCU,
+  DUO_NRES,
+  DUO_POA,
+} from "./consent/duo/duo-schemas.ts";
 import type {
   DuoApplicationType,
   DuoLimitationCodedType,
+  DuoModifierType,
 } from "./consent/duo/duo-types.ts";
 import { collapseExternalIds } from "./helpers.ts";
 
@@ -55,36 +64,83 @@ export class SelectService {
     // note this logic still needs to be generalised... but will work for datasets
     // set up for our demonstration projects
 
-    // because dynamic consent overrules any other static info - it runs
-    // first by itself
-    for (const statement of patientContext.consent?.statements ?? []) {
-      if ("consentSystemIdentifier" in statement) {
-        const csi = statement.consentSystemIdentifier as
-          | string
-          | null
-          | undefined;
+    // convert our database application context into our consent engine equivalent
+    // we also do some demo specific "fixes"
+    let app: DuoApplicationType = {
+      researchType: DUO_HMB,
+      isNonCommercialResearch: applicationContext.studyIsNotCommercial,
+    };
 
-        if (csi) {
-          return await this.applyPatientDynamicConsent(csi);
-        } else {
-          // if they have a dynamic consent statement but no identifier then we
-          // need to say they are not consented
-          return false;
-        }
+    // if the UI has enabled any diseases of interest - then the study becomes disease specific
+    if (
+      applicationContext.diseasesOfStudy &&
+      applicationContext.diseasesOfStudy.length > 0
+    ) {
+      app.researchType = DUO_DS;
+      app.disease = applicationContext.diseasesOfStudy[0].code;
+    }
+
+    this.logger.debug(
+      {
+        database: JSON.stringify(applicationContext),
+        engine: JSON.stringify(app),
+      },
+      "Application coding",
+    );
+
+    // because dynamic consent overrules any other static info - it runs
+    // first by itself - and returns immediately if we find *any* statement of dynamic consent
+    for (const statement of patientContext.consent?.statements ?? []) {
+      if (
+        "consentSystemIdentifier" in statement &&
+        statement.consentSystemIdentifier
+      ) {
+        this.logger.debug(
+          {
+            consentSystemIdentifier: statement.consentSystemIdentifier,
+            patientContext: JSON.stringify(patientContext),
+          },
+          "Dynamic consent calculation",
+        );
+
+        return await this.applyPatientDynamicConsent(
+          app,
+          statement.consentSystemIdentifier as string,
+        );
       }
     }
 
-    const caseLimitations = (caseContext.consent?.statements ?? []).filter(
-      (c) => "dataUseLimitation" in c,
+    this.logger.debug(
+      {
+        caseContext: caseContext,
+        patientContext: patientContext,
+        specimenContext: specimenContext,
+      },
+      "Static consent calculation",
     );
-    const patientLimitations = (
-      patientContext.consent?.statements ?? []
-    ).filter((c) => "dataUseLimitation" in c);
-    const specimenLimitations = (
-      specimenContext.consent?.statements ?? []
-    ).filter((c) => "dataUseLimitation" in c);
 
-    return true;
+    const caseLimitations = (caseContext.consent?.statements ?? [])
+      .filter((c) => "dataUseLimitation" in c)
+      .map((c) => c.dataUseLimitation);
+    const patientLimitations = (patientContext.consent?.statements ?? [])
+      .filter((c) => "dataUseLimitation" in c)
+      .map((c) => c.dataUseLimitation);
+    const specimenLimitations = (specimenContext.consent?.statements ?? [])
+      .filter((c) => "dataUseLimitation" in c)
+      .map((c) => c.dataUseLimitation);
+
+    console.log(caseLimitations);
+    console.log(patientLimitations);
+    console.log(specimenLimitations);
+
+    return await this.consentDuoService.applyConsent(
+      this.getContext(),
+      app,
+      [],
+      caseLimitations as any,
+      patientLimitations as any,
+      specimenLimitations as any,
+    );
 
     // this.consentDuoService.applyConsent()
 
@@ -131,23 +187,14 @@ export class SelectService {
    * at a case or dataset level (as this is done by the dynamic consent
    * system).
    *
+   * @param application
    * @param consentSystemIdentifier
    * @private
    */
-  private async applyPatientDynamicConsent(consentSystemIdentifier: string) {
-    const context: ConsentDuoContext = {
-      now: new Date(),
-    };
-
-    const app: DuoApplicationType = {
-      researchType: "DUO:0000007",
-
-      // researchers
-      // institutions
-      // countries
-      // disease
-    };
-
+  private async applyPatientDynamicConsent(
+    application: DuoApplicationType,
+    consentSystemIdentifier: string,
+  ) {
     // we need to find a consenter of type ctrl (at the moment assuming
     // there is only one) - will need to find the "right" one via some
     // flag in the dataset in the future
@@ -156,51 +203,122 @@ export class SelectService {
     ) as ConsenterCtrlType[];
 
     if (ctrlConsenters && ctrlConsenters.length > 0) {
-      const r = await axios
-        .post<any>(
-          ctrlConsenters[0].url,
-          {
-            participantIds: [consentSystemIdentifier],
+      const ctrlConsenter = ctrlConsenters[0];
+
+      const resp = await axios.post<any>(
+        ctrlConsenter.url,
+        {
+          participantIds: [consentSystemIdentifier],
+        },
+        {
+          headers: {
+            Authorization: ctrlConsenter.authorizationHeaderValue,
           },
-          {
-            headers: {
-              Authorization: ctrlConsenters[0].authorizationHeaderValue,
-            },
-          },
-        )
-        .then((a) => a.data);
+        },
+      );
+
+      this.logger.debug(
+        {
+          url: ctrlConsenter.url,
+          responseStatus: resp.statusText,
+          responseData: resp.data,
+        },
+        "Dynamic consent HTTP POST",
+      );
 
       // this will be each patient that they had a record for... in our case we only asked for
       // one patient so will be either 0 or 1
-      for (const d of r?.data ?? []) {
+      for (const ctrlMatch of resp.data?.data ?? []) {
+        if (ctrlMatch.participantId !== consentSystemIdentifier)
+          throw new Error(
+            `Consent logic ended up with participantId of ${ctrlMatch.participantId} mismatched to identifier ${consentSystemIdentifier}`,
+          );
+
+        const ctrlDuoCodes = ctrlMatch?.duos ?? [];
+
+        // if there are no DUOS in the response then we fall through
+        // effectively this means that they are _not_ consented to anything
+        if (!ctrlDuoCodes) continue;
+        if (ctrlDuoCodes.length < 1) continue;
+
         // for dynamic consent - we allow the CTRL engine to provide family/dataset etc
         // statements. So all we need to do is decode the patient consents we
         // get back and pass them into the engine
-        const patientLimitations: DuoLimitationCodedType[] = [];
+        let patientLimitation: DuoLimitationCodedType | undefined = undefined;
+        const modifiers: DuoModifierType[] = [];
 
-        for (const code of d?.duos ?? []) {
-          switch (code) {
-            case "DUO:0000002":
-              patientLimitations.push({
-                code: "DUO:0000042",
-                modifiers: [],
-              });
-              break;
-            default:
-              break;
+        // first we loop through looking for a base limitation
+        for (const code of ctrlDuoCodes) {
+          if (code.startsWith("SNOMED:")) {
+            // we have an agreement to translate SNOMED on behalf of CTRL into DS
+            if (patientLimitation) {
+              // we will allow the case where we "upgrade" a HMB to a DS
+              if (patientLimitation.code !== DUO_HMB)
+                throw new Error(
+                  "More than one base limitation was expressed by CTRL for a single patient",
+                );
+            }
+            patientLimitation = {
+              code: DUO_DS,
+              diseaseSystem: "http://snomed.info/sct",
+              diseaseCode: code.slice("SNOMED:".length),
+              modifiers: [],
+            };
+          } else {
+            switch (code) {
+              case DUO_GRU:
+              case DUO_POA:
+              case DUO_NRES:
+                if (patientLimitation)
+                  throw new Error(
+                    "More than one base limitation was expressed by CTRL for a single patient",
+                  );
+                patientLimitation = {
+                  code: code,
+                  modifiers: [],
+                };
+                break;
+              case DUO_HMB:
+                if (patientLimitation) {
+                  // we will allow the case in which we have already declared a DS - in which case we fall through
+                  // and don't change anything
+                  if (patientLimitation.code !== DUO_DS)
+                    throw new Error(
+                      "More than one base limitation was expressed by CTRL for a single patient",
+                    );
+                } else {
+                  patientLimitation = {
+                    code: code,
+                    modifiers: [],
+                  };
+                }
+                break;
+              case DUO_NCU:
+                modifiers.push({
+                  code: code,
+                });
+                break;
+              default:
+                throw new Error(`Unknown code ${code}`);
+            }
           }
         }
 
-        if (d.participantId === consentSystemIdentifier) {
-          return await this.consentDuoService.applyConsent(
-            context,
-            app,
-            [],
-            [],
-            patientLimitations,
-            [],
+        if (!patientLimitation)
+          throw new Error(
+            "No base limitation was found for CTRL for a single patient",
           );
-        }
+
+        patientLimitation.modifiers = modifiers;
+
+        return await this.consentDuoService.applyConsent(
+          this.getContext(),
+          application,
+          [],
+          [],
+          [patientLimitation],
+          [],
+        );
       }
     }
 
@@ -242,6 +360,55 @@ export class SelectService {
     }
 
     return true;
+  }
+
+  /**
+   * Creates a DUO engine consent context that can perform SNOMED lookups.
+   *
+   * @private
+   */
+  private getContext(): ConsentDuoContext {
+    const onto = this.settings.ontoFhirUrl;
+    return {
+      now: new Date(),
+      diseaseIsA: async (system, a, b) => {
+        if (system !== "http://snomed.info/sct")
+          throw new Error("Only handles SNOMED currently");
+
+        try {
+          const response = await axios.get(`${onto}/CodeSystem/$subsumes`, {
+            params: {
+              system: "http://snomed.info/sct",
+              codeA: a,
+              codeB: b,
+            },
+            headers: {
+              Accept: "application/fhir+json",
+            },
+          });
+
+          // Extract the outcome from the response
+          const outcome = response.data.parameter.find(
+            (p: { name: string }) => p.name === "outcome",
+          );
+
+          return (
+            outcome?.valueCode === "subsumed-by" ||
+            outcome?.valueCode === "equivalent"
+          );
+        } catch (error) {
+          console.log(error);
+          if (axios.isAxiosError(error)) {
+            this.logger.error(
+              error.response?.data || error.message,
+              "Subsumption test failed",
+            );
+          }
+        }
+
+        return false;
+      },
+    };
   }
 
   private async beaconSelect(

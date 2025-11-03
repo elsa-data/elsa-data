@@ -28,7 +28,7 @@ import { JobService, NotAuthorisedToControlJob } from "./job-service";
 @injectable()
 export class JobCloudFormationCreateService extends JobService {
   constructor(
-    @inject("Database") readonly edgeDbClient: gel.Client,
+    @inject("Database") readonly gelDbClient: gel.Client,
     @inject("Logger") readonly logger: Logger,
     @inject(AuditEventService) readonly auditLogService: AuditEventService,
     @inject(ReleaseService) readonly releaseService: ReleaseService,
@@ -40,7 +40,7 @@ export class JobCloudFormationCreateService extends JobService {
     @inject(AwsAccessPointService)
     private readonly awsAccessPointService: AwsAccessPointService,
   ) {
-    super(edgeDbClient, auditLogService, releaseService, selectService);
+    super(gelDbClient, auditLogService, releaseService, selectService);
   }
 
   /**
@@ -64,10 +64,7 @@ export class JobCloudFormationCreateService extends JobService {
     if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
-    const { releaseQuery } = await getReleaseInfo(
-      this.edgeDbClient,
-      releaseKey,
-    );
+    const { releaseQuery } = await getReleaseInfo(this.gelDbClient, releaseKey);
 
     await this.startGenericJob(releaseKey, async (tx) => {
       // by placing the audit event in the transaction I guess we miss out on
@@ -130,7 +127,7 @@ export class JobCloudFormationCreateService extends JobService {
       }))
       .assert_single();
 
-    const cfInstallJob = await cfInstallJobQuery.run(this.edgeDbClient);
+    const cfInstallJob = await cfInstallJobQuery.run(this.gelDbClient);
 
     if (!cfInstallJob)
       throw new Error("Job id passed in was not a Cloud Formation Install Job");
@@ -157,7 +154,7 @@ export class JobCloudFormationCreateService extends JobService {
         return 0;
       }
 
-      await this.edgeDbClient.transaction(async (tx) => {
+      await this.gelDbClient.transaction(async (tx) => {
         const cloudFormationInstallQuery = e
           .select(e.job.CloudFormationInstallJob, (j) => ({
             auditEntry: true,
@@ -224,7 +221,7 @@ export class JobCloudFormationCreateService extends JobService {
   ): Promise<void> {
     // basically at this point we believe the cloud formation is installed
     // we just need to clean up the records
-    await this.edgeDbClient.transaction(async (tx) => {
+    await this.gelDbClient.transaction(async (tx) => {
       const cloudFormationInstallQuery = e
         .select(e.job.CloudFormationInstallJob, (j) => ({
           auditEntry: true,
@@ -238,7 +235,7 @@ export class JobCloudFormationCreateService extends JobService {
         .assert_single();
 
       const cloudFormationInstallJob = await cloudFormationInstallQuery.run(
-        this.edgeDbClient,
+        this.gelDbClient,
       );
 
       if (!cloudFormationInstallJob)
@@ -277,7 +274,7 @@ export class JobCloudFormationCreateService extends JobService {
               accessPointArns: Array.from(apArn),
             },
           }))
-          .run(this.edgeDbClient);
+          .run(this.gelDbClient);
       } catch (error) {
         // Possibly this CloudFormation install is not part of AccessPoint installation and
         // it happens that no AP installed for this release

@@ -118,7 +118,7 @@ export async function insertScenario1(dc: DependencyContainer) {
         description: TENG_DESCRIPTION,
         cases: e.set(),
       })
-      .run(edgeDbClient);
+      .run(gelDbClient);
 
     await s3IndexService.syncWithDatabaseFromDatasetUri(
       TENG_URI,
@@ -216,7 +216,7 @@ export async function insertScenario1(dc: DependencyContainer) {
   //     specimensCount: e.count(ds.cases.patients.specimens),
   //  });
   // });
-  //console.log(await eachDs.run(edgeDbClient));
+  //console.log(await eachDs.run(gelDbClient));
 
   await insertSystemAuditEvent(edgeDbClient, {
     actionCategory: "E",

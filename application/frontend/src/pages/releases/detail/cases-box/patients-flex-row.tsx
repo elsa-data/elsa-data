@@ -208,29 +208,31 @@ export const PatientsFlexRow: React.FC<Props> = ({
   return (
     <>
       <td className={classNames(baseColumnClasses, "w-12", "text-center")}>
-        <label className="flex cursor-pointer space-x-4">
-          <IndeterminateCheckbox
-            disabled={
-              specimenMutate.isPending || releaseIsActivated || !isAllowEdit
-            }
-            checked={cas.nodeStatus === "selected"}
-            indeterminate={cas.nodeStatus === "indeterminate"}
-            onChange={onChangeCasesCheckbox(
-              cas.externalId,
-              cas.nodeStatus !== "selected",
-            )}
-          />
-          <div className="flex space-x-1">
-            <span>{cas.externalId}</span>
-            {showConsent && cas.consentStatements && (
-              <span className="space-x-1">
-                {cas.consentStatements.map((s) => (
-                  <ConsentPopup statement={s} />
-                ))}
-              </span>
-            )}
-          </div>
-        </label>
+        {patients.length > 1 && (
+          <label className="flex cursor-pointer space-x-4">
+            <IndeterminateCheckbox
+              disabled={
+                specimenMutate.isPending || releaseIsActivated || !isAllowEdit
+              }
+              checked={cas.nodeStatus === "selected"}
+              indeterminate={cas.nodeStatus === "indeterminate"}
+              onChange={onChangeCasesCheckbox(
+                cas.externalId,
+                cas.nodeStatus !== "selected",
+              )}
+            />
+            <div className="flex space-x-1">
+              <span>{cas.externalId}</span>
+              {showConsent && cas.consentStatements && (
+                <span className="space-x-1">
+                  {cas.consentStatements.map((s) => (
+                    <ConsentPopup statement={s} />
+                  ))}
+                </span>
+              )}
+            </div>
+          </label>
+        )}
       </td>
       <td className={classNames(baseColumnClasses, "text-left", "pr-4")}>
         <div className="grid min-w-max grid-flow-row-dense grid-cols-3 gap-2">

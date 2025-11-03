@@ -197,6 +197,20 @@ export const ApplicationCodedBox: React.FC<Props> = ({
     );
   };
 
+  const IsCheck = (label: string, path: any) => (
+    <RhCheckItem
+      disabled={false}
+      label={label}
+      onChange={(e) => {
+        releasePatchMutate.mutate({
+          op: "replace",
+          path: path,
+          value: e.target.checked,
+        });
+      }}
+    />
+  );
+
   /*(
 
   <RhRadioItem
@@ -270,7 +284,10 @@ export const ApplicationCodedBox: React.FC<Props> = ({
             </RhRadios>
 
             <RhChecks label={"Assertions"}>
-              <RhCheckItem disabled={false} label={"Study is Commercial"} />
+              {IsCheck(
+                "Applicant Asserts the Study is Non-Commercial",
+                "/applicationCoded/isNotCommercial",
+              )}
               {/*<RhCheckItem
                 disabled={true}
                 label={"Applicant Has Agreed to Publish the Results"}

@@ -1,20 +1,20 @@
-import * as gel from "gel";
-import e from "../../../../dbschema/edgeql-js";
-import { AuthenticatedUser } from "../../authenticated-user";
-import { getReleaseInfo } from "../helpers";
-import type { ReleaseDetailType } from "../../../shared/schemas-releases";
-import { inject, injectable } from "tsyringe";
-import { SelectService } from "../select-service";
-import { ReleaseService } from "../releases/release-service";
-import { AuditEventService, OUTCOME_SUCCESS } from "../audit-event-service";
 import {
   CloudFormationClient,
   DeleteStackCommand,
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
+import * as gel from "gel";
+import { inject, injectable } from "tsyringe";
+import e from "../../../../dbschema/edgeql-js";
+import type { ReleaseDetailType } from "../../../shared/schemas-releases";
+import { AuthenticatedUser } from "../../authenticated-user";
+import { AuditEventService, OUTCOME_SUCCESS } from "../audit-event-service";
+import { AwsEnabledService } from "../aws/aws-enabled-service";
+import { getReleaseInfo } from "../helpers";
+import { ReleaseService } from "../releases/release-service";
+import { SelectService } from "../select-service";
 import { AwsAccessPointService } from "../sharers/aws-access-point/aws-access-point-service";
 import { JobService, NotAuthorisedToControlJob } from "./job-service";
-import { AwsEnabledService } from "../aws/aws-enabled-service";
 
 /**
  * A service for performing long-running operations deleting previously installed
@@ -57,10 +57,7 @@ export class JobCloudFormationDeleteService extends JobService {
     if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
-    const { releaseQuery } = await getReleaseInfo(
-      this.edgeDbClient,
-      releaseKey,
-    );
+    const { releaseQuery } = await getReleaseInfo(this.gelDbClient, releaseKey);
 
     await this.startGenericJob(releaseKey, async (tx) => {
       // by placing the audit event in the transaction I guess we miss out on
@@ -164,7 +161,7 @@ export class JobCloudFormationDeleteService extends JobService {
       }))
       .assert_single();
 
-    const cfDeleteJob = await cfDeleteJobQuery.run(this.edgeDbClient);
+    const cfDeleteJob = await cfDeleteJobQuery.run(this.gelDbClient);
 
     if (!cfDeleteJob)
       throw new Error("Job id passed in was not a Cloud Formation Delete Job");
@@ -216,7 +213,7 @@ export class JobCloudFormationDeleteService extends JobService {
   ): Promise<void> {
     // basically at this point we believe the cloud formation is removed
     // we just need to clean up the records
-    await this.edgeDbClient.transaction(async (tx) => {
+    await this.gelDbClient.transaction(async (tx) => {
       const cloudFormationDeleteQuery = e
         .select(e.job.CloudFormationDeleteJob, (j) => ({
           auditEntry: true,
@@ -227,7 +224,7 @@ export class JobCloudFormationDeleteService extends JobService {
         .assert_single();
 
       const cloudFormationDeleteJob = await cloudFormationDeleteQuery.run(
-        this.edgeDbClient,
+        this.gelDbClient,
       );
 
       if (!cloudFormationDeleteJob)

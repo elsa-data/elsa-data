@@ -24,7 +24,7 @@ export class PhenopacketsService {
         },
         filter: e.op(dp.id, "=", e.uuid(individualId)),
       }))
-      .run(this.edgeDbClient);
+      .run(this.gelDbClient);
 
     let message = Phenopacket.create({
       id: "Hello",
