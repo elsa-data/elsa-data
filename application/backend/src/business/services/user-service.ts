@@ -27,6 +27,7 @@ import type {
 } from "../../shared/schemas-users";
 import { AuthenticatedUser } from "../authenticated-user";
 import { UserData } from "../data/user-data";
+import { InvalidReleaseKeyError } from "../exceptions/release-participation";
 import {
   NonExistentUser,
   NotAuthorisedEditUserManagement,
@@ -620,9 +621,14 @@ export class UserService {
     user: AuthenticatedUser,
     releaseKey: string,
   ): Promise<ReleaseParticipantRoleType | null> {
-    // TODO: check that releaseKey is a valid UUID structure
-    // given this is a boundary check function for our routes - we need to protect against being
-    // sent release ids that are invalid entirely (as edgedb sends a wierd uuid() error msg)
+    // Check that releaseKey is a valid UUID structure
+    // Given this is a boundary check function for our routes - we need to protect against being
+    // sent release ids that are invalid entirely (as edgedb sends a weird uuid() error msg)
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(releaseKey)) {
+      throw new InvalidReleaseKeyError(releaseKey);
+    }
 
     const userWithMatchingReleases = await e
       .select(e.permission.User, (u) => ({

@@ -29,3 +29,13 @@ export class ReleaseParticipationExistError extends Base7807Error {
     );
   }
 }
+
+export class InvalidReleaseKeyError extends Base7807Error {
+  constructor(releaseKey: string) {
+    super(
+      "The release key is not a valid UUID",
+      400,
+      `The provided release key '${releaseKey}' is not a valid UUID format`,
+    );
+  }
+}
