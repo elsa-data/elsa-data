@@ -7,30 +7,18 @@ import AmazonS3URI from "amazon-s3-uri";
 import axios from "axios";
 import * as gel from "gel";
 import _ from "lodash";
-import Papa from "papaparse";
 import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import type { dataset, release } from "../../../dbschema/interfaces";
 import type { ConsenterCtrlType } from "../../config/config-schema-consenter.ts";
 import type { ElsaSettings } from "../../config/elsa-settings.ts";
+import { fetchCtrlConsent } from "./_ctrl-fetch-helper.ts";
 import {
   type ConsentDuoContext,
   ConsentDuoService,
 } from "./consent/duo/consent-duo-service.ts";
-import {
-  DUO_DS,
-  DUO_GRU,
-  DUO_HMB,
-  DUO_NCU,
-  DUO_NRES,
-  DUO_POA,
-} from "./consent/duo/duo-schemas.ts";
-import type {
-  DuoApplicationType,
-  DuoLimitationCodedType,
-  DuoModifierType,
-} from "./consent/duo/duo-types.ts";
-import { collapseExternalIds } from "./helpers.ts";
+import { DUO_DS, DUO_HMB } from "./consent/duo/duo-schemas.ts";
+import type { DuoApplicationType } from "./consent/duo/duo-types.ts";
 
 @injectable()
 export class SelectService {
@@ -105,10 +93,23 @@ export class SelectService {
           "Dynamic consent calculation",
         );
 
-        return await this.applyPatientDynamicConsent(
-          app,
-          statement.consentSystemIdentifier as string,
-        );
+        // we need to find a consenter of type ctrl (at the moment assuming
+        // there is only one) - will need to find the "right" one via some
+        // flag in the dataset in the future
+        const ctrlConsenters = this.settings.consenters.filter(
+          (s) => s.type === "ctrl",
+        ) as ConsenterCtrlType[];
+
+        if (ctrlConsenters && ctrlConsenters.length > 0) {
+          return await this.applyPatientDynamicConsent(
+            app,
+            ctrlConsenters[0],
+            statement.consentSystemIdentifier as string,
+          );
+        } else {
+          // if we have no consenters to lookup then must return false
+          return false;
+        }
       }
     }
 
@@ -131,10 +132,6 @@ export class SelectService {
       .filter((c) => "dataUseLimitation" in c)
       .map((c) => c.dataUseLimitation);
 
-    console.log(caseLimitations);
-    console.log(patientLimitations);
-    console.log(specimenLimitations);
-
     return await this.consentDuoService.applyConsent(
       this.getContext(),
       app,
@@ -151,7 +148,7 @@ export class SelectService {
     //  return await this.beaconSelect(applicationContext.beaconQuery as string, vcf, vcfIndex, caseContext, patientContext, specimenContext);
     //
     //}
-    const population = await axios
+    /*const population = await axios
       .get<string>(
         "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt",
       )
@@ -178,151 +175,41 @@ export class SelectService {
       }
     }
 
-    return result;
+    return result; */
   }
 
   /**
    * Once we identify that a patient belongs to a dynamic consent
    * provider - we ask it for consent info and then run the algorithm.
-   * The result of this single dynamic check applies for all this
-   * patients specimens - and does not consult any consent information
+   * The result of this single dynamic check applies for all the
+   * patient's specimens - and does not consult any consent information
    * at a case or dataset level (as this is done by the dynamic consent
    * system).
    *
    * @param application
+   * @param consenter
    * @param consentSystemIdentifier
    * @private
    */
   private async applyPatientDynamicConsent(
     application: DuoApplicationType,
+    consenter: ConsenterCtrlType,
     consentSystemIdentifier: string,
   ) {
-    // we need to find a consenter of type ctrl (at the moment assuming
-    // there is only one) - will need to find the "right" one via some
-    // flag in the dataset in the future
-    const ctrlConsenters = this.settings.consenters.filter(
-      (s) => s.type === "ctrl",
-    ) as ConsenterCtrlType[];
+    const patientLimitation = await fetchCtrlConsent(
+      consenter,
+      consentSystemIdentifier,
+    );
 
-    if (ctrlConsenters && ctrlConsenters.length > 0) {
-      const ctrlConsenter = ctrlConsenters[0];
-
-      const resp = await axios.post<any>(
-        ctrlConsenter.url,
-        {
-          participantIds: [consentSystemIdentifier],
-        },
-        {
-          headers: {
-            Authorization: ctrlConsenter.authorizationHeaderValue,
-          },
-        },
+    if (patientLimitation)
+      return await this.consentDuoService.applyConsent(
+        this.getContext(),
+        application,
+        [],
+        [],
+        [patientLimitation],
+        [],
       );
-
-      this.logger.debug(
-        {
-          url: ctrlConsenter.url,
-          responseStatus: resp.statusText,
-          responseData: resp.data,
-        },
-        "Dynamic consent HTTP POST",
-      );
-
-      // this will be each patient that they had a record for... in our case we only asked for
-      // one patient so will be either 0 or 1
-      for (const ctrlMatch of resp.data?.data ?? []) {
-        if (ctrlMatch.participantId !== consentSystemIdentifier)
-          throw new Error(
-            `Consent logic ended up with participantId of ${ctrlMatch.participantId} mismatched to identifier ${consentSystemIdentifier}`,
-          );
-
-        const ctrlDuoCodes = ctrlMatch?.duos ?? [];
-
-        // if there are no DUOS in the response then we fall through
-        // effectively this means that they are _not_ consented to anything
-        if (!ctrlDuoCodes) continue;
-        if (ctrlDuoCodes.length < 1) continue;
-
-        // for dynamic consent - we allow the CTRL engine to provide family/dataset etc
-        // statements. So all we need to do is decode the patient consents we
-        // get back and pass them into the engine
-        let patientLimitation: DuoLimitationCodedType | undefined = undefined;
-        const modifiers: DuoModifierType[] = [];
-
-        // first we loop through looking for a base limitation
-        for (const code of ctrlDuoCodes) {
-          if (code.startsWith("SNOMED:")) {
-            // we have an agreement to translate SNOMED on behalf of CTRL into DS
-            if (patientLimitation) {
-              // we will allow the case where we "upgrade" a HMB to a DS
-              if (patientLimitation.code !== DUO_HMB)
-                throw new Error(
-                  "More than one base limitation was expressed by CTRL for a single patient",
-                );
-            }
-            patientLimitation = {
-              code: DUO_DS,
-              diseaseSystem: "http://snomed.info/sct",
-              diseaseCode: code.slice("SNOMED:".length),
-              modifiers: [],
-            };
-          } else {
-            switch (code) {
-              case DUO_GRU:
-              case DUO_POA:
-              case DUO_NRES:
-                if (patientLimitation)
-                  throw new Error(
-                    "More than one base limitation was expressed by CTRL for a single patient",
-                  );
-                patientLimitation = {
-                  code: code,
-                  modifiers: [],
-                };
-                break;
-              case DUO_HMB:
-                if (patientLimitation) {
-                  // we will allow the case in which we have already declared a DS - in which case we fall through
-                  // and don't change anything
-                  if (patientLimitation.code !== DUO_DS)
-                    throw new Error(
-                      "More than one base limitation was expressed by CTRL for a single patient",
-                    );
-                } else {
-                  patientLimitation = {
-                    code: code,
-                    modifiers: [],
-                  };
-                }
-                break;
-              case DUO_NCU:
-                modifiers.push({
-                  code: code,
-                });
-                break;
-              default:
-                throw new Error(`Unknown code ${code}`);
-            }
-          }
-        }
-
-        if (!patientLimitation)
-          throw new Error(
-            "No base limitation was found for CTRL for a single patient",
-          );
-
-        patientLimitation.modifiers = modifiers;
-
-        return await this.consentDuoService.applyConsent(
-          this.getContext(),
-          application,
-          [],
-          [],
-          [patientLimitation],
-          [],
-        );
-      }
-    }
 
     return false;
   }

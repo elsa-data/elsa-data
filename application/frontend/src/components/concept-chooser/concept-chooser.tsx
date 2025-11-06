@@ -68,7 +68,6 @@ export const ConceptChooser: React.FC<Props> = (props: Props) => {
         "https://onto.prod.umccr.org/fhir",
         codesWithDisplay
       );
-      console.log(JSON.stringify(newCodes));
       setCodesWithDisplay([...newCodes]);
     };
     fetchData().catch();

@@ -12,6 +12,10 @@ import ConsentSummaryCtrl from "./consent-summary-ctrl.tsx";
 
 type Props = {
   statement: ConsentStatementType;
+
+  // passed in in-case we need some more information from the backend
+  releaseKey: string;
+  nodeId: string;
 };
 
 /**
@@ -50,7 +54,6 @@ export const ConsentPopup: React.FC<Props> = (props) => {
       </label>
       <ul
         tabIndex={-1}
-        // className="dropdown-content min-w-fit rounded border bg-white p-2 text-sm drop-shadow-lg block"
         className={classNames(
           "dropdown-content block min-w-fit rounded border bg-white p-2 text-sm drop-shadow-lg",
           {
@@ -59,7 +62,11 @@ export const ConsentPopup: React.FC<Props> = (props) => {
         )}
       >
         {props.statement.type === "consent::ConsentStatementDynamicDuo" ? (
-          <ConsentSummaryCtrl statement={props.statement} />
+          <ConsentSummaryCtrl
+            statement={props.statement}
+            releaseKey={props.releaseKey}
+            nodeId={props.nodeId}
+          />
         ) : (
           <ConsentSummaryDuo statement={props.statement} />
         )}

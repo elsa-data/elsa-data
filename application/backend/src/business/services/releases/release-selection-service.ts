@@ -10,6 +10,7 @@ import {
   releaseSelectionGetCases,
 } from "../../../../dbschema/queries";
 import { createPagedResult } from "../../../api/helpers/pagination-helpers";
+import type { ConsenterCtrlType } from "../../../config/config-schema-consenter.ts";
 import type { ElsaSettings } from "../../../config/elsa-settings";
 import type {
   ConsentStatementType,
@@ -26,6 +27,7 @@ import {
   ReleaseSelectionNonExistentIdentifierError,
   ReleaseSelectionPermissionError,
 } from "../../exceptions/release-selection";
+import { fetchCtrlConsent } from "../_ctrl-fetch-helper.ts";
 import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import type { DuoLimitationCodedType } from "../consent/duo/duo-types.ts";
@@ -193,8 +195,8 @@ export class ReleaseSelectionService extends ReleaseBaseService {
   }
 
   /**
-   * Return the set of consent statements present in the database for any given
-   * case/individual/biosample.
+   * Return the dynamic consent information for a given
+   * node.
    *
    * @param user
    * @param releaseKey
@@ -221,7 +223,9 @@ export class ReleaseSelectionService extends ReleaseBaseService {
         datasetSpecimen: s.is(e.dataset.DatasetSpecimen).dataset,
         consent: {
           statements: {
-            ...e.is(e.consent.ConsentStatementDuo, { dataUseLimitation: true }),
+            ...e.is(e.consent.ConsentStatementDynamicDuo, {
+              consentSystemIdentifier: true,
+            }),
           },
         },
         filter: e.op(s.id, "=", e.uuid(nodeId)),
@@ -253,9 +257,27 @@ export class ReleaseSelectionService extends ReleaseBaseService {
     if (actualNode.datasetSpecimen)
       if (!datasetIdToUriMap.has(actualNode.datasetSpecimen.id)) return [];
 
-    return actualNode.consent.statements.map(
-      (stmt) => stmt.dataUseLimitation as DuoLimitationCodedType,
-    );
+    if (
+      actualNode.consent.statements &&
+      actualNode.consent.statements.length > 0 &&
+      actualNode.consent.statements[0].consentSystemIdentifier
+    ) {
+      const id = actualNode.consent.statements[0].consentSystemIdentifier;
+
+      const ctrlConsenters = this.settings.consenters.filter(
+        (s) => s.type === "ctrl",
+      ) as ConsenterCtrlType[];
+
+      if (ctrlConsenters && ctrlConsenters.length > 0) {
+        const patientLimitation = await fetchCtrlConsent(ctrlConsenters[0], id);
+
+        if (patientLimitation) {
+          return [patientLimitation];
+        }
+      }
+    }
+
+    return [];
   }
 
   public async setSelected(

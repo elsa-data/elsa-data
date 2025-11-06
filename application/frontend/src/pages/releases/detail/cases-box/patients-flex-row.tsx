@@ -163,7 +163,11 @@ export const PatientsFlexRow: React.FC<Props> = ({
             {showConsent && patient.consentStatements && (
               <span className="space-x-1">
                 {patient.consentStatements.map((s) => (
-                  <ConsentPopup statement={s} />
+                  <ConsentPopup
+                    statement={s}
+                    releaseKey={releaseKey}
+                    nodeId={patient.id}
+                  />
                 ))}
               </span>
             )}
@@ -178,7 +182,11 @@ export const PatientsFlexRow: React.FC<Props> = ({
                     {showConsent && spec.consentStatements && (
                       <span className="space-x-1">
                         {spec.consentStatements.map((s) => (
-                          <ConsentPopup statement={s} />
+                          <ConsentPopup
+                            statement={s}
+                            releaseKey={releaseKey}
+                            nodeId={spec.id}
+                          />
                         ))}
                       </span>
                     )}
@@ -226,7 +234,11 @@ export const PatientsFlexRow: React.FC<Props> = ({
               {showConsent && cas.consentStatements && (
                 <span className="space-x-1">
                   {cas.consentStatements.map((s) => (
-                    <ConsentPopup statement={s} />
+                    <ConsentPopup
+                      statement={s}
+                      releaseKey={releaseKey}
+                      nodeId={cas.id}
+                    />
                   ))}
                 </span>
               )}
