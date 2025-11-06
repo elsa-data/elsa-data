@@ -73,6 +73,8 @@ export class SelectService {
 
     // if the UI has enabled any diseases of interest - then the study becomes disease specific
     if (
+      (applicationContext.studyType === "DS" ||
+        applicationContext.studyType === "HMB") &&
       applicationContext.diseasesOfStudy &&
       applicationContext.diseasesOfStudy.length > 0
     ) {
