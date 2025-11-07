@@ -4,6 +4,7 @@ import {
   DescribeStacksCommand,
 } from "@aws-sdk/client-cloudformation";
 import * as gel from "gel";
+import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
 import type { ReleaseDetailType } from "../../../shared/schemas-releases";
@@ -24,6 +25,7 @@ import { JobService, NotAuthorisedToControlJob } from "./job-service";
 export class JobCloudFormationDeleteService extends JobService {
   constructor(
     @inject("Database") edgeDbClient: gel.Client,
+    @inject("Logger") logger: Logger,
     @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ReleaseService) releaseService: ReleaseService,
     @inject(SelectService) selectService: SelectService,
@@ -32,7 +34,7 @@ export class JobCloudFormationDeleteService extends JobService {
     @inject(AwsEnabledService)
     private readonly awsEnabledService: AwsEnabledService,
   ) {
-    super(edgeDbClient, auditLogService, releaseService, selectService);
+    super(edgeDbClient, logger, auditLogService, releaseService, selectService);
   }
 
   /**

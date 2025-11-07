@@ -40,7 +40,7 @@ export class JobHtsgetAwsVpcLatticeAccessPointCreateService extends JobService {
     @inject(AwsAccessPointService)
     private readonly awsAccessPointService: AwsAccessPointService,
   ) {
-    super(gelDbClient, auditLogService, releaseService, selectService);
+    super(gelDbClient, logger, auditLogService, releaseService, selectService);
   }
 
   /**

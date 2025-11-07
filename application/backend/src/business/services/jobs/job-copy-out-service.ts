@@ -11,6 +11,7 @@ import { randomBytes } from "crypto";
 import type { Executor } from "gel";
 import * as gel from "gel";
 import assert from "node:assert";
+import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
 import { updateReleaseDataEgress } from "../../../../dbschema/queries";
@@ -40,6 +41,7 @@ export class JobCopyOutService extends JobService {
 
   constructor(
     @inject("Database") edgeDbClient: gel.Client,
+    @inject("Logger") protected readonly logger: Logger,
     @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ReleaseService) releaseService: ReleaseService,
     @inject(SelectService) selectService: SelectService,
@@ -50,7 +52,7 @@ export class JobCopyOutService extends JobService {
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("SFNClient") private readonly sfnClient: SFNClient,
   ) {
-    super(edgeDbClient, auditLogService, releaseService, selectService);
+    super(edgeDbClient, logger, auditLogService, releaseService, selectService);
   }
 
   private async getCurrentJobWithExceptionForInvalid(
