@@ -40,6 +40,11 @@ export const ReleasePatchOperationSchema = Type.Union([
   }),
   Type.Object({
     op: Type.Literal("replace"),
+    path: Type.Literal("/applicationCoded/isNotCommercial"),
+    value: Type.Boolean(),
+  }),
+  Type.Object({
+    op: Type.Literal("replace"),
     path: Type.Literal("/applicationCoded/beacon"),
     value: Type.Any(),
   }),

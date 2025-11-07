@@ -7,21 +7,18 @@ import AmazonS3URI from "amazon-s3-uri";
 import axios from "axios";
 import * as gel from "gel";
 import _ from "lodash";
-import Papa from "papaparse";
 import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import type { dataset, release } from "../../../dbschema/interfaces";
 import type { ConsenterCtrlType } from "../../config/config-schema-consenter.ts";
 import type { ElsaSettings } from "../../config/elsa-settings.ts";
+import { fetchCtrlConsent } from "./_ctrl-fetch-helper.ts";
 import {
   type ConsentDuoContext,
   ConsentDuoService,
 } from "./consent/duo/consent-duo-service.ts";
-import type {
-  DuoApplicationType,
-  DuoLimitationCodedType,
-} from "./consent/duo/duo-types.ts";
-import { collapseExternalIds } from "./helpers.ts";
+import { DUO_DS, DUO_HMB } from "./consent/duo/duo-schemas.ts";
+import type { DuoApplicationType } from "./consent/duo/duo-types.ts";
 
 @injectable()
 export class SelectService {
@@ -55,36 +52,94 @@ export class SelectService {
     // note this logic still needs to be generalised... but will work for datasets
     // set up for our demonstration projects
 
-    // because dynamic consent overrules any other static info - it runs
-    // first by itself
-    for (const statement of patientContext.consent?.statements ?? []) {
-      if ("consentSystemIdentifier" in statement) {
-        const csi = statement.consentSystemIdentifier as
-          | string
-          | null
-          | undefined;
+    // convert our database application context into our consent engine equivalent
+    // we also do some demo specific "fixes"
+    let app: DuoApplicationType = {
+      researchType: DUO_HMB,
+      isNonCommercialResearch: applicationContext.studyIsNotCommercial,
+    };
 
-        if (csi) {
-          return await this.applyPatientDynamicConsent(csi);
+    // if the UI has enabled any diseases of interest - then the study becomes disease specific
+    if (
+      (applicationContext.studyType === "DS" ||
+        applicationContext.studyType === "HMB") &&
+      applicationContext.diseasesOfStudy &&
+      applicationContext.diseasesOfStudy.length > 0
+    ) {
+      app.researchType = DUO_DS;
+      app.disease = applicationContext.diseasesOfStudy[0].code;
+    }
+
+    this.logger.debug(
+      {
+        database: JSON.stringify(applicationContext),
+        engine: JSON.stringify(app),
+      },
+      "Application coding",
+    );
+
+    // because dynamic consent overrules any other static info - it runs
+    // first by itself - and returns immediately if we find *any* statement of dynamic consent
+    for (const statement of patientContext.consent?.statements ?? []) {
+      if (
+        "consentSystemIdentifier" in statement &&
+        statement.consentSystemIdentifier
+      ) {
+        this.logger.debug(
+          {
+            consentSystemIdentifier: statement.consentSystemIdentifier,
+            patientContext: JSON.stringify(patientContext),
+          },
+          "Dynamic consent calculation",
+        );
+
+        // we need to find a consenter of type ctrl (at the moment assuming
+        // there is only one) - will need to find the "right" one via some
+        // flag in the dataset in the future
+        const ctrlConsenters = this.settings.consenters.filter(
+          (s) => s.type === "ctrl",
+        ) as ConsenterCtrlType[];
+
+        if (ctrlConsenters && ctrlConsenters.length > 0) {
+          return await this.applyPatientDynamicConsent(
+            app,
+            ctrlConsenters[0],
+            statement.consentSystemIdentifier as string,
+          );
         } else {
-          // if they have a dynamic consent statement but no identifier then we
-          // need to say they are not consented
+          // if we have no consenters to lookup then must return false
           return false;
         }
       }
     }
 
-    const caseLimitations = (caseContext.consent?.statements ?? []).filter(
-      (c) => "dataUseLimitation" in c,
+    this.logger.debug(
+      {
+        caseContext: caseContext,
+        patientContext: patientContext,
+        specimenContext: specimenContext,
+      },
+      "Static consent calculation",
     );
-    const patientLimitations = (
-      patientContext.consent?.statements ?? []
-    ).filter((c) => "dataUseLimitation" in c);
-    const specimenLimitations = (
-      specimenContext.consent?.statements ?? []
-    ).filter((c) => "dataUseLimitation" in c);
 
-    return true;
+    const caseLimitations = (caseContext.consent?.statements ?? [])
+      .filter((c) => "dataUseLimitation" in c)
+      .map((c) => c.dataUseLimitation);
+    const patientLimitations = (patientContext.consent?.statements ?? [])
+      .filter((c) => "dataUseLimitation" in c)
+      .map((c) => c.dataUseLimitation);
+    const specimenLimitations = (specimenContext.consent?.statements ?? [])
+      .filter((c) => "dataUseLimitation" in c)
+      .map((c) => c.dataUseLimitation);
+
+    return await this.consentDuoService.applyConsent(
+      this.getContext(),
+      app,
+      [],
+      caseLimitations as any,
+      patientLimitations as any,
+      specimenLimitations as any,
+    );
 
     // this.consentDuoService.applyConsent()
 
@@ -93,7 +148,7 @@ export class SelectService {
     //  return await this.beaconSelect(applicationContext.beaconQuery as string, vcf, vcfIndex, caseContext, patientContext, specimenContext);
     //
     //}
-    const population = await axios
+    /*const population = await axios
       .get<string>(
         "https://ftp.1000genomes.ebi.ac.uk/vol1/ftp/data_collections/1000G_2504_high_coverage/20130606_g1k_3202_samples_ped_population.txt",
       )
@@ -120,89 +175,41 @@ export class SelectService {
       }
     }
 
-    return result;
+    return result; */
   }
 
   /**
    * Once we identify that a patient belongs to a dynamic consent
    * provider - we ask it for consent info and then run the algorithm.
-   * The result of this single dynamic check applies for all this
-   * patients specimens - and does not consult any consent information
+   * The result of this single dynamic check applies for all the
+   * patient's specimens - and does not consult any consent information
    * at a case or dataset level (as this is done by the dynamic consent
    * system).
    *
+   * @param application
+   * @param consenter
    * @param consentSystemIdentifier
    * @private
    */
-  private async applyPatientDynamicConsent(consentSystemIdentifier: string) {
-    const context: ConsentDuoContext = {
-      now: new Date(),
-    };
+  private async applyPatientDynamicConsent(
+    application: DuoApplicationType,
+    consenter: ConsenterCtrlType,
+    consentSystemIdentifier: string,
+  ) {
+    const patientLimitation = await fetchCtrlConsent(
+      consenter,
+      consentSystemIdentifier,
+    );
 
-    const app: DuoApplicationType = {
-      researchType: "DUO:0000007",
-
-      // researchers
-      // institutions
-      // countries
-      // disease
-    };
-
-    // we need to find a consenter of type ctrl (at the moment assuming
-    // there is only one) - will need to find the "right" one via some
-    // flag in the dataset in the future
-    const ctrlConsenters = this.settings.consenters.filter(
-      (s) => s.type === "ctrl",
-    ) as ConsenterCtrlType[];
-
-    if (ctrlConsenters && ctrlConsenters.length > 0) {
-      const r = await axios
-        .post<any>(
-          ctrlConsenters[0].url,
-          {
-            participantIds: [consentSystemIdentifier],
-          },
-          {
-            headers: {
-              Authorization: ctrlConsenters[0].authorizationHeaderValue,
-            },
-          },
-        )
-        .then((a) => a.data);
-
-      // this will be each patient that they had a record for... in our case we only asked for
-      // one patient so will be either 0 or 1
-      for (const d of r?.data ?? []) {
-        // for dynamic consent - we allow the CTRL engine to provide family/dataset etc
-        // statements. So all we need to do is decode the patient consents we
-        // get back and pass them into the engine
-        const patientLimitations: DuoLimitationCodedType[] = [];
-
-        for (const code of d?.duos ?? []) {
-          switch (code) {
-            case "DUO:0000002":
-              patientLimitations.push({
-                code: "DUO:0000042",
-                modifiers: [],
-              });
-              break;
-            default:
-              break;
-          }
-        }
-
-        if (d.participantId === consentSystemIdentifier) {
-          return await this.consentDuoService.applyConsent(
-            context,
-            app,
-            [],
-            [],
-            patientLimitations,
-            [],
-          );
-        }
-      }
-    }
+    if (patientLimitation)
+      return await this.consentDuoService.applyConsent(
+        this.getContext(),
+        application,
+        [],
+        [],
+        [patientLimitation],
+        [],
+      );
 
     return false;
   }
@@ -242,6 +249,55 @@ export class SelectService {
     }
 
     return true;
+  }
+
+  /**
+   * Creates a DUO engine consent context that can perform SNOMED lookups.
+   *
+   * @private
+   */
+  private getContext(): ConsentDuoContext {
+    const onto = this.settings.ontoFhirUrl;
+    return {
+      now: new Date(),
+      diseaseIsA: async (system, a, b) => {
+        if (system !== "http://snomed.info/sct")
+          throw new Error("Only handles SNOMED currently");
+
+        try {
+          const response = await axios.get(`${onto}/CodeSystem/$subsumes`, {
+            params: {
+              system: "http://snomed.info/sct",
+              codeA: a,
+              codeB: b,
+            },
+            headers: {
+              Accept: "application/fhir+json",
+            },
+          });
+
+          // Extract the outcome from the response
+          const outcome = response.data.parameter.find(
+            (p: { name: string }) => p.name === "outcome",
+          );
+
+          return (
+            outcome?.valueCode === "subsumed-by" ||
+            outcome?.valueCode === "equivalent"
+          );
+        } catch (error) {
+          console.log(error);
+          if (axios.isAxiosError(error)) {
+            this.logger.error(
+              error.response?.data || error.message,
+              "Subsumption test failed",
+            );
+          }
+        }
+
+        return false;
+      },
+    };
   }
 
   private async beaconSelect(

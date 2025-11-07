@@ -195,7 +195,7 @@ export function putManyIntoCache(codes: ResolvedCodingType[]) {
  *
  * @param url the URL of the ontology server FHIR endpoint
  * @param code the code that may or may not have a display field
- * @param forceAllRefresh if true then fetch and set the display field of all codes, irrespective of already set
+ * @param forceRefresh if true then fetch and set the display field of all codes, irrespective of already set
  */
 export async function doLookup(
   url: string,

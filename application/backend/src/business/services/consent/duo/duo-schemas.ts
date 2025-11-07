@@ -193,10 +193,13 @@ export const DuoApplicationSchema = Type.Object({
   // not including a research type will rule out all data other than "no restriction" data
   researchType: Type.Optional(DuoLimitationCodeSchema),
 
-  researchers: Type.Optional(Type.Array(Type.String())),
-  institutions: Type.Optional(Type.Array(Type.String())),
-  countries: Type.Optional(Type.Array(Type.String())),
+  //researchers: Type.Optional(Type.Array(Type.String())),
+  //institutions: Type.Optional(Type.Array(Type.String())),
+  //countries: Type.Optional(Type.Array(Type.String())),
 
+  // if DS then this is the disease code
   disease: Type.Optional(Type.String()),
   // projects
+
+  isNonCommercialResearch: Type.Optional(Type.Boolean()),
 });

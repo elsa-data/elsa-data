@@ -2,6 +2,7 @@ import { differenceInSeconds } from "date-fns";
 import * as gel from "gel";
 import { Transaction } from "gel/dist/transaction";
 import _ from "lodash";
+import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
 import {
@@ -36,13 +37,14 @@ export class NotAuthorisedToControlJob extends Base7807Error {
 
 /**
  * The job service is responsible for coordinating database state with a
- * long running background task that is responsible for progressing "jobs"
+ * long-running background task that is responsible for progressing "jobs"
  * in small chunks.
  */
 @injectable()
 export class JobService {
   constructor(
-    @inject("Database") protected readonly edgeDbClient: gel.Client,
+    @inject("Database") protected readonly gelDbClient: gel.Client,
+    @inject("Logger") protected readonly logger: Logger,
     @inject(AuditEventService)
     protected readonly auditLogService: AuditEventService,
     @inject(ReleaseService) protected readonly releaseService: ReleaseService,
@@ -61,7 +63,7 @@ export class JobService {
     releaseKey: string,
     finalJobStartStep: (tx: Transaction) => Promise<void>,
   ) {
-    await this.edgeDbClient.transaction(async (tx) => {
+    await this.gelDbClient.transaction(async (tx) => {
       // we do not use the 'exclusive constraint's of edgedb because we want to
       // retain the link to the release - but with the constraint there is
       // only one *running* job per release - and exclusive constraints cannot have filters
@@ -108,7 +110,7 @@ export class JobService {
         started: true,
         filter: e.op(j.status, "=", e.job.JobStatus.running),
       }))
-      .run(this.edgeDbClient);
+      .run(this.gelDbClient);
 
     return jobsInProgress.map((j) => ({
       jobId: j.id,
@@ -177,7 +179,7 @@ export class JobService {
     if (userRole != "Administrator")
       throw new NotAuthorisedToControlJob(userRole, releaseKey);
 
-    await this.edgeDbClient.transaction(async (tx) => {
+    await this.gelDbClient.transaction(async (tx) => {
       const currentJob = await e
         .select(e.job.Job, (j) => ({
           id: true,
@@ -224,7 +226,7 @@ export class JobService {
       }))
       .assert_single();
 
-    if (!(await selectJobQuery.run(this.edgeDbClient)))
+    if (!(await selectJobQuery.run(this.gelDbClient)))
       throw new Error("Job id passed in was not a Select Job");
 
     const selectJobReleaseQuery = e.select(selectJobQuery.forRelease);
@@ -233,7 +235,7 @@ export class JobService {
       .select(selectJobReleaseQuery.applicationCoded, (ac) => ({
         ...e.release.ApplicationCoded["*"],
       }))
-      .run(this.edgeDbClient);
+      .run(this.gelDbClient);
 
     const startTime = new Date();
     let processedCount = 0;
@@ -243,17 +245,39 @@ export class JobService {
     while (differenceInSeconds(startTime, new Date()) < 10) {
       // we need to process a job off the queue - create the corresponding result (if any) - and save the result
       // we do this transactionally so we can never miss an item
-      const c = await this.edgeDbClient.transaction(async (tx) => {
+      const c = await this.gelDbClient.transaction(async (tx) => {
         const casesFromQueue = await e
           .select(selectJobQuery.todoQueue, (c) => ({
             ...e.dataset.DatasetCase["*"],
             dataset: {
               ...e.dataset.Dataset["*"],
+              consent: {
+                ...e.consent.Consent["*"],
+                statements: () => ({
+                  ...e.is(e.consent.ConsentStatementDynamicDuo, {
+                    consentSystemIdentifier: true,
+                  }),
+                  ...e.is(e.consent.ConsentStatementDuo, {
+                    dataUseLimitation: true,
+                  }),
+                }),
+              },
+            },
+            consent: {
+              ...e.consent.Consent["*"],
+              statements: () => ({
+                ...e.is(e.consent.ConsentStatementDynamicDuo, {
+                  consentSystemIdentifier: true,
+                }),
+                ...e.is(e.consent.ConsentStatementDuo, {
+                  dataUseLimitation: true,
+                }),
+              }),
             },
             patients: {
               consent: {
                 ...e.consent.Consent["*"],
-                statements: (s) => ({
+                statements: () => ({
                   ...e.is(e.consent.ConsentStatementDynamicDuo, {
                     consentSystemIdentifier: true,
                   }),
@@ -265,6 +289,17 @@ export class JobService {
               ...e.dataset.DatasetPatient["*"],
               specimens: {
                 ...e.dataset.DatasetSpecimen["*"],
+                consent: {
+                  ...e.consent.Consent["*"],
+                  statements: () => ({
+                    ...e.is(e.consent.ConsentStatementDynamicDuo, {
+                      consentSystemIdentifier: true,
+                    }),
+                    ...e.is(e.consent.ConsentStatementDuo, {
+                      dataUseLimitation: true,
+                    }),
+                  }),
+                },
               },
             },
             limit: 1,
@@ -285,16 +320,27 @@ export class JobService {
               let vcf = undefined,
                 index = undefined;
 
-              if (
-                await this.selectService.isSelectable(
+              let testSelectable = false;
+
+              try {
+                testSelectable = await this.selectService.isSelectable(
                   applicationCoded as any,
                   vcf,
                   index,
                   cas as any,
                   pat as any,
                   spec as any,
-                )
-              ) {
+                );
+              } catch (e) {
+                this.logger.error(
+                  e,
+                  "Uncaught exception during cohort building test so assuming false",
+                );
+
+                testSelectable = false;
+              }
+
+              if (testSelectable) {
                 resultSpecimens.push(spec.id);
                 resultMessages.push(
                   `In - ${collapseExternalIds(cas.externalIdentifiers)} ${collapseExternalIds(pat.externalIdentifiers)} ${collapseExternalIds(spec.externalIdentifiers)}`,
@@ -308,13 +354,11 @@ export class JobService {
           }
         }
 
-        console.log(
-          await selectJobUpdateWorkChunk(tx, {
-            jobId: jobId,
-            newMessages: resultMessages,
-            newSpecimens: resultSpecimens,
-          }),
-        );
+        await selectJobUpdateWorkChunk(tx, {
+          jobId: jobId,
+          newMessages: resultMessages,
+          newSpecimens: resultSpecimens,
+        });
 
         // and we remove *all* the cases that we process as part of this batch from the todoQueue
         if (casesFromQueue.length > 0) {
@@ -386,7 +430,7 @@ export class JobService {
     isCancellation: boolean,
   ): Promise<void> {
     // basically the gist here is we need to move the new results into the release - and close this job off
-    await this.edgeDbClient.transaction(async (tx) => {
+    await this.gelDbClient.transaction(async (tx) => {
       const selectJobQuery = e
         .select(e.job.SelectJob, (j) => ({
           auditEntry: true,
@@ -395,7 +439,7 @@ export class JobService {
         }))
         .assert_single();
 
-      const selectJob = await selectJobQuery.run(this.edgeDbClient);
+      const selectJob = await selectJobQuery.run(this.gelDbClient);
 
       if (!selectJob) throw new Error("Job id passed in was not a Select Job");
 
@@ -498,8 +542,8 @@ export class JobService {
     const countQuery = e.count(pageOfEntriesQueryFn());
     const pageOfEntriesQuery = pageOfEntriesQueryFn({ limit, offset });
 
-    const totalEntries = await countQuery.run(this.edgeDbClient);
-    const pageOfEntries = await pageOfEntriesQuery.run(this.edgeDbClient);
+    const totalEntries = await countQuery.run(this.gelDbClient);
+    const pageOfEntries = await pageOfEntriesQuery.run(this.gelDbClient);
 
     return createPagedResult(
       pageOfEntries.map((entry) => ({

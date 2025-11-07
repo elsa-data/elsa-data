@@ -5,6 +5,7 @@ import {
   DUO_DS,
   DUO_GRU,
   DUO_HMB,
+  DUO_NCU,
   DUO_NRES,
   DUO_POA,
   DuoLimitationSchema,
@@ -190,6 +191,11 @@ export class ConsentDuoService {
       throw new Error(
         `->${JSON.stringify(modifier)}<- does not meet our DUO modifier schema`,
       );
+
+    if (modifier.code === DUO_NCU) {
+      // they have asserted non-commercial use so we need a value of true
+      if (!application.isNonCommercialResearch) return false;
+    }
 
     return true;
   }

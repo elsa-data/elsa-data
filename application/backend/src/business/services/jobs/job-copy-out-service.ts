@@ -11,6 +11,7 @@ import { randomBytes } from "crypto";
 import type { Executor } from "gel";
 import * as gel from "gel";
 import assert from "node:assert";
+import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
 import { updateReleaseDataEgress } from "../../../../dbschema/queries";
@@ -40,6 +41,7 @@ export class JobCopyOutService extends JobService {
 
   constructor(
     @inject("Database") edgeDbClient: gel.Client,
+    @inject("Logger") protected readonly logger: Logger,
     @inject(AuditEventService) auditLogService: AuditEventService,
     @inject(ReleaseService) releaseService: ReleaseService,
     @inject(SelectService) selectService: SelectService,
@@ -50,7 +52,7 @@ export class JobCopyOutService extends JobService {
     @inject("S3Client") private readonly s3Client: S3Client,
     @inject("SFNClient") private readonly sfnClient: SFNClient,
   ) {
-    super(edgeDbClient, auditLogService, releaseService, selectService);
+    super(edgeDbClient, logger, auditLogService, releaseService, selectService);
   }
 
   private async getCurrentJobWithExceptionForInvalid(
@@ -122,10 +124,7 @@ export class JobCopyOutService extends JobService {
 
     if (!stepsArn) throw new CopyOutServiceNotInstalled();
 
-    const { releaseQuery } = await getReleaseInfo(
-      this.edgeDbClient,
-      releaseKey,
-    );
+    const { releaseQuery } = await getReleaseInfo(this.gelDbClient, releaseKey);
 
     await this.startGenericJob(releaseKey, async (tx) => {
       // by placing the audit event in the transaction I guess we miss out on
@@ -234,7 +233,7 @@ export class JobCopyOutService extends JobService {
     // TODO some security level here? does the user have permissions?
     //      this method is only ever called by the job handler which acts with system level permissions??
 
-    return await this.edgeDbClient.transaction(async (tx) => {
+    return await this.gelDbClient.transaction(async (tx) => {
       const copyOutJob = await this.getCurrentJobWithExceptionForInvalid(
         tx,
         jobId,
@@ -320,7 +319,7 @@ export class JobCopyOutService extends JobService {
     jobId: string,
     wasSuccessful: boolean,
   ): Promise<void> {
-    await this.edgeDbClient.transaction(async (tx) => {
+    await this.gelDbClient.transaction(async (tx) => {
       const copyOutJob = await this.getCurrentJobWithExceptionForInvalid(
         tx,
         jobId,

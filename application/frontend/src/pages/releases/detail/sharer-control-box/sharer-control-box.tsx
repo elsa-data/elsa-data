@@ -50,7 +50,6 @@ export const SharerControlBox: React.FC<Props> = ({
     mutationFn: axiosPatchOperationMutationFn(`/api/releases/${releaseKey}`),
     onSuccess: async () => await queryClient.invalidateQueries(),
   });
-  console.log(sharers);
 
   // the settings come from the backend on login and tell us what is fundamentally enabled
   // in the system

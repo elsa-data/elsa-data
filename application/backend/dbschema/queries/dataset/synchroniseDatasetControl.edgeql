@@ -261,7 +261,7 @@ WITH
           consent := (INSERT consent::Consent {
             statements := {
               (INSERT consent::ConsentStatementDynamicDuo {
-                consentSystemIdentifier := "PID-TYT-00000"
+                consentSystemIdentifier := "PID-XAY-00000"
               })
             }
           }),
@@ -279,7 +279,7 @@ WITH
           consent := (INSERT consent::Consent {
             statements := {
               (INSERT consent::ConsentStatementDynamicDuo {
-                consentSystemIdentifier := "PID-TYT-00001"
+                consentSystemIdentifier := "PID-XAY-00001"
               })
             }
           }),
@@ -297,7 +297,7 @@ WITH
           consent := (INSERT consent::Consent {
             statements := {
               (INSERT consent::ConsentStatementDynamicDuo {
-                consentSystemIdentifier := "PID-TYT-00002"
+                consentSystemIdentifier := "PID-XAY-00002"
               })
             }
           }),
@@ -320,7 +320,7 @@ WITH
           consent := (INSERT consent::Consent {
             statements := {
               (INSERT consent::ConsentStatementDynamicDuo {
-                consentSystemIdentifier := "PID-TYT-00003"
+                consentSystemIdentifier := "PID-XAY-00003"
               })
             }
           }),
@@ -343,7 +343,7 @@ WITH
               consent := (INSERT consent::Consent {
                 statements := {
                   (INSERT consent::ConsentStatementDynamicDuo {
-                    consentSystemIdentifier := "PID-TYT-00004"
+                    consentSystemIdentifier := "PID-XAY-00004"
                   })
                 }
               }),
