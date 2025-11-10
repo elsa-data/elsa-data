@@ -27,7 +27,7 @@ import { UserService } from "../user-service";
 @injectable()
 export class RemsService {
   constructor(
-    @inject("Database") private readonly edgeDbClient: gel.Client,
+    @inject("Database") private readonly gelDbClient: gel.Client,
     @inject("Settings") private readonly settings: ElsaSettings,
     @inject("Logger") private readonly logger: Logger,
     @inject(UserService) private readonly userService: UserService,
@@ -78,7 +78,7 @@ export class RemsService {
     user: AuthenticatedUser,
     dacConfiguration: DacRemsType,
   ): Promise<RemsApprovedApplicationType[]> {
-    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
+    const dbUser = await this.userData.getDbUser(this.gelDbClient, user);
 
     if (!dbUser.isAllowedCreateRelease) throw new ReleaseViewError();
 
@@ -107,7 +107,15 @@ export class RemsService {
             dacConfiguration.url,
           ),
         }))
-        .applicationDacIdentifier.value.run(this.edgeDbClient),
+        .applicationDacIdentifier.value.run(this.gelDbClient),
+    );
+
+    const currentDatasetUris = new Set<string>(
+      await e
+        .select(e.dataset.Dataset, (d) => ({
+          uri: true,
+        }))
+        .uri.run(this.gelDbClient),
     );
 
     const newReleases: RemsApprovedApplicationType[] = [];
@@ -116,6 +124,7 @@ export class RemsService {
       if (application["application/state"] === "application.state/approved") {
         const applicant = application["application/applicant"];
         const remsId: number = application["application/id"];
+        const resources: any[] = application["application/resources"];
 
         if (isEmpty(applicant)) continue;
 
@@ -124,6 +133,17 @@ export class RemsService {
 
         // if we've already turned this REMS application into a release - then skip
         if (currentReleaseKeys.has(remsId.toString())) continue;
+
+        // we are only interested in applications that speak to resources that we have
+        let resourceNotFound = false;
+
+        for (const r of resources) {
+          if (!currentDatasetUris.has(r["resource/ext-id"])) {
+            resourceNotFound = true;
+          }
+        }
+
+        if (resourceNotFound) continue;
 
         newReleases.push({
           // consider what date we want to actually put here...
@@ -145,7 +165,7 @@ export class RemsService {
     dacConfiguration: DacRemsType,
     remsId: number,
   ): Promise<string> {
-    const dbUser = await this.userData.getDbUser(this.edgeDbClient, user);
+    const dbUser = await this.userData.getDbUser(this.gelDbClient, user);
 
     if (!dbUser.isAllowedCreateRelease) throw new ReleaseCreateError();
 
@@ -161,13 +181,57 @@ export class RemsService {
       remsId,
     );
 
+    this.logger.debug(
+      application,
+      "Creating release from the REMS application",
+    );
+
+    const applicationTitle: string =
+      application["application/description"] || "Untitled in REMS";
+    let askingForReads: boolean = false;
+    let askingForVariants: boolean = false;
+    let assertsNonCommercial: boolean = false;
+
+    const lookupMulti = (key: string, value: string): boolean => {
+      if (!value) return false;
+
+      const split = new Set<string>(value.split(" "));
+
+      return split.has(key);
+    };
+
+    // loop through the form responses looking for data we can use
+    for (const form of application["application/forms"] ?? []) {
+      for (const field of form["form/fields"] ?? []) {
+        if (field["field/id"] === "fld2") {
+          // a multiselect with assertions about the type of research
+          assertsNonCommercial = lookupMulti("research", field["field/value"]);
+        }
+
+        if (field["field/id"] === "data_type") {
+          askingForReads = lookupMulti("reads", field["field/value"]);
+          askingForVariants = lookupMulti("variants", field["field/value"]);
+        }
+      }
+    }
+
+    this.logger.debug(
+      {
+        applicationTitle,
+        assertsNonCommercial,
+        askingForReads,
+        askingForVariants,
+      },
+      "Variables derived from the REMS form data",
+    );
+
     // TODO: some error checking here
 
-    return await this.edgeDbClient.transaction(async (t) => {
+    return await this.gelDbClient.transaction(async (t) => {
       const resourceToDatasetMap: { [uri: string]: string } = {};
 
       // loop through the resources (datasets) in the application and make sure we are a data holder
-      // for them (create a map of dataset id to our edgedb id for that dataset)
+      // for them (create a map of dataset id to our gel db id for that dataset)
       for (const res of application["application/resources"] || []) {
         const remsDatasetUri = res["resource/ext-id"];
 
@@ -176,7 +240,7 @@ export class RemsService {
             id: true,
             filter: e.op(e.str(remsDatasetUri), "=", ds.uri),
           }))
-          .run(this.edgeDbClient);
+          .run(this.gelDbClient);
 
         if (matchDs && matchDs.length > 0) {
           if (matchDs.length > 1)
@@ -200,8 +264,7 @@ export class RemsService {
               system: dacConfiguration.url,
               value: e.str(remsId.toString()),
             }),
-            applicationDacTitle:
-              application["application/description"] || "Untitled in REMS",
+            applicationDacTitle: applicationTitle,
             applicationDacDetails: `
 #### Source
 
@@ -235,15 +298,18 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
 ~~~
 `,
             applicationCoded: e.insert(e.release.ApplicationCoded, {
-              studyAgreesToPublish: true,
-              studyIsNotCommercial: true,
+              studyAgreesToPublish: false,
+              studyIsNotCommercial: assertsNonCommercial,
               diseasesOfStudy: makeEmptyCodeArray(),
               countriesInvolved: makeEmptyCodeArray(),
               studyType: "HMB",
               beaconQuery: {},
             }),
-            isAllowedReadData: false,
-            isAllowedVariantData: false,
+            isAllowedS3Data: true,
+            isAllowedGSData: false,
+            isAllowedR2Data: false,
+            isAllowedReadData: askingForReads,
+            isAllowedVariantData: askingForVariants,
             isAllowedPhenotypeData: false,
             datasetIndividualUrisOrderPreference: [""],
             datasetSpecimenUrisOrderPreference: [""],
@@ -278,7 +344,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
             releaseKey: true,
           }),
         )
-        .run(this.edgeDbClient);
+        .run(this.gelDbClient);
 
       const applicant = application["application/applicant"];
 

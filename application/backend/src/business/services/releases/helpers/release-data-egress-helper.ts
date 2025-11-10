@@ -1,10 +1,10 @@
+import { Transaction } from "gel/dist/transaction";
+import e from "../../../../../dbschema/edgeql-js";
 import {
   releaseGetByReleaseKey,
   updateLastDataEgressQueryTimestamp,
   updateReleaseDataEgress,
 } from "../../../../../dbschema/queries";
-import { Transaction } from "gel/dist/transaction";
-import e from "../../../../../dbschema/edgeql-js";
 import { IPLookupService } from "../../ip-lookup-service";
 
 export type ReleaseEgressRecords = {

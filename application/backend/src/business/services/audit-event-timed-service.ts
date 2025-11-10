@@ -1,6 +1,6 @@
-import { injectable } from "tsyringe";
-import { setTimeout } from "timers/promises";
 import { milliseconds } from "date-fns";
+import { setTimeout } from "timers/promises";
+import { injectable } from "tsyringe";
 
 @injectable()
 export class AuditEventTimedService {

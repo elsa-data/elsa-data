@@ -1,5 +1,3 @@
-import { Type } from "@sinclair/typebox";
-
 /**
  * We use typebox to provide us with JSON schema compatible definitions
  * AND Typescript compatible types.

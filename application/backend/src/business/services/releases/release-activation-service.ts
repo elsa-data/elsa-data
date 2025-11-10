@@ -1,13 +1,11 @@
+import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
+import etag from "etag";
 import * as gel from "gel";
-import { AuthenticatedUser } from "../../authenticated-user";
-import { getReleaseInfo } from "../helpers";
+import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
-import { UserService } from "../user-service";
-import { ReleaseBaseService } from "./release-base-service";
-import type { ElsaSettings } from "../../../config/elsa-settings";
 import e from "../../../../dbschema/edgeql-js";
-import { AuditEventService } from "../audit-event-service";
-import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
+import type { ElsaSettings } from "../../../config/elsa-settings";
+import { AuthenticatedUser } from "../../authenticated-user";
 import {
   ReleaseActivatedNothingError,
   ReleaseActivationPermissionError,
@@ -15,15 +13,17 @@ import {
   ReleaseDeactivationRunningJobError,
   ReleaseDeactivationStateError,
 } from "../../exceptions/release-activation";
-import etag from "etag";
-import type { Logger } from "pino";
-import { ManifestService } from "../manifests/manifest-service";
+import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
+import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
-import { CloudFormationClient } from "@aws-sdk/client-cloudformation";
 import { EmailService } from "../email-service";
-import { ReleaseParticipationService } from "./release-participation-service";
-import { PermissionService } from "../permission-service";
+import { getReleaseInfo } from "../helpers";
 import { JobCloudFormationDeleteService } from "../jobs/job-cloud-formation-delete-service";
+import { ManifestService } from "../manifests/manifest-service";
+import { PermissionService } from "../permission-service";
+import { UserService } from "../user-service";
+import { ReleaseBaseService } from "./release-base-service";
+import { ReleaseParticipationService } from "./release-participation-service";
 
 /**
  * A service that handles activated and deactivating releases.

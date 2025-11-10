@@ -1,6 +1,6 @@
 import { GetCallerIdentityCommand, STSClient } from "@aws-sdk/client-sts";
-import { inject, injectable } from "tsyringe";
 import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
 
 export interface IAwsEnabledService {
   isEnabled(): Promise<boolean>;

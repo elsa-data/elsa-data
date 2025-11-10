@@ -17638,9 +17638,8 @@ export const org = ($root.org = (() => {
             if (object.chrom != null) message.chrom = String(object.chrom);
             if (object.pos != null)
               if ($util.Long)
-                (message.pos = $util.Long.fromValue(
-                  object.pos,
-                )).unsigned = true;
+                (message.pos = $util.Long.fromValue(object.pos)).unsigned =
+                  true;
               else if (typeof object.pos === "string")
                 message.pos = parseInt(object.pos, 10);
               else if (typeof object.pos === "number") message.pos = object.pos;
@@ -17679,8 +17678,8 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? long.toString()
                     : options.longs === Number
-                    ? long.toNumber()
-                    : long;
+                      ? long.toNumber()
+                      : long;
               } else object.pos = options.longs === String ? "0" : 0;
               object.id = "";
               object.ref = "";
@@ -17705,11 +17704,11 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? $util.Long.prototype.toString.call(message.pos)
                     : options.longs === Number
-                    ? new $util.LongBits(
-                        message.pos.low >>> 0,
-                        message.pos.high >>> 0,
-                      ).toNumber(true)
-                    : message.pos;
+                      ? new $util.LongBits(
+                          message.pos.low >>> 0,
+                          message.pos.high >>> 0,
+                        ).toNumber(true)
+                      : message.pos;
             if (message.id != null && message.hasOwnProperty("id"))
               object.id = message.id;
             if (message.ref != null && message.hasOwnProperty("ref"))
@@ -27529,9 +27528,8 @@ export const org = ($root.org = (() => {
             let message = new $root.org.ga4gh.vrs.v1.Number();
             if (object.value != null)
               if ($util.Long)
-                (message.value = $util.Long.fromValue(
-                  object.value,
-                )).unsigned = true;
+                (message.value = $util.Long.fromValue(object.value)).unsigned =
+                  true;
               else if (typeof object.value === "string")
                 message.value = parseInt(object.value, 10);
               else if (typeof object.value === "number")
@@ -27563,8 +27561,8 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? long.toString()
                     : options.longs === Number
-                    ? long.toNumber()
-                    : long;
+                      ? long.toNumber()
+                      : long;
               } else object.value = options.longs === String ? "0" : 0;
             if (message.value != null && message.hasOwnProperty("value"))
               if (typeof message.value === "number")
@@ -27577,11 +27575,11 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? $util.Long.prototype.toString.call(message.value)
                     : options.longs === Number
-                    ? new $util.LongBits(
-                        message.value.low >>> 0,
-                        message.value.high >>> 0,
-                      ).toNumber(true)
-                    : message.value;
+                      ? new $util.LongBits(
+                          message.value.low >>> 0,
+                          message.value.high >>> 0,
+                        ).toNumber(true)
+                      : message.value;
             return object;
           };
 
@@ -27810,9 +27808,8 @@ export const org = ($root.org = (() => {
             let message = new $root.org.ga4gh.vrs.v1.IndefiniteRange();
             if (object.value != null)
               if ($util.Long)
-                (message.value = $util.Long.fromValue(
-                  object.value,
-                )).unsigned = true;
+                (message.value = $util.Long.fromValue(object.value)).unsigned =
+                  true;
               else if (typeof object.value === "string")
                 message.value = parseInt(object.value, 10);
               else if (typeof object.value === "number")
@@ -27846,8 +27843,8 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? long.toString()
                     : options.longs === Number
-                    ? long.toNumber()
-                    : long;
+                      ? long.toNumber()
+                      : long;
               } else object.value = options.longs === String ? "0" : 0;
               object.comparator = "";
             }
@@ -27862,11 +27859,11 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? $util.Long.prototype.toString.call(message.value)
                     : options.longs === Number
-                    ? new $util.LongBits(
-                        message.value.low >>> 0,
-                        message.value.high >>> 0,
-                      ).toNumber(true)
-                    : message.value;
+                      ? new $util.LongBits(
+                          message.value.low >>> 0,
+                          message.value.high >>> 0,
+                        ).toNumber(true)
+                      : message.value;
             if (
               message.comparator != null &&
               message.hasOwnProperty("comparator")
@@ -28104,9 +28101,8 @@ export const org = ($root.org = (() => {
             let message = new $root.org.ga4gh.vrs.v1.DefiniteRange();
             if (object.min != null)
               if ($util.Long)
-                (message.min = $util.Long.fromValue(
-                  object.min,
-                )).unsigned = true;
+                (message.min = $util.Long.fromValue(object.min)).unsigned =
+                  true;
               else if (typeof object.min === "string")
                 message.min = parseInt(object.min, 10);
               else if (typeof object.min === "number") message.min = object.min;
@@ -28117,9 +28113,8 @@ export const org = ($root.org = (() => {
                 ).toNumber(true);
             if (object.max != null)
               if ($util.Long)
-                (message.max = $util.Long.fromValue(
-                  object.max,
-                )).unsigned = true;
+                (message.max = $util.Long.fromValue(object.max)).unsigned =
+                  true;
               else if (typeof object.max === "string")
                 message.max = parseInt(object.max, 10);
               else if (typeof object.max === "number") message.max = object.max;
@@ -28150,8 +28145,8 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? long.toString()
                     : options.longs === Number
-                    ? long.toNumber()
-                    : long;
+                      ? long.toNumber()
+                      : long;
               } else object.min = options.longs === String ? "0" : 0;
               if ($util.Long) {
                 let long = new $util.Long(0, 0, true);
@@ -28159,8 +28154,8 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? long.toString()
                     : options.longs === Number
-                    ? long.toNumber()
-                    : long;
+                      ? long.toNumber()
+                      : long;
               } else object.max = options.longs === String ? "0" : 0;
             }
             if (message.min != null && message.hasOwnProperty("min"))
@@ -28172,11 +28167,11 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? $util.Long.prototype.toString.call(message.min)
                     : options.longs === Number
-                    ? new $util.LongBits(
-                        message.min.low >>> 0,
-                        message.min.high >>> 0,
-                      ).toNumber(true)
-                    : message.min;
+                      ? new $util.LongBits(
+                          message.min.low >>> 0,
+                          message.min.high >>> 0,
+                        ).toNumber(true)
+                      : message.min;
             if (message.max != null && message.hasOwnProperty("max"))
               if (typeof message.max === "number")
                 object.max =
@@ -28186,11 +28181,11 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? $util.Long.prototype.toString.call(message.max)
                     : options.longs === Number
-                    ? new $util.LongBits(
-                        message.max.low >>> 0,
-                        message.max.high >>> 0,
-                      ).toNumber(true)
-                    : message.max;
+                      ? new $util.LongBits(
+                          message.max.low >>> 0,
+                          message.max.high >>> 0,
+                        ).toNumber(true)
+                      : message.max;
             return object;
           };
 
@@ -28636,9 +28631,8 @@ export const org = ($root.org = (() => {
             let message = new $root.org.ga4gh.vrs.v1.SimpleInterval();
             if (object.start != null)
               if ($util.Long)
-                (message.start = $util.Long.fromValue(
-                  object.start,
-                )).unsigned = true;
+                (message.start = $util.Long.fromValue(object.start)).unsigned =
+                  true;
               else if (typeof object.start === "string")
                 message.start = parseInt(object.start, 10);
               else if (typeof object.start === "number")
@@ -28650,9 +28644,8 @@ export const org = ($root.org = (() => {
                 ).toNumber(true);
             if (object.end != null)
               if ($util.Long)
-                (message.end = $util.Long.fromValue(
-                  object.end,
-                )).unsigned = true;
+                (message.end = $util.Long.fromValue(object.end)).unsigned =
+                  true;
               else if (typeof object.end === "string")
                 message.end = parseInt(object.end, 10);
               else if (typeof object.end === "number") message.end = object.end;
@@ -28683,8 +28676,8 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? long.toString()
                     : options.longs === Number
-                    ? long.toNumber()
-                    : long;
+                      ? long.toNumber()
+                      : long;
               } else object.start = options.longs === String ? "0" : 0;
               if ($util.Long) {
                 let long = new $util.Long(0, 0, true);
@@ -28692,8 +28685,8 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? long.toString()
                     : options.longs === Number
-                    ? long.toNumber()
-                    : long;
+                      ? long.toNumber()
+                      : long;
               } else object.end = options.longs === String ? "0" : 0;
             }
             if (message.start != null && message.hasOwnProperty("start"))
@@ -28707,11 +28700,11 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? $util.Long.prototype.toString.call(message.start)
                     : options.longs === Number
-                    ? new $util.LongBits(
-                        message.start.low >>> 0,
-                        message.start.high >>> 0,
-                      ).toNumber(true)
-                    : message.start;
+                      ? new $util.LongBits(
+                          message.start.low >>> 0,
+                          message.start.high >>> 0,
+                        ).toNumber(true)
+                      : message.start;
             if (message.end != null && message.hasOwnProperty("end"))
               if (typeof message.end === "number")
                 object.end =
@@ -28721,11 +28714,11 @@ export const org = ($root.org = (() => {
                   options.longs === String
                     ? $util.Long.prototype.toString.call(message.end)
                     : options.longs === Number
-                    ? new $util.LongBits(
-                        message.end.low >>> 0,
-                        message.end.high >>> 0,
-                      ).toNumber(true)
-                    : message.end;
+                      ? new $util.LongBits(
+                          message.end.low >>> 0,
+                          message.end.high >>> 0,
+                        ).toNumber(true)
+                      : message.end;
             return object;
           };
 
@@ -28968,9 +28961,8 @@ export const google = ($root.google = (() => {
         let message = new $root.google.protobuf.Timestamp();
         if (object.seconds != null)
           if ($util.Long)
-            (message.seconds = $util.Long.fromValue(
-              object.seconds,
-            )).unsigned = false;
+            (message.seconds = $util.Long.fromValue(object.seconds)).unsigned =
+              false;
           else if (typeof object.seconds === "string")
             message.seconds = parseInt(object.seconds, 10);
           else if (typeof object.seconds === "number")
@@ -29003,8 +28995,8 @@ export const google = ($root.google = (() => {
               options.longs === String
                 ? long.toString()
                 : options.longs === Number
-                ? long.toNumber()
-                : long;
+                  ? long.toNumber()
+                  : long;
           } else object.seconds = options.longs === String ? "0" : 0;
           object.nanos = 0;
         }
@@ -29019,11 +29011,11 @@ export const google = ($root.google = (() => {
               options.longs === String
                 ? $util.Long.prototype.toString.call(message.seconds)
                 : options.longs === Number
-                ? new $util.LongBits(
-                    message.seconds.low >>> 0,
-                    message.seconds.high >>> 0,
-                  ).toNumber()
-                : message.seconds;
+                  ? new $util.LongBits(
+                      message.seconds.low >>> 0,
+                      message.seconds.high >>> 0,
+                    ).toNumber()
+                  : message.seconds;
         if (message.nanos != null && message.hasOwnProperty("nanos"))
           object.nanos = message.nanos;
         return object;

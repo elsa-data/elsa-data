@@ -1,6 +1,5 @@
 import addFormats from "ajv-formats";
 import Ajv from "ajv/dist/2019";
-import { DatasetGen3SyncRequestSchema } from "../shared/schemas";
 
 const ajv = addFormats(new Ajv({ allErrors: true }), [
   "date-time",

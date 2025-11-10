@@ -6,22 +6,68 @@ WITH
   externalIdentifiers := [ (system:="DOI",value:=doi) ],
   description := "KAOS - a dataset for evil",
 
+  s3Prefix := "s3://umccr-googlebrain-data-dev/",
+  s3Vcf1Suffix := ".novaseq.wes_idt.50x.deepvariant-v1.0.grch38.vcf.gz",
+  s3Vcf1IndexSuffix := ".novaseq.wes_idt.50x.deepvariant-v1.0.grch38.vcf.gz.tbi",
+  s3Vcf2Suffix := ".novaseq.wes_idt.50x.gatk4.grch38.vcf.gz",
+  s3Vcf2IndexSuffix := ".novaseq.wes_idt.50x.gatk4.grch38.vcf.gz.tbi",
+  s3BamSuffix := ".novaseq.wes_idt.50x.dedup.bam",
+  s3BamIndexSuffix := ".novaseq.wes_idt.50x.dedup.bam.bai",
+  s3Fastq1Suffix := ".novaseq.wes_idt.50x.R1.fastq.gz",
+  s3Fastq2Suffix := ".novaseq.wes_idt.50x.R2.fastq.gz",
+
+  # HG006
+  #
+
   aArtifacts := {
+    (INSERT lab::ArtifactFastqPair {
+          forwardFile := (
+            INSERT storage::File {
+              url := s3Prefix ++ "HG006" ++ s3Fastq1Suffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="E/L8/vhy0CY=")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
+          ),
+          reverseFile := (
+            INSERT storage::File {
+              url := s3Prefix ++ "HG006" ++ s3Fastq2Suffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="sfCQTkrbzYs=")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
+          )
+        }
+      ),
     (INSERT lab::ArtifactBam {
           bamFile := (
             INSERT storage::File {
-              url := "s3://blah/foo.bam",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="424ca9d51649b47dc935fc63552036ee") ]
+              url := s3Prefix ++ "HG006" ++ s3BamSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
             }
             UNLESS CONFLICT ON .url
             ELSE (SELECT storage::File)
           ),
           baiFile := (
             INSERT storage::File {
-              url := "s3://blah/foo.bam.bai",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="424ca9d51649b47dc935fc63552036ee") ]
+              url := s3Prefix ++ "HG006" ++ s3BamIndexSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
             }
             UNLESS CONFLICT ON .url
             ELSE (SELECT storage::File)
@@ -31,190 +77,301 @@ WITH
       (INSERT lab::ArtifactVcf {
           vcfFile := (
             INSERT storage::File {
-              url := "s3://blah/foo.vcf.gz",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
+              url := s3Prefix ++ "HG006" ++ s3Vcf1Suffix,
+              size := 0,
+              checksums := [
+               (type:="MD5",value:="TODO"),
+               (type:="AWS_CRC64NVME",value:="TODO")
+              ]
             }
             UNLESS CONFLICT ON .url
             ELSE (SELECT storage::File)
           ),
           tbiFile := (
             INSERT storage::File {
-              url := "s3://blah/foo.vcf.gz.tbi",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
+              url := s3Prefix ++ "HG006" ++ s3Vcf1IndexSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
             } unless conflict on .url else (select storage::File)
           )
         }
       )
   },
+
+  # HG007
+  #
 
   bArtifacts := {
+    (INSERT lab::ArtifactFastqPair {
+          forwardFile := (
+            INSERT storage::File {
+              url := s3Prefix ++ "HG007" ++ s3Fastq1Suffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
+          ),
+          reverseFile := (
+            INSERT storage::File {
+              url := s3Prefix ++ "HG007" ++ s3Fastq2Suffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
+          )
+        }
+      ),
     (INSERT lab::ArtifactBam {
           bamFile := (
             INSERT storage::File {
-              url := "s3://blah/foob.bam",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
+              url := s3Prefix ++ "HG007" ++ s3BamSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
           ),
           baiFile := (
             INSERT storage::File {
-              url := "s3://blah/foob.bam.bai",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
+              url := s3Prefix ++ "HG007" ++ s3BamIndexSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="69752816d99f403e20c2a2afb9df71a1"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
           )
         }
       ),
       (INSERT lab::ArtifactVcf {
           vcfFile := (
             INSERT storage::File {
-              url := "s3://blah/foob.vcf.gz",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
+              url := s3Prefix ++ "HG007" ++ s3Vcf1Suffix,
+              size := 0,
+              checksums := [
+               (type:="MD5",value:="TODO"),
+               (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
           ),
           tbiFile := (
             INSERT storage::File {
-              url := "s3://blah/foob.vcf.gz.tbi",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
+              url := s3Prefix ++ "HG007" ++ s3Vcf1IndexSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
             } unless conflict on .url else (select storage::File)
           )
         }
       )
   },
+
+  # NA12891
+  #
 
   cArtifacts := {
+    (INSERT lab::ArtifactFastqPair {
+          forwardFile := (
+            INSERT storage::File {
+              url := s3Prefix ++ "NA12891" ++ s3Fastq1Suffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
+          ),
+          reverseFile := (
+            INSERT storage::File {
+              url := s3Prefix ++ "NA12891" ++ s3Fastq2Suffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
+          )
+        }
+      ),
     (INSERT lab::ArtifactBam {
           bamFile := (
             INSERT storage::File {
-              url := "s3://blah/fooc.bam",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
+              url := s3Prefix ++ "NA12891" ++ s3BamSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
           ),
           baiFile := (
             INSERT storage::File {
-              url := "s3://blah/fooc.bam.bai",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
+              url := s3Prefix ++ "NA12891" ++ s3BamIndexSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
           )
         }
       ),
       (INSERT lab::ArtifactVcf {
           vcfFile := (
             INSERT storage::File {
-              url := "s3://blah/fooc.vcf.gz",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
+              url := s3Prefix ++ "NA12891" ++ s3Vcf1Suffix,
+              size := 0,
+              checksums := [
+               (type:="MD5",value:="TODO"),
+               (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
           ),
           tbiFile := (
             INSERT storage::File {
-              url := "s3://blah/fooc.vcf.gz.tbi",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
+              url := s3Prefix ++ "NA12891" ++ s3Vcf1IndexSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
             } unless conflict on .url else (select storage::File)
           )
         }
       )
   },
+
+  # NA12892
+  #
 
   dArtifacts := {
+    (INSERT lab::ArtifactFastqPair {
+          forwardFile := (
+            INSERT storage::File {
+              url := s3Prefix ++ "NA12892" ++ s3Fastq1Suffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
+          ),
+          reverseFile := (
+            INSERT storage::File {
+              url := s3Prefix ++ "NA12892" ++ s3Fastq2Suffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
+          )
+        }
+      ),
     (INSERT lab::ArtifactBam {
           bamFile := (
             INSERT storage::File {
-              url := "s3://blah/food.bam",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
+              url := s3Prefix ++ "NA12892" ++ s3BamSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
           ),
           baiFile := (
             INSERT storage::File {
-              url := "s3://blah/food.bam.bai",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
+              url := s3Prefix ++ "NA12892" ++ s3BamIndexSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
           )
         }
       ),
       (INSERT lab::ArtifactVcf {
           vcfFile := (
             INSERT storage::File {
-              url := "s3://blah/food.vcf.gz",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
+              url := s3Prefix ++ "NA12892" ++ s3Vcf1Suffix,
+              size := 0,
+              checksums := [
+               (type:="MD5",value:="TODO"),
+               (type:="AWS_CRC64NVME",value:="TODO")
+              ]
+            }
+            UNLESS CONFLICT ON .url
+            ELSE (SELECT storage::File)
           ),
           tbiFile := (
             INSERT storage::File {
-              url := "s3://blah/food.vcf.gz.tbi",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
+              url := s3Prefix ++ "NA12892" ++ s3Vcf1IndexSuffix,
+              size := 0,
+              checksums := [
+                (type:="MD5",value:="TODO"),
+                (type:="AWS_CRC64NVME",value:="TODO")
+              ]
             } unless conflict on .url else (select storage::File)
           )
         }
       )
   },
-
-  eArtifacts := {
-    (INSERT lab::ArtifactBam {
-          bamFile := (
-            INSERT storage::File {
-              url := "s3://blah/fooe.bam",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
-          ),
-          baiFile := (
-            INSERT storage::File {
-              url := "s3://blah/fooe.bam.bai",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
-          )
-        }
-      ),
-      (INSERT lab::ArtifactVcf {
-          vcfFile := (
-            INSERT storage::File {
-              url := "s3://blah/fooe.vcf.gz",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
-          ),
-          tbiFile := (
-            INSERT storage::File {
-              url := "s3://blah/fooe.vcf.gz.tbi",
-              size := 12324324,
-              checksums := [ (type:="MD5",value:="123435456") ]
-            } unless conflict on .url else (select storage::File)
-          )
-        }
-      )
-  },
-
 
   run := {
     (INSERT lab::Run {
-      platform := "Illumina Whizz Bang",
+      platform := "Illumina Novaseq",
       runDate := <datetime>'2018-05-07T15:01:22+00',
       artifactsProduced := {
         aArtifacts,
         bArtifacts,
         cArtifacts,
         dArtifacts,
-        eArtifacts,
       }
     })
   },
 
   cases := {
     (INSERT dataset::DatasetCase {
-      externalIdentifiers := [ (system:="",value:="FAMILY-ABC") ],
+      externalIdentifiers := [ (system:="",value:="FAMILY-AB") ],
       # we have static consents at this family level allowing only
       # disease specific research
       consent := (INSERT consent::Consent {
@@ -235,7 +392,7 @@ WITH
           externalIdentifiers := [ (system:="",value:="A") ],
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00296") ],
+                externalIdentifiers := [ (system:="",value:="HG006") ],
                 artifacts := aArtifacts
             }
           )
@@ -245,7 +402,7 @@ WITH
           externalIdentifiers := [ (system:="",value:="B") ],
           specimens := (
             INSERT dataset::DatasetSpecimen {
-              externalIdentifiers := [ (system:="",value:="HG00297") ],
+              externalIdentifiers := [ (system:="",value:="HG007") ],
               # but B has a specific specimen level consent with no restrictions that will overrule all
               consent := (INSERT consent::Consent {
                 statements := {
@@ -258,16 +415,6 @@ WITH
               artifacts := bArtifacts
             }
           )
-        }),
-        (INSERT dataset::DatasetPatient {
-          sexAtBirth := "male",
-          externalIdentifiers := [ (system:="",value:="C") ],
-          specimens := (
-            INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00299") ],
-                artifacts := cArtifacts
-            }
-          )
         })
       }
     }),
@@ -276,7 +423,7 @@ WITH
       patients := {
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "female",
-          externalIdentifiers := [ (system:="",value:="D") ],
+          externalIdentifiers := [ (system:="",value:="X") ],
           # we have static consent at this patient allowing disease specific research
           consent := (INSERT consent::Consent {
             statements := {
@@ -288,8 +435,8 @@ WITH
           }),
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG00171") ],
-                artifacts := dArtifacts
+                externalIdentifiers := [ (system:="",value:="NA12891") ],
+                artifacts := cArtifacts
             }
           )
         }),
@@ -300,17 +447,18 @@ WITH
       patients := {
         (INSERT dataset::DatasetPatient {
           sexAtBirth := "female",
-          externalIdentifiers := [ (system:="",value:="E") ],
+          externalIdentifiers := [ (system:="",value:="Y") ],
           specimens := (
             INSERT dataset::DatasetSpecimen {
-                externalIdentifiers := [ (system:="",value:="HG01810") ],
-                artifacts := eArtifacts
+                externalIdentifiers := [ (system:="",value:="NA12892") ],
+                artifacts := dArtifacts
             }
           )
         }),
       }
     })
   }
+
 
 INSERT dataset::Dataset {
   uri := uri,

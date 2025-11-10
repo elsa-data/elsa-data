@@ -1,4 +1,4 @@
-CREATE MIGRATION m1fra7wuc2yghs77r6axsltdtwrvrrjwpihrtbkqxfldurcllaudfq
+CREATE MIGRATION m1uewbtxsevuacjfrcgbdll53iged3vuv2k3z3krqhc4himbbf7vza
     ONTO initial
 {
   CREATE MODULE audit IF NOT EXISTS;
@@ -17,7 +17,7 @@ CREATE MIGRATION m1fra7wuc2yghs77r6axsltdtwrvrrjwpihrtbkqxfldurcllaudfq
   CREATE SCALAR TYPE pedigree::KinType EXTENDING enum<isRelativeOf, isBiologicalRelativeOf, isBiologicalParentOf, isBiologicalFatherOf, isBiologicalMotherOf, isSpermDonorOf, isBiologicalSiblingOf, isFullSiblingOf, isMultipleBirthSiblingOf, isParentalSiblingOf, isHalfSiblingOf, isMaternalCousinOf, isPaternalCousinOf>;
   CREATE SCALAR TYPE release::ApplicationCodedStudyType EXTENDING enum<GRU, HMB, CC, POA, DS>;
   CREATE SCALAR TYPE release::ReleaseCounterSequence EXTENDING std::sequence;
-  CREATE SCALAR TYPE storage::ChecksumType EXTENDING enum<MD5, AWS_ETAG, SHA_1, SHA_256>;
+  CREATE SCALAR TYPE storage::ChecksumType EXTENDING enum<MD5, AWS_ETAG, AWS_CRC64NVME, SHA_1, SHA_256>;
   CREATE TYPE release::ApplicationCoded {
       CREATE REQUIRED PROPERTY countriesInvolved: array<tuple<system: std::str, code: std::str>>;
       CREATE REQUIRED PROPERTY diseasesOfStudy: array<tuple<system: std::str, code: std::str>>;
@@ -63,21 +63,18 @@ CREATE MIGRATION m1fra7wuc2yghs77r6axsltdtwrvrrjwpihrtbkqxfldurcllaudfq
           CREATE CONSTRAINT std::exclusive;
       };
   };
-  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
-      CREATE OPTIONAL PROPERTY sexAtBirth: dataset::SexAtBirthType;
-  };
-  ALTER TYPE dataset::DatasetCase {
-      CREATE MULTI LINK patients: dataset::DatasetPatient {
-          ON SOURCE DELETE DELETE TARGET;
-          ON TARGET DELETE ALLOW;
-          CREATE CONSTRAINT std::exclusive;
-      };
-      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
-  };
   CREATE ABSTRACT TYPE lab::ArtifactBase;
   CREATE TYPE dataset::DatasetSpecimen EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
       CREATE MULTI LINK artifacts: lab::ArtifactBase;
       CREATE OPTIONAL PROPERTY sampleType: std::str;
+  };
+  CREATE TYPE dataset::DatasetPatient EXTENDING dataset::DatasetShareable, dataset::DatasetIdentifiable {
+      CREATE MULTI LINK specimens: dataset::DatasetSpecimen {
+          ON SOURCE DELETE DELETE TARGET;
+          ON TARGET DELETE ALLOW;
+          CREATE CONSTRAINT std::exclusive;
+      };
+      CREATE OPTIONAL PROPERTY sexAtBirth: dataset::SexAtBirthType;
   };
   CREATE TYPE storage::File {
       CREATE REQUIRED PROPERTY checksums: array<tuple<type: storage::ChecksumType, value: std::str>>;
@@ -92,6 +89,7 @@ CREATE MIGRATION m1fra7wuc2yghs77r6axsltdtwrvrrjwpihrtbkqxfldurcllaudfq
       };
   };
   CREATE FUNCTION dataset::extractIdentifierValue(i: tuple<system: std::str, value: std::str>) ->  std::str USING (i.value);
+  CREATE FUTURE simple_scoping;
   CREATE ABSTRACT LINK permission::Participation {
       CREATE PROPERTY role: std::str {
           CREATE CONSTRAINT std::one_of('Administrator', 'Manager', 'Member');
@@ -367,13 +365,16 @@ CREATE MIGRATION m1fra7wuc2yghs77r6axsltdtwrvrrjwpihrtbkqxfldurcllaudfq
   CREATE TYPE consent::ConsentStatementDynamicDuo EXTENDING consent::ConsentStatement {
       CREATE REQUIRED PROPERTY consentSystemIdentifier: std::str;
   };
-  ALTER TYPE dataset::DatasetPatient {
-      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
-      CREATE MULTI LINK specimens: dataset::DatasetSpecimen {
+  ALTER TYPE dataset::DatasetCase {
+      CREATE LINK dataset := (.<cases[IS dataset::Dataset]);
+      CREATE MULTI LINK patients: dataset::DatasetPatient {
           ON SOURCE DELETE DELETE TARGET;
           ON TARGET DELETE ALLOW;
           CREATE CONSTRAINT std::exclusive;
       };
+  };
+  ALTER TYPE dataset::DatasetPatient {
+      CREATE LINK dataset := (.<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);
   };
   ALTER TYPE dataset::DatasetSpecimen {
       CREATE LINK dataset := (.<specimens[IS dataset::DatasetPatient].<patients[IS dataset::DatasetCase].<cases[IS dataset::Dataset]);

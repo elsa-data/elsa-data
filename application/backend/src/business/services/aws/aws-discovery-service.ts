@@ -1,15 +1,15 @@
-import { inject, injectable } from "tsyringe";
-import type { ElsaSettings } from "../../../config/elsa-settings";
-import type { Logger } from "pino";
-import {
-  DiscoverInstancesCommand,
-  ServiceDiscoveryClient,
-} from "@aws-sdk/client-servicediscovery";
 import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
-import { differenceInHours, differenceInMinutes, subHours } from "date-fns";
+import {
+  DiscoverInstancesCommand,
+  ServiceDiscoveryClient,
+} from "@aws-sdk/client-servicediscovery";
+import { differenceInHours, differenceInMinutes } from "date-fns";
+import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
+import type { ElsaSettings } from "../../../config/elsa-settings";
 
 export type IAwsDiscoveryService = {
   locateCopyServiceStepsArn(): Promise<string | undefined>;

@@ -39,12 +39,14 @@ async function jobHandler(configJson: any) {
   // this is a measure of the chunk size of work we want to do
   // it is roughly also the responsiveness measure for the queue - in general starting new jobs or cancelling
   // jobs will take about this amount of seconds before the signal is noticed
-  const secondsChunk = 10;
+  let secondsChunk;
 
   let lastEmptyInProgressMessageDateTime = minTime;
 
   // @ts-ignore: 'while' statement cannot complete without throwing an exception
   while (true) {
+    secondsChunk = 10;
+
     try {
       // moved here due to not sure we want a super long lived job service (AWS credentials??)
       // so yes - we re-create the services each loop
@@ -73,12 +75,12 @@ async function jobHandler(configJson: any) {
         // we always want to log this if we have actual jobs in progress
         logger.debug(`Check for in progress jobs resulted in set ${jobs}`);
 
-        // our jobs will be a mixture of 'compute' and 'io'.. what we want to do is structure them
+        // our jobs will be a mixture of 'compute' and 'io'... what we want to do is structure them
         // into small chunks of work (be that compute or io)
         // we then ask each job to progress its work...
         // some of these work items will go for 10ish seconds
         // some will just poll as they are waiting on external activity
-        // one 'made up' job will just sleepMicroseconds for 10 seconds
+        // one 'made up' job will just sleep for 10 seconds
 
         const jobPromises: Promise<void>[] = [];
 
@@ -105,17 +107,21 @@ async function jobHandler(configJson: any) {
 
           switch (j.jobType) {
             case "SelectJob":
-              if (j.requestedCancellation)
+              if (j.requestedCancellation) {
+                secondsChunk = 1;
                 jobPromises.push(jobService.endSelectJob(j.jobId, false, true));
-              else
+              } else {
                 jobPromises.push(
                   jobService
                     .doSelectJobWork(j.jobId, secondsChunk)
                     .then((result) => {
-                      if (result === 0)
+                      if (result === 0) {
+                        secondsChunk = 1;
                         return jobService.endSelectJob(j.jobId, true, false);
+                      }
                     }),
                 );
+              }
               break;
 
             case "CloudFormationInstallJob":
