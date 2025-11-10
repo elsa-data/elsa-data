@@ -432,6 +432,7 @@ export abstract class ReleaseBaseService {
       applicationDacTitle: releaseInfo.applicationDacTitle!,
       applicationCoded: {
         type: releaseInfo.applicationCoded.studyType,
+        isNonCommercial: releaseInfo.applicationCoded.studyIsNotCommercial,
         diseases: releaseInfo.applicationCoded.diseasesOfStudy,
         countriesInvolved: releaseInfo.applicationCoded.countriesInvolved,
         beaconQuery: releaseInfo.applicationCoded.beaconQuery,

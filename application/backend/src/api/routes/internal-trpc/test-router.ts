@@ -1,5 +1,5 @@
-import { router, internalProcedure } from "../trpc-bootstrap";
 import { z } from "zod";
+import { internalProcedure, router } from "../trpc-bootstrap";
 
 /**
  * TRPC router that can exhibit a variety of test error/good results.

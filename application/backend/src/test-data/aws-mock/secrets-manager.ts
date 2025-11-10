@@ -1,8 +1,8 @@
-import { mockClient } from "aws-sdk-client-mock";
 import {
   GetSecretValueCommand,
   SecretsManagerClient,
 } from "@aws-sdk/client-secrets-manager";
+import { mockClient } from "aws-sdk-client-mock";
 
 export const MOCK_AWS_OBJECT_SIGNING_SECRET_NAME = "arn:abc"; // pragma: allowlist secret
 

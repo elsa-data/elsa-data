@@ -1,6 +1,6 @@
 module storage {
 
-    scalar type ChecksumType extending enum<'MD5', 'AWS_ETAG', 'SHA_1', 'SHA_256'>;
+    scalar type ChecksumType extending enum<'MD5', 'AWS_ETAG', 'AWS_CRC64NVME', 'SHA_1', 'SHA_256'>;
 
     type File {
         required property url -> str {

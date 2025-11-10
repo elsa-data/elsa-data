@@ -68,6 +68,8 @@ export const ReleaseApplicationCodedTypeSchema = StringUnion([
 export const ReleaseApplicationCodedSchema = Type.Object({
   type: ReleaseApplicationCodedTypeSchema,
 
+  isNonCommercial: Type.Boolean(),
+
   diseases: Type.Array(CodingSchema),
 
   countriesInvolved: Type.Array(CodingSchema),

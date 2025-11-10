@@ -12,6 +12,7 @@ type Props = {
   releaseKey: string;
   applicationCoded: {
     type: "HMB" | "DS" | "CC" | "GRU" | "POA";
+    isNonCommercial: boolean;
     diseases: {
       display?: string | undefined;
       code: string;
@@ -197,10 +198,11 @@ export const ApplicationCodedBox: React.FC<Props> = ({
     );
   };
 
-  const IsCheck = (label: string, path: any) => (
+  const IsCheck = (label: string, path: any, currentValue: boolean) => (
     <RhCheckItem
       disabled={false}
       label={label}
+      checked={currentValue}
       onChange={(e) => {
         releasePatchMutate.mutate({
           op: "replace",
@@ -287,6 +289,7 @@ export const ApplicationCodedBox: React.FC<Props> = ({
               {IsCheck(
                 "Applicant Asserts the Study is Non-Commercial",
                 "/applicationCoded/isNotCommercial",
+                applicationCoded.isNonCommercial,
               )}
               {/*<RhCheckItem
                 disabled={true}

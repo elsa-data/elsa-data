@@ -1,6 +1,6 @@
 import { GoogleAuth } from "google-auth-library";
-import { inject, injectable } from "tsyringe";
 import type { Logger } from "pino";
+import { inject, injectable } from "tsyringe";
 
 @injectable()
 export class GcpEnabledService {

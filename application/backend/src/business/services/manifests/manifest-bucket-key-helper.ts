@@ -53,7 +53,7 @@ export async function transformMasterManifestToBucketKeyManifest(
       url: string,
       size: number,
       checksums: {
-        type: "MD5" | "AWS_ETAG" | "SHA_1" | "SHA_256";
+        type: "MD5" | "AWS_ETAG" | "AWS_CRC64NVME" | "SHA_1" | "SHA_256";
         value: string;
       }[],
     ): Pick<

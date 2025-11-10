@@ -1,4 +1,3 @@
-import { mockClient } from "aws-sdk-client-mock";
 import {
   DescribeExecutionCommand,
   DescribeMapRunCommand,
@@ -7,6 +6,7 @@ import {
   SFNClient,
   StartExecutionCommand,
 } from "@aws-sdk/client-sfn";
+import { mockClient } from "aws-sdk-client-mock";
 
 export const MOCK_COPY_OUT_STEPS_ARN =
   "arn:aws:states:ap-southeast-2:000000000000:stateMachine:CopyOutStateMachineAABBCCDD-qUZhBYCuZY8X";
