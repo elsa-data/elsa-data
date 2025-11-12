@@ -24,6 +24,7 @@ import {
 import { AuditEventService } from "../audit-event-service";
 import { ReleaseService } from "../releases/release-service";
 import { UserService } from "../user-service";
+
 @injectable()
 export class RemsService {
   constructor(
@@ -191,6 +192,19 @@ export class RemsService {
     let askingForReads: boolean = false;
     let askingForVariants: boolean = false;
     let assertsNonCommercial: boolean = false;
+    const users: ApplicationUser[] = [];
+    const applicant = application["application/applicant"];
+    let applicantEmail;
+
+    if (applicant && applicant["email"]) {
+      // we record this just to make sure we don't add the applicant twice
+      applicantEmail = applicant["email"];
+      users.push({
+        role: "Manager",
+        email: applicant["email"],
+        displayName: applicant["name"],
+      });
+    }
 
     const lookupMulti = (key: string, value: string): boolean => {
       if (!value) return false;
@@ -211,6 +225,33 @@ export class RemsService {
         if (field["field/id"] === "data_type") {
           askingForReads = lookupMulti("reads", field["field/value"]);
           askingForVariants = lookupMulti("variants", field["field/value"]);
+        }
+
+        if (field["field/id"] === "fld4") {
+          // a table with the researchers
+          for (const row of field["field/value"] ?? []) {
+            let name: string | undefined;
+            let email: string | undefined;
+
+            for (const v of row) {
+              if (v["column"] === "name") {
+                name = v["value"];
+              }
+              if (v["column"] === "email") {
+                email = v["value"];
+              }
+            }
+
+            if (name && email) {
+              // if we've already seen the applicant email then they are already in the users list
+              if (email != applicantEmail)
+                users.push({
+                  role: "Manager",
+                  email: email,
+                  displayName: name,
+                });
+            }
+          }
         }
       }
     }
@@ -291,10 +332,10 @@ See the [original application](${
 ${application["application/created"]}
 ~~~
 
-##### Applicant
+##### Applicant(s)
  
 ~~~
-${JSON.stringify(application["application/applicant"], null, 2)}
+${JSON.stringify(users, null, 2)}
 ~~~
 `,
             applicationCoded: e.insert(e.release.ApplicationCoded, {
@@ -346,17 +387,11 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
         )
         .run(this.gelDbClient);
 
-      const applicant = application["application/applicant"];
-
-      if (applicant && applicant["email"]) {
-        const applicantAu: ApplicationUser = {
-          role: "Manager",
-          email: applicant["email"],
-          displayName: applicant["name"],
-        };
+      // people listed *in* the application are made Managers
+      for (const u of users) {
         await insertPotentialOrReal(
           t,
-          applicantAu,
+          u,
           "Manager",
           newRelease.id,
           newRelease.releaseKey,
@@ -364,6 +399,7 @@ ${JSON.stringify(application["application/applicant"], null, 2)}
         );
       }
 
+      // the person who process the application from REMS is made the administrator
       await this.userService.registerRoleInRelease(
         user,
         newRelease.releaseKey,

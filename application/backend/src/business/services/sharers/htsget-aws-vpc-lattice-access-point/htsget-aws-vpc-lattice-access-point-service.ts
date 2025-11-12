@@ -12,6 +12,7 @@ import streamConsumers from "node:stream/consumers";
 import type { Logger } from "pino";
 import { Readable } from "stream";
 import { inject, injectable } from "tsyringe";
+import type { SharerHtsgetAwsVpcLatticeAccessPointType } from "../../../../config/config-schema-sharer.ts";
 import type { ElsaSettings } from "../../../../config/elsa-settings";
 import { AuthenticatedUser } from "../../../authenticated-user";
 import { ReleaseDataSharingConfigurationData } from "../../../data/release-data-sharing-configuration-data.ts";
@@ -26,6 +27,7 @@ import {
   createCloudFormationTemplateFromObjects,
   VPC_LATTICE_ACCESS_POINT_ALIAS_KEY_SUFFIX,
   VPC_LATTICE_ACCESS_POINT_BUCKET_KEY_SUFFIX,
+  VPC_LATTICE_ACCESS_POINT_DOMAIN_NAME,
   VPC_LATTICE_ACCESS_POINT_VPC_ID,
 } from "./_vpc-lattice-access-point-template-helper";
 
@@ -38,6 +40,9 @@ type InstalledHtsgetAwsVpcLatticeAccessPoint = {
 
   // the VPC id that this is being shared to
   vpcId: string;
+
+  // the htsget URL that this is being shared via
+  domainName: string;
 
   // a dictionary of bucket names and the corresponding S3 access point aliases
   bucketsToAlias: Record<string, string>;
@@ -113,18 +118,23 @@ export class HtsgetAwsVpcLatticeAccessPointService {
     if (!stack.Outputs) return null;
 
     let vpcId: string | undefined = undefined;
+    let domainName: string | undefined = undefined;
 
     for (const o of stack.Outputs) {
       if (o.OutputKey === VPC_LATTICE_ACCESS_POINT_VPC_ID)
-        vpcId = o.OutputValue!;
+        vpcId = o.OutputValue;
+      if (o.OutputKey === VPC_LATTICE_ACCESS_POINT_DOMAIN_NAME)
+        domainName = o.OutputValue;
     }
 
     if (!vpcId) return null;
+    if (!domainName) return null;
 
     const result: InstalledHtsgetAwsVpcLatticeAccessPoint = {
       releaseKey: releaseKey,
       stack: stack,
       vpcId: vpcId,
+      domainName: domainName,
       bucketsToAlias: {},
     };
 
@@ -278,9 +288,9 @@ export class HtsgetAwsVpcLatticeAccessPointService {
           const newHtsgetObject = cloneDeep(obj);
 
           if (obj.objectStoreKey.endsWith("bam")) {
-            newHtsgetObject.objectStoreUrl = `htsget://htsget.dev.umccr.org/reads/${obj.specimenId}`;
+            newHtsgetObject.objectStoreUrl = `htsget://${installedInfo.domainName}/reads/${releaseKey}/${obj.specimenId}`;
           } else {
-            newHtsgetObject.objectStoreUrl = `htsget://htsget.dev.umccr.org/variants/${obj.specimenId}`;
+            newHtsgetObject.objectStoreUrl = `htsget://${installedInfo.domainName}/variants/${releaseKey}/${obj.specimenId}`;
           }
 
           newHtsgetObjects.push(newHtsgetObject);
@@ -367,8 +377,27 @@ export class HtsgetAwsVpcLatticeAccessPointService {
       destinationName,
     );
 
+    let sharer: SharerHtsgetAwsVpcLatticeAccessPointType | undefined;
+
+    for (const s of this.settings.sharers) {
+      if (s.type === "htsget-aws-vpc-lattice-access-point") {
+        for (const [name, destination] of Object.entries(s.destinations)) {
+          if (name === destinationName) {
+            sharer = s;
+          }
+        }
+      }
+    }
+
+    if (!sharer)
+      throw new Error(
+        "There were no data sharing configuration settings for htsget-aws-vpc-lattice-access-point saved for this release",
+      );
+
     const releaseInfo = await this.releaseService.getBase(releaseKey, userRole);
 
+    // TODO we have a difference here between items in the settings and items that we "saved" in the backend database when we
+    //      created the release. In general this will be fine - but needs a fresh look at some point
     if (
       !releaseInfo.dataSharingHtsgetAwsVpcLatticeAccessPoint ||
       !releaseInfo.dataSharingHtsgetAwsVpcLatticeAccessPoint.name
@@ -397,6 +426,7 @@ export class HtsgetAwsVpcLatticeAccessPointService {
       bucketKeyManifest.objects,
       releaseInfo.dataSharingHtsgetAwsVpcLatticeAccessPoint.vpcId,
       this.settings.aws.vpcId,
+      sharer.domainName,
     );
 
     this.logger.debug(template, "created access point templates");

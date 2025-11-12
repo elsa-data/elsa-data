@@ -7,7 +7,6 @@ import e from "../../../../dbschema/edgeql-js";
 import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AuthenticatedUser } from "../../authenticated-user";
 import {
-  ReleaseActivatedNothingError,
   ReleaseActivationPermissionError,
   ReleaseActivationStateError,
   ReleaseDeactivationRunningJobError,
@@ -131,19 +130,22 @@ export class ReleaseActivationService extends ReleaseBaseService {
 
         // Do some checking if release is activatable
         // 1. Check if there are any sharing configuration allowed for the release
+        // TODO: delete entirely this but think it through - given sharing configuration can be dynamic
+        //       there should be no requirement that sharing is switched on before the release is activated
+        // if (
+        //!releaseInfo.dataSharingConfiguration.objectSigningEnabled &&
+        //!releaseInfo.dataSharingConfiguration.copyOutEnabled &&
+        //!releaseInfo.dataSharingConfiguration.htsgetEnabled &&
+        //!releaseInfo.dataSharingConfiguration.awsAccessPointEnabled &&
+        //!releaseInfo.dataSharingConfiguration.gcpStorageIamEnabled
+        //) {
+        //  throw new ReleaseActivatedNothingError(
+        //    "No sharing configuration is enabled",
+        //  );
+        //}
+
         // 2. Check if there are cases releasable with the specified cases and access control
         //    are check within the 'createMasterManifest' function
-        if (
-          !releaseInfo.dataSharingConfiguration.objectSigningEnabled &&
-          !releaseInfo.dataSharingConfiguration.copyOutEnabled &&
-          !releaseInfo.dataSharingConfiguration.htsgetEnabled &&
-          !releaseInfo.dataSharingConfiguration.awsAccessPointEnabled &&
-          !releaseInfo.dataSharingConfiguration.gcpStorageIamEnabled
-        ) {
-          throw new ReleaseActivatedNothingError(
-            "No sharing configuration is enabled",
-          );
-        }
 
         const m = await this.manifestService.createMasterManifest(
           tx,
