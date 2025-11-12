@@ -16,6 +16,8 @@ export const VPC_LATTICE_ACCESS_POINT_BUCKET_KEY_SUFFIX = "Bucket";
 
 export const VPC_LATTICE_ACCESS_POINT_VPC_ID = "VpcId";
 
+export const VPC_LATTICE_ACCESS_POINT_DOMAIN_NAME = "DomainName";
+
 /**
  * Create an access point share resource
  * wrapping a single bucket that we can insert into
@@ -99,6 +101,7 @@ function createAccessPointResourceForBucket(
  * @param objects the list of S3 objects that we are sharing
  * @param shareDestinationVpcId the specific destination VPC id that should be specified in the access point
  * @param signingVpcId the specific VPC id that will be where the signing principal lives
+ * @param htsgetDomainName the domain name of the htsget server associated with this share
  */
 export function createCloudFormationTemplateFromObjects(
   logger: Logger,
@@ -107,6 +110,7 @@ export function createCloudFormationTemplateFromObjects(
   objects: ManifestBucketKeyObjectType[],
   shareDestinationVpcId: string,
   signingVpcId: string,
+  htsgetDomainName: string,
 ): AccessPointTemplateToSave {
   // for the S3 paths of the resulting templates - we want to make sure every time we do this it is in someway unique
   // (these end up going into a temporary bucket and are later removed)
@@ -121,6 +125,9 @@ export function createCloudFormationTemplateFromObjects(
     Outputs: {
       [VPC_LATTICE_ACCESS_POINT_VPC_ID]: {
         Value: shareDestinationVpcId,
+      },
+      [VPC_LATTICE_ACCESS_POINT_DOMAIN_NAME]: {
+        Value: htsgetDomainName,
       },
     },
   };

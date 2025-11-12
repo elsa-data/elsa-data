@@ -11,6 +11,7 @@ import {
   type ManifestHtsgetResponseType,
 } from "../../../business/services/manifests/htsget/manifest-htsget-types";
 import { HtsgetAwsVpcLatticeAccessPointService } from "../../../business/services/sharers/htsget-aws-vpc-lattice-access-point/htsget-aws-vpc-lattice-access-point-service";
+import type { SharerHtsgetAwsVpcLatticeAccessPointType } from "../../../config/config-schema-sharer.ts";
 import { getServices } from "../../../di-helpers.ts";
 
 export const manifestRoutes = async (
@@ -135,6 +136,7 @@ export const manifestRoutes = async (
     }
 
     let found = false;
+    let sharer: SharerHtsgetAwsVpcLatticeAccessPointType;
 
     // we can do a very _quick_ simple check to make sure that the incoming VPC is mentioned
     // somewhere in the sharing settings - if not, then by definition we shouldn't be
@@ -143,6 +145,7 @@ export const manifestRoutes = async (
       if (s.type === "htsget-aws-vpc-lattice-access-point") {
         for (const [name, destination] of Object.entries(s.destinations)) {
           if (destination.vpcId === vpcId) {
+            sharer = s;
             found = true;
           }
         }
