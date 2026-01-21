@@ -9,18 +9,11 @@ import Type from "typebox";
  */
 
 export const CopyInvokeEntry = Type.Object({
-  bytes_transferred: Type.Integer(),
-  copy_mode: Type.String(),
+  bytesTransferred: Type.Integer(),
+  copyMode: Type.String(),
   source: Type.String(),
   destination: Type.String(),
-  elapsed_seconds: Type.Number(),
-  n_retries: Type.Optional(Type.String()),
-  reason: Type.Optional(
-    Type.Object({
-      kind: Type.String(),
-      value: Type.String(),
-    }),
-  ),
+  elapsedSeconds: Type.Number(),
 });
 
 export type CopyInvokeEntryType = Type.Static<typeof CopyInvokeEntry>;

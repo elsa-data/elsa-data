@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { internalProcedure, router } from "../trpc-bootstrap";
+import { calculateOffset, internalProcedure, router } from "../trpc-bootstrap";
+import { unorderedInputPaginationParameter } from "./input-schemas-common";
 
 const inputStepsExecutionArn = z.object({
   stepsExecutionArn: z.string(),
@@ -12,7 +13,6 @@ export const copyServiceRouter = router({
   getCopied: internalProcedure.query(async ({ input, ctx }) => {
     return ctx.copyService.getCopied();
   }),
-  /* JUST FOR LOCAL DEMONSTRATION - DISABLED
   getCopiedReportHeader: internalProcedure
     .input(inputStepsExecutionArn)
     .query(async ({ input, ctx }) => {
@@ -29,5 +29,5 @@ export const copyServiceRouter = router({
         pageSize,
         calculateOffset(page, pageSize),
       );
-    }),*/
+    }),
 });

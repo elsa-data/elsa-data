@@ -4,16 +4,18 @@ import { IsLoadingDiv } from "../../components/is-loading-div";
 import classNames from "classnames";
 import { useNavigate } from "react-router-dom";
 import { useTRPC } from "../../helpers/trpc-modern.ts";
+import { useQuery } from "@tanstack/react-query";
 
 export const CopiesDashboardPage: React.FC = () => {
   const trpc = useTRPC();
   const navigate = useNavigate();
 
+  const getCopiedQueryOptions = trpc.copyService.getCopied.queryOptions();
   const {
     data: copyData,
     isSuccess: copyIsSuccess,
     isPending: copyIsPending,
-  } = trpc.copyService.getCopied.useQuery();
+  } = useQuery(getCopiedQueryOptions);
 
   return (
     <>

@@ -27,8 +27,16 @@ export type CopySummaryEntry = CopyInvokeEntryType;
 
 export type CopySummaryHeader = {
   overallError?: string;
-  timeTakenSeconds: number;
+
+  // the total number of bytes transferred
   totalBytesTransferred: number;
+
+  // the number of seconds that the "whole" orchestration took by
+  // measuring the difference of literal start and end times
+  wallClockTimeTakenSeconds: number;
+
+  // the average transfer speed as bytes/second
+  averageTransferSpeed: number;
 };
 
 export type CopySummary = {
@@ -251,6 +259,7 @@ export class CopyService {
           // and use that to look at stats
           // for instance - get time taken for thaw from
           // thawing copier
+          if (sr.type !== "Large") continue;
 
           for await (const e of getCopierMapRunManifestEntries(
             this.s3Client,
@@ -262,15 +271,25 @@ export class CopyService {
         }
 
         let totalTransferred = 0;
+        let totalCopies = 0;
+        let totalRate = 0;
 
         for (const stat of resultArray) {
-          totalTransferred += stat.bytes_transferred;
+          totalCopies += 1;
+          totalTransferred += stat.bytesTransferred;
+
+          if (stat.elapsedSeconds > 0) {
+            const rate = stat.bytesTransferred / stat.elapsedSeconds;
+
+            totalRate += rate;
+          }
         }
 
         return {
           header: {
             totalBytesTransferred: totalTransferred,
-            timeTakenSeconds:
+            averageTransferSpeed: totalRate / totalCopies,
+            wallClockTimeTakenSeconds:
               (describeExecutionResult.stopDate!.getTime() -
                 describeExecutionResult.startDate!.getTime()) /
               1000,
@@ -281,7 +300,8 @@ export class CopyService {
         return {
           header: {
             overallError: "Result was not an array",
-            timeTakenSeconds: 0,
+            averageTransferSpeed: 1,
+            wallClockTimeTakenSeconds: 1,
             totalBytesTransferred: 0,
           },
           entries: [],
@@ -291,7 +311,8 @@ export class CopyService {
     return {
       header: {
         overallError: describeExecutionResult.error!,
-        timeTakenSeconds: 0,
+        averageTransferSpeed: 1,
+        wallClockTimeTakenSeconds: 1,
         totalBytesTransferred: 0,
       },
       entries: [],
