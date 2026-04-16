@@ -110,3 +110,6 @@ application/backend/asset/maxmind/
 .DS_Store
 
 .direnv/
+
+# Helm charts
+helm/charts/

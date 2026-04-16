@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gel
+  labels:
+    app: gel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gel
+  template:
+    metadata:
+      labels:
+        app: gel
+    spec:
+      containers:
+        - name: gel
+          image: geldata/gel:6
+          ports:
+            - containerPort: 5656
+          env:
+            - name: GEL_SERVER_TLS_CERT_MODE
+              value: generate_self_signed
+            - name: GEL_SERVER_USER
+              value: admin
+            - name: GEL_PORT
+              value: "5656"
+            - name: GEL_SERVER_SECURITY
+              value: insecure_dev_mode
+            - name: GEL_SERVER_DEFAULT_AUTH_METHOD
+              value: Trust
+            - name: GEL_SERVER_PASSWORD
+              value: testpass
+            - name: GEL_PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: elsa-postgres
+                  key: postgres-password
+            - name: GEL_SERVER_BACKEND_DSN
+              value: postgres://postgres:$(GEL_PG_PASSWORD)@elsa-postgres:5432
