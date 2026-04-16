@@ -108,3 +108,5 @@ application/backend/asset/maxmind/
 
 # Mac browsing files
 .DS_Store
+
+.direnv/
