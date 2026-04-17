@@ -112,4 +112,4 @@ application/backend/asset/maxmind/
 .direnv/
 
 # Helm charts
-helm/charts/
+!helm/charts/*.tgz
