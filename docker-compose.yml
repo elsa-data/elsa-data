@@ -1,0 +1,13 @@
+services:
+  gel:
+    image: geldata/gel:7
+    ports:
+      - "5656:5656"
+    environment:
+      - GEL_SERVER_PASSWORD=development
+      - GEL_SERVER_TLS_CERT_MODE=generate_self_signed
+    volumes:
+      - gel-data:/var/lib/gel/data
+
+volumes:
+  gel-data:
