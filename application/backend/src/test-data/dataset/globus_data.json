@@ -1,0 +1,802 @@
+[
+  {
+    "sample_id": "SAMPLE001",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "56cc25df93be39f6d51606ad4c0bcb06"
+  },
+  {
+    "sample_id": "SAMPLE002",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "69fc767a9c236f3aa9a91ef7e642dd84"
+  },
+  {
+    "sample_id": "SAMPLE003",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "1bc6ea7e9974fd2b18ac4d39b82045c6"
+  },
+  {
+    "sample_id": "SAMPLE004",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "706cb26992253cacc1c12e4519cc599e"
+  },
+  {
+    "sample_id": "SAMPLE005",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "ec40d047cb7cd197ec8f3d68e0585171"
+  },
+  {
+    "sample_id": "SAMPLE006",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "d20d7b0398ce90a92e7a2404e24f11f6"
+  },
+  {
+    "sample_id": "SAMPLE007",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "a9e519edafa7b05b4a19fb5f675265c6"
+  },
+  {
+    "sample_id": "SAMPLE008",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "629b98bfd1adbdef60fd14f294a1033c"
+  },
+  {
+    "sample_id": "SAMPLE009",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "61de6bfb525633ce28b78de38ad229af"
+  },
+  {
+    "sample_id": "SAMPLE010",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "0c1c0ea6906547df7a1c90b7d948550f"
+  },
+  {
+    "sample_id": "SAMPLE011",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "f84f6dabaa567125d1c7b487ac639ef6"
+  },
+  {
+    "sample_id": "SAMPLE012",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "1d28952fc210af718bc391beb6a7a72c"
+  },
+  {
+    "sample_id": "SAMPLE013",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "73a1f75e661945f8c5b54254e3e6942e"
+  },
+  {
+    "sample_id": "SAMPLE014",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "221c9463015048e8bbc2f8baf0dbcbe2"
+  },
+  {
+    "sample_id": "SAMPLE015",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "1f8ab53292a7ac4805cbaa91e010e0f7"
+  },
+  {
+    "sample_id": "SAMPLE016",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "e73a6313e93974638b6a8a697fc4a6ac"
+  },
+  {
+    "sample_id": "SAMPLE017",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "81e2b39851e36404be4fce4b65cce8db"
+  },
+  {
+    "sample_id": "SAMPLE018",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "1bf3ffd70cceb4e6b080954e738c625b"
+  },
+  {
+    "sample_id": "SAMPLE019",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "c0a730fb18dc078d20710876582dff3f"
+  },
+  {
+    "sample_id": "SAMPLE020",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "4ebfe595ffd59eb9963c9a090b44b3e9"
+  },
+  {
+    "sample_id": "SAMPLE021",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "4954a911d5c39790c1fa4458e5099fed"
+  },
+  {
+    "sample_id": "SAMPLE022",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "695ae89916ecd82de9f518dc71da3d85"
+  },
+  {
+    "sample_id": "SAMPLE023",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "64fc4c45aaf8a7dc4a940e8d7356ba05"
+  },
+  {
+    "sample_id": "SAMPLE024",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "b2a3392b17cec4d88698a5370ff36cb1"
+  },
+  {
+    "sample_id": "SAMPLE025",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "c62d0e099fe7b1d1fd30cc0f2cfb1061"
+  },
+  {
+    "sample_id": "SAMPLE026",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "61702946907bfb4f880e57addfb040d0"
+  },
+  {
+    "sample_id": "SAMPLE027",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "5c530d2a04e8b58e6f21c89d51dc4ab4"
+  },
+  {
+    "sample_id": "SAMPLE028",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "655fc11200bf6aea5b3fae8c200550f5"
+  },
+  {
+    "sample_id": "SAMPLE029",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "e6445a9754459e510b1e0f88b80a41e9"
+  },
+  {
+    "sample_id": "SAMPLE030",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "06cfda47df3f3b8b58dc7f4af7f761cc"
+  },
+  {
+    "sample_id": "SAMPLE031",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "d5f7ad8333646776f4903b0f68a21af8"
+  },
+  {
+    "sample_id": "SAMPLE032",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "b4d608c8102bf6afbaf5c6ca20bd530b"
+  },
+  {
+    "sample_id": "SAMPLE033",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "75ccf2026c6d3c41698f406790e22869"
+  },
+  {
+    "sample_id": "SAMPLE034",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "9ee5dd13f104a6ed102ce76a9d4ae199"
+  },
+  {
+    "sample_id": "SAMPLE035",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "b72f2897561e7f6d8fe8bac6c174f6c5"
+  },
+  {
+    "sample_id": "SAMPLE036",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "5e6e9a85869d6f6caaf1fcf2305243e8"
+  },
+  {
+    "sample_id": "SAMPLE037",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "77835c3404c91c26639ae6759fef27aa"
+  },
+  {
+    "sample_id": "SAMPLE038",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "27f5f91167cad71966318fa1503aa232"
+  },
+  {
+    "sample_id": "SAMPLE039",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "c8d921abe99cfa2d4be5a34ba945e1c9"
+  },
+  {
+    "sample_id": "SAMPLE040",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "692ccee11175885a05802fe8d314b79c"
+  },
+  {
+    "sample_id": "SAMPLE041",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "6808ea7b90debd5ebecb200dae45e9d4"
+  },
+  {
+    "sample_id": "SAMPLE042",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "b41293893ca1343886f6cb148ff6857a"
+  },
+  {
+    "sample_id": "SAMPLE043",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "87c044f276ed63585aeca0d45f1df44e"
+  },
+  {
+    "sample_id": "SAMPLE044",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "2456dedf025ee635911f77f8d72c7281"
+  },
+  {
+    "sample_id": "SAMPLE045",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "d1779921ab85bf8637e3512abaffad68"
+  },
+  {
+    "sample_id": "SAMPLE046",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "f11092f96dc93c9afa3ad23dbfe5e453"
+  },
+  {
+    "sample_id": "SAMPLE047",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "02c92e2b553ab451ec78845a84bb990b"
+  },
+  {
+    "sample_id": "SAMPLE048",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "5b36c7c556de50a8a0c743b745e0f146"
+  },
+  {
+    "sample_id": "SAMPLE049",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "bcf52ad8b78941caf47cb54ea63f7e05"
+  },
+  {
+    "sample_id": "SAMPLE050",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "cd62ff685d2bd175576da93337b855c8"
+  },
+  {
+    "sample_id": "SAMPLE051",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "ba0a7fe6ff89e56e8230bdbffef8b327"
+  },
+  {
+    "sample_id": "SAMPLE052",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "1f8371c2c70aca5761febc17d4bcffe0"
+  },
+  {
+    "sample_id": "SAMPLE053",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "57aff416f482cb9a1e3ba6a55e2e4275"
+  },
+  {
+    "sample_id": "SAMPLE054",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "c9c4b0d617c9113927cc899e6a55f8cf"
+  },
+  {
+    "sample_id": "SAMPLE055",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "377c37b41f7f1e2a9cbea4902808e3c1"
+  },
+  {
+    "sample_id": "SAMPLE056",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "4a87e2b3a730ace6fe43b9012f75f9c8"
+  },
+  {
+    "sample_id": "SAMPLE057",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "66cba1b2ba8324e4e4de6f4c5f0ac494"
+  },
+  {
+    "sample_id": "SAMPLE058",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "c9281f63fa355919292f4fa8d21343d5"
+  },
+  {
+    "sample_id": "SAMPLE059",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "3bed288269b4f0a77e90ffe3848e1e4a"
+  },
+  {
+    "sample_id": "SAMPLE060",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "3d31e2f9e74c6f987ff8c80ac9f7a869"
+  },
+  {
+    "sample_id": "SAMPLE061",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "f55eb960bdc9ebdf69d634910aed25e5"
+  },
+  {
+    "sample_id": "SAMPLE062",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "090e8def1041d043f75c58ae2888dfd0"
+  },
+  {
+    "sample_id": "SAMPLE063",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "85283736ab2fd5690b772dbe83dec34b"
+  },
+  {
+    "sample_id": "SAMPLE064",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "e9435d66f8730b308d263fbc58c04585"
+  },
+  {
+    "sample_id": "SAMPLE065",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "55204cf3dd9669fcc74b1ab4f25ee5f9"
+  },
+  {
+    "sample_id": "SAMPLE066",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "c8dd327f14fa5403657cfc8eea6a697a"
+  },
+  {
+    "sample_id": "SAMPLE067",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "85ee2e7b1886fe83d5f716bc65bfbf18"
+  },
+  {
+    "sample_id": "SAMPLE068",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "60deb3667cb745da22915a98270e8b99"
+  },
+  {
+    "sample_id": "SAMPLE069",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "7230f957d1bc856c8da432be8379d8e3"
+  },
+  {
+    "sample_id": "SAMPLE070",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "926446878f7035a80dbe18be470c3490"
+  },
+  {
+    "sample_id": "SAMPLE071",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "32f0c06222a620df27489fe4b9364faa"
+  },
+  {
+    "sample_id": "SAMPLE072",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "d55d02f3d674e416fd4ebc07f702522b"
+  },
+  {
+    "sample_id": "SAMPLE073",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "c57a22c443d213ef9994eaa84fff3d38"
+  },
+  {
+    "sample_id": "SAMPLE074",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "5fa3e0cb48eab26c52c5f2879f917061"
+  },
+  {
+    "sample_id": "SAMPLE075",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "2a87a98c53e694c27544f457412321c8"
+  },
+  {
+    "sample_id": "SAMPLE076",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "ce12b992f23f085c1786c7b580e4884e"
+  },
+  {
+    "sample_id": "SAMPLE077",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "879edcd1e4b7847c504e41362db5a858"
+  },
+  {
+    "sample_id": "SAMPLE078",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "4c2a4b75d4852b3a592e910d71c480e1"
+  },
+  {
+    "sample_id": "SAMPLE079",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "74bd364e9956a7e64b4c759180e72fa7"
+  },
+  {
+    "sample_id": "SAMPLE080",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "bb933c4deea009d722fc2819d14db5a6"
+  },
+  {
+    "sample_id": "SAMPLE081",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "e37e38ca27013fd3109677d6ec98b22c"
+  },
+  {
+    "sample_id": "SAMPLE082",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "33e4ea392683c0363f565960353638d3"
+  },
+  {
+    "sample_id": "SAMPLE083",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "1d637bc907c8531827ff455e8564fe8e"
+  },
+  {
+    "sample_id": "SAMPLE084",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "9530731d3bc50f91ab585bacabeb315e"
+  },
+  {
+    "sample_id": "SAMPLE085",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "2de37a90c6b601475004cb18b8efa38b"
+  },
+  {
+    "sample_id": "SAMPLE086",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "8ca69e822e975844fd0b39aae1b1f922"
+  },
+  {
+    "sample_id": "SAMPLE087",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "c601912ae2eb355e2a4432972bbe54ce"
+  },
+  {
+    "sample_id": "SAMPLE088",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "50f2b74a2d1fb753efc3f6a1710e04f6"
+  },
+  {
+    "sample_id": "SAMPLE089",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "294b5411cf35e995b08857028642c6a6"
+  },
+  {
+    "sample_id": "SAMPLE090",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "8568c9a1c9d6db5d16947456099d9bdc"
+  },
+  {
+    "sample_id": "SAMPLE091",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "550c1d59fbcf1caf3430614044f06eaf"
+  },
+  {
+    "sample_id": "SAMPLE092",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "ab2c03615d108a478009657036a8a669"
+  },
+  {
+    "sample_id": "SAMPLE093",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "4e11ff7a0aa10e653d8b627cd1d19493"
+  },
+  {
+    "sample_id": "SAMPLE094",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "2552208cacf7fabf8cd8dd313eb84013"
+  },
+  {
+    "sample_id": "SAMPLE095",
+    "sub_dir": "commercial",
+    "duo_code": "DUO:0000004",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "3cdcdeb9b024fae94f527f50fe83d23a"
+  },
+  {
+    "sample_id": "SAMPLE096",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "36fdecae9e251ee77f11f7853df810c7"
+  },
+  {
+    "sample_id": "SAMPLE097",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "318b3cc6de93b60c0946fd2fbc836540"
+  },
+  {
+    "sample_id": "SAMPLE098",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "f7b6e8f687ea552d8d84ed4064ad8b2a"
+  },
+  {
+    "sample_id": "SAMPLE099",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "8ccf70d78b6fb0daf98d0cca771b974c"
+  },
+  {
+    "sample_id": "SAMPLE100",
+    "sub_dir": "noncommercial",
+    "duo_code": "DUO:0000018",
+    "bam_size": 1000000000,
+    "bai_size": 10000,
+    "md5_hash": "9ab69c429b55e678f0f3c4faf5d98417"
+  }
+]

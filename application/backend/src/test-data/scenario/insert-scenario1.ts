@@ -31,9 +31,11 @@ import {
   SMARTIE_URI,
 } from "../dataset/insert-test-data-smartie";
 import { CONTROL_DATASET_URI } from "../dataset/test-data-control.ts";
+import { GLOBUS_DATASET_URI } from "../dataset/test-data-globus.ts";
 import { KAOS_DATASET_URI } from "../dataset/test-data-kaos.ts";
 import { insertRelease6 } from "../release/insert-test-data-release6";
 import { insertRelease7 } from "../release/insert-test-data-release7.ts";
+import { insertRelease8 } from "../release/insert-test-data-release8.ts";
 import { insertUser5 } from "../user/insert-user5";
 
 const BLANK_DB_PROPS = [
@@ -138,6 +140,8 @@ export async function insertScenario1(dc: DependencyContainer) {
 
   await devLoader.synchroniseDataset(edgeDbClient, CONTROL_DATASET_URI);
 
+  await devLoader.synchroniseDataset(edgeDbClient, GLOBUS_DATASET_URI);
+
   // Some blank DB records inserted to see how it looks like
   for (const dbProp of BLANK_DB_PROPS) {
     await insertBlankDataset(dbProp.id, dbProp.uri);
@@ -185,6 +189,12 @@ export async function insertScenario1(dc: DependencyContainer) {
     releaseManager: [manager],
     releaseMember: [member],
     datasetUris: [KAOS_DATASET_URI, CONTROL_DATASET_URI],
+  });
+  const r8 = await insertRelease8(dc, {
+    releaseAdministrator: [administrator],
+    releaseManager: [manager],
+    releaseMember: [member],
+    datasetUris: [GLOBUS_DATASET_URI],
   });
 
   logger.debug(
