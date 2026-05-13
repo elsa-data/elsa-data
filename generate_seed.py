@@ -14,11 +14,19 @@ for i in range (1, 101):
     if os.path.exists(os.path.join(commercial_dir, f"{sample}.bam")):
         sub_dir = "commercial"
         local_dir_path = commercial_dir
-        duo_code = "DUO:0000004" # No Restriction
+        # General Research use (no modifiers)
+        duo_json = {
+            "code": "DUO:0000042",
+            "modifiers": []
+        }
     elif os.path.exists(os.path.join(noncommercial_dir, f"{sample}.bam")):
         sub_dir = "noncommercial"
         local_dir_path = noncommercial_dir
-        duo_code = "DUO:0000018" # Not for profit, non-commercial use only
+        # Non-commercial: General Research Use + Non-Commercial Use Only modifier
+        duo_json = {
+            "code": "DUO:0000042",
+            "modifiers": [ { "code": "DUO:0000046"}]
+        }
     else:
         continue
 
@@ -40,7 +48,7 @@ for i in range (1, 101):
     samples_data.append({
       "sample_id": sample,
       "sub_dir": sub_dir,
-      "duo_code": duo_code,
+      "duo_json": duo_json,
       "bam_size": bam_size,
       "bai_size": bai_size,
       "md5_hash": md5_hash

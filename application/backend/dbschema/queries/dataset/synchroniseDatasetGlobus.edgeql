@@ -18,7 +18,7 @@ WITH
         consent := (INSERT consent::Consent {
           statements := {
             (INSERT consent::ConsentStatementDuo {
-              dataUseLimitation := <json>(code := <str>item['duo_code'])
+              dataUseLimitation := <json>item['duo_json']
             })
           }
         }),
