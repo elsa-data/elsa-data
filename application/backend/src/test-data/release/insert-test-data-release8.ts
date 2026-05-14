@@ -49,7 +49,7 @@ export async function insertRelease8(
       isAllowedReadData: true,
       isAllowedVariantData: true,
       isAllowedPhenotypeData: true,
-      isAllowedS3Data: true,
+      isAllowedNciGlobusData: true,
       releaseAuditLog: e.set(
         e.insert(e.audit.ReleaseAuditEvent, {
           actionCategory: "C",

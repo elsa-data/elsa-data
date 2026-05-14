@@ -563,7 +563,8 @@ ${release.applicantEmailAddresses}
       | "isAllowedPhenotypeData"
       | "isAllowedS3Data"
       | "isAllowedGSData"
-      | "isAllowedR2Data",
+      | "isAllowedR2Data"
+      | "isAllowedNciGlobusData",
     value: boolean,
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
@@ -599,7 +600,10 @@ ${release.applicantEmailAddresses}
           isAllowedGSData: {
             isAllowedGSData: value,
           },
-          isAllowedR2Data: { isAllowedR2Data: value },
+          isAllowedR2Data: {
+            isAllowedR2Data: value,
+          },
+          isAllowedNciGlobusData: { isAllowedNciGlobusData: value },
         }[type];
 
         await this.edgeDbClient.transaction(async (tx) => {

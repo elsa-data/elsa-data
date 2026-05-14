@@ -151,6 +151,7 @@ export const ReleaseDetailSchema = Type.Object({
   isAllowedS3Data: Type.Boolean(),
   isAllowedGSData: Type.Boolean(),
   isAllowedR2Data: Type.Boolean(),
+  isAllowedNciGlobusData: Type.Boolean(),
 
   // Permission for the current user that allowed to edit other user's role within the release.
   rolesAllowedToAlterParticipant: Nullable(
