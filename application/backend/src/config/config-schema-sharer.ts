@@ -58,12 +58,20 @@ export const SharerHtsgetAwsVpcLatticeAccessPointSchema = z.object({
     ),
 });
 
+export const SharerGlobusSchema = z.object({
+  id: z.string(),
+  type: z.literal("globus"),
+  clientId: z.string(), // TODO: Add more strictness
+  clientSecret: z.string(),
+});
+
 export const SharerSchema = z.discriminatedUnion("type", [
   SharerObjectSigningSchema,
   SharerCopyOutSchema,
   SharerHtsgetSchema,
   SharerAwsAccessPointSchema,
   SharerHtsgetAwsVpcLatticeAccessPointSchema,
+  SharerGlobusSchema,
 ]);
 
 export type SharerType = z.infer<typeof SharerSchema>;
@@ -77,3 +85,4 @@ export type SharerAwsAccessPointType = z.infer<
 export type SharerHtsgetAwsVpcLatticeAccessPointType = z.infer<
   typeof SharerHtsgetAwsVpcLatticeAccessPointSchema
 >;
+export type SharereGlobusType = z.infer<typeof SharerGlobusSchema>;

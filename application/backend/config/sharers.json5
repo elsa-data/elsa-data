@@ -40,5 +40,11 @@
         },
       },
     },
+    {
+      id: "nci-globus",
+      type: "globus",
+      clientId: "",
+      clientSecret: "",
+    },
   ],
 }
