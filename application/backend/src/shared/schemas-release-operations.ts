@@ -137,6 +137,11 @@ export const ReleasePatchOperationSchema = Type.Union([
     path: Type.Literal("/dataSharingConfiguration/gcpStorageIamUsers"),
     value: Type.Array(Type.String()),
   }),
+  Type.Object({
+    op: Type.Literal("replace"),
+    path: Type.Literal("/dataSharingConfiguration/globusEnabled"),
+    value: Type.Boolean(),
+  }),
 ]);
 
 export type ReleasePatchOperationType = Type.Static<

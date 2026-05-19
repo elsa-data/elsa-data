@@ -510,6 +510,9 @@ export abstract class ReleaseBaseService {
             users: releaseInfo.dataSharingConfiguration.gcpStorageIamUsers,
           }
         : undefined,
+      dataSharingGlobus: releaseInfo.dataSharingConfiguration.globusEnabled
+        ? { installed: true }
+        : undefined,
     };
   }
 

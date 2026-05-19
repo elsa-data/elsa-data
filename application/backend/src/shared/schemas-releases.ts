@@ -115,6 +115,15 @@ export type DataSharingHtsgetAwsVpcLatticeAccessPointType = Type.Static<
   typeof DataSharingHtsgetAwsVpcLatticeAccessPointSchema
 >;
 
+export const DataSharingGlobusSchema = Type.Optional(
+  Type.Object({
+    installed: Type.Boolean(),
+    // TODO: Add Group Ids here??
+  }),
+);
+
+export type DataSharingGlobusType = Type.Static<typeof DataSharingGlobusSchema>;
+
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
 
@@ -205,6 +214,8 @@ export const ReleaseDetailSchema = Type.Object({
       users: Type.Array(Type.String()),
     }),
   ),
+
+  dataSharingGlobus: DataSharingGlobusSchema,
 
   // once we get @role link properties working we should enable this
   // roleInRelease: Type.String(),
