@@ -287,5 +287,6 @@ module release {
 
         required property gcpStorageIamEnabled -> bool { default := false };
         required property gcpStorageIamUsers -> array<str> { default := <array<str>>[] };
+        required property globusEnabled -> bool { default := false };
     }
 }
