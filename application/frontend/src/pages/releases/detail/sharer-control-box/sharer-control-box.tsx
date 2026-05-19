@@ -16,6 +16,7 @@ import { CopyOutAccordionContent } from "./copy-out-accordion-content";
 import { ObjectSigningAccordionContent } from "./object-signing-accordion-content";
 import { HtsgetAccordionContent } from "./htsget-accordion-content";
 import { AwsAccessPointAccordionContent } from "./aws-access-point-accordion-content";
+// import { GlobusAccordionContent } from "./globus-accordion-content";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { HtsgetAwsVpcLatticeAccessPointAccordionContent } from "./htsget-aws-vpc-lattice-access-point-accordion-content.tsx";
 
@@ -64,6 +65,7 @@ export const SharerControlBox: React.FC<Props> = ({
   const htsgetAwsVpcLatticeAccessPointSetting = sharers.find(
     isDiscriminate("type", "htsget-aws-vpc-lattice-access-point"),
   );
+  const globusSetting = sharers.find(isDiscriminate("type", "globus"));
 
   // the "enabled" fields are whether the custodian has checked the checkbox..
   const objectSigningEnabled = !!releaseData.dataSharingObjectSigning;
@@ -73,6 +75,7 @@ export const SharerControlBox: React.FC<Props> = ({
   const htsgetAwsVpcLatticeAccessPointEnabled =
     !!releaseData.dataSharingHtsgetAwsVpcLatticeAccessPoint;
   // const gcpStorageIamEnabled = !!releaseData.dataSharingGcpStorageIam;
+  const globusEnabled = !!releaseData.dataSharingGlobus;
 
   const error = (releasePatchMutate.error as any)?.response?.data;
   const isError = releasePatchMutate.isError;
@@ -189,6 +192,18 @@ export const SharerControlBox: React.FC<Props> = ({
                       !!htsgetAwsVpcLatticeAccessPointSetting.notWorkingReason
                     }
                   />
+                </SharingConfigurationAccordion>
+              )}
+
+              {globusSetting && (
+                <SharingConfigurationAccordion
+                  mutator={releasePatchMutate}
+                  path="/dataSharingConfiguration/globusEnabled"
+                  label="Globus"
+                  current={globusEnabled}
+                  notWorkingReason={globusSetting.notWorkingReason}
+                >
+                  "hi!"
                 </SharingConfigurationAccordion>
               )}
             </>
