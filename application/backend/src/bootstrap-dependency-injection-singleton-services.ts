@@ -12,6 +12,7 @@ import { GcpEnabledService } from "./business/services/gcp-enabled-service";
 import { GcpPresignedUrlService } from "./business/services/gcp-presigned-url-service";
 import { GcpStorageSharingService } from "./business/services/gcp-storage-sharing-service";
 import { GlobusEnabledService } from "./business/services/globus/globus-enabled-service";
+import { GlobusService } from "./business/services/globus/globus-service";
 import { IPLookupService } from "./business/services/ip-lookup-service";
 import { S3ManifestHtsgetService } from "./business/services/manifests/htsget/manifest-htsget-service";
 import { ManifestService } from "./business/services/manifests/manifest-service";
@@ -36,6 +37,8 @@ export function bootstrapDependencyInjectionSingletonServices(
   dc.registerSingleton("IAwsDiscoveryService", AwsDiscoveryService);
 
   dc.registerSingleton(GlobusEnabledService);
+  dc.registerSingleton(GlobusService);
+
   dc.registerSingleton(GcpEnabledService);
   dc.registerSingleton(GcpStorageSharingService);
   dc.registerSingleton(GcpPresignedUrlService);

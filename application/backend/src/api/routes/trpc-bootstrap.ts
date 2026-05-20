@@ -7,6 +7,7 @@ import { AwsCloudTrailLakeService } from "../../business/services/aws/aws-cloudt
 import { CopyService } from "../../business/services/copy-service";
 import { DacService } from "../../business/services/dacs/dac-service";
 import { DatasetService } from "../../business/services/dataset/dataset-service.ts";
+import { GlobusService } from "../../business/services/globus/globus-service.ts";
 import { JobCloudFormationCreateService } from "../../business/services/jobs/job-cloud-formation-create-service";
 import { JobCloudFormationDeleteService } from "../../business/services/jobs/job-cloud-formation-delete-service";
 import { JobCopyOutService } from "../../business/services/jobs/job-copy-out-service";
@@ -128,6 +129,7 @@ const isSessionCookieAuthed = middleware(async ({ next, ctx }) => {
       awsCloudTrailLakeService: ctx.container.resolve(AwsCloudTrailLakeService),
       //      agS3IndexService: ctx.container.resolve(S3IndexApplicationService),
       sharerService: ctx.container.resolve(SharerService),
+      globusService: ctx.container.resolve(GlobusService),
       ...ctx,
     },
   });
