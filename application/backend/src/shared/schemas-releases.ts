@@ -118,6 +118,7 @@ export type DataSharingHtsgetAwsVpcLatticeAccessPointType = Type.Static<
 export const DataSharingGlobusSchema = Type.Optional(
   Type.Object({
     installed: Type.Boolean(),
+    globusResearcherUsername: Type.Optional(Type.String()),
     // TODO: Add Group Ids here??
   }),
 );

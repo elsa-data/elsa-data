@@ -511,7 +511,12 @@ export abstract class ReleaseBaseService {
           }
         : undefined,
       dataSharingGlobus: releaseInfo.dataSharingConfiguration.globusEnabled
-        ? { installed: true }
+        ? {
+            installed: true,
+            globusResearcherUsername:
+              releaseInfo.dataSharingConfiguration.globusResearcherUsername ??
+              undefined,
+          }
         : undefined,
     };
   }

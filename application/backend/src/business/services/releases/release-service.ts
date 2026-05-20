@@ -650,7 +650,8 @@ ${release.applicantEmailAddresses}
       | "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointName"
       | "/dataSharingConfiguration/gcpStorageIamEnabled"
       | "/dataSharingConfiguration/gcpStorageIamUsers"
-      | "/dataSharingConfiguration/globusEnabled",
+      | "/dataSharingConfiguration/globusEnabled"
+      | "/dataSharingConfiguration/globusResearcherUsername",
     value: any,
   ): Promise<ReleaseDetailType> {
     const { userRole, isActivated } =
@@ -811,6 +812,11 @@ ${release.applicantEmailAddresses}
           case "/dataSharingConfiguration/globusEnabled":
             fieldToSet = {
               globusEnabled: e.bool(value),
+            };
+            break;
+          case "/dataSharingConfiguration/globusResearcherUsername":
+            fieldToSet = {
+              globusResearcherUsername: e.str(value),
             };
             break;
           default:
