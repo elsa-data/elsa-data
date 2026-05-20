@@ -16,7 +16,7 @@ import { CopyOutAccordionContent } from "./copy-out-accordion-content";
 import { ObjectSigningAccordionContent } from "./object-signing-accordion-content";
 import { HtsgetAccordionContent } from "./htsget-accordion-content";
 import { AwsAccessPointAccordionContent } from "./aws-access-point-accordion-content";
-// import { GlobusAccordionContent } from "./globus-accordion-content";
+import { GlobusAccordionContent } from "./globus-accordion-content";
 import { EagerErrorBoundary } from "../../../../components/errors";
 import { HtsgetAwsVpcLatticeAccessPointAccordionContent } from "./htsget-aws-vpc-lattice-access-point-accordion-content.tsx";
 
@@ -203,7 +203,13 @@ export const SharerControlBox: React.FC<Props> = ({
                   current={globusEnabled}
                   notWorkingReason={globusSetting.notWorkingReason}
                 >
-                  "hi!"
+                  <GlobusAccordionContent
+                    releaseKey={releaseKey}
+                    releaseData={releaseData}
+                    releasePatchMutator={releasePatchMutate}
+                    globusSetting={globusSetting}
+                    globusWorking={!globusSetting.notWorkingReason}
+                  />
                 </SharingConfigurationAccordion>
               )}
             </>
