@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
 import type { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas-release-operations";
-import { SharereGlobusType } from "../../../../../../backend/src/config/config-schema-sharer";
+import { SharerGlobusType } from "../../../../../../backend/src/config/config-schema-sharer";
 import { useTRPC } from "../../../../helpers/trpc-modern";
 
 type GlobusAccordionContentProps = {
@@ -15,7 +15,7 @@ type GlobusAccordionContentProps = {
     ReleasePatchOperationType,
     any
   >;
-  globusSetting: SharereGlobusType; // TODO: Fix Typo
+  globusSetting: SharerGlobusType;
   globusWorking: boolean;
 };
 

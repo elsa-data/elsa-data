@@ -85,4 +85,4 @@ export type SharerAwsAccessPointType = z.infer<
 export type SharerHtsgetAwsVpcLatticeAccessPointType = z.infer<
   typeof SharerHtsgetAwsVpcLatticeAccessPointSchema
 >;
-export type SharereGlobusType = z.infer<typeof SharerGlobusSchema>;
+export type SharerGlobusType = z.infer<typeof SharerGlobusSchema>;
