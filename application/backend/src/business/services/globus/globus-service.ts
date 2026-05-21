@@ -89,4 +89,57 @@ export class GlobusService {
       identity_id: identity.id,
     };
   }
+
+  /*
+   * Assemble Globus Auth request URL with params.
+   */
+  public getAuthoriseUrl(state: string, redirectUri: string): string {
+    const globusSharer = this.settings.sharers?.find(
+      (s) => s.type == "globus",
+    )!;
+    const params = new URLSearchParams({
+      client_id: globusSharer.clientId,
+      response_type: "code",
+      scope: "urn:globus:auth:scope:groups.api.globus.org:all",
+      redirect_uri: redirectUri,
+      state,
+      prompt: "login",
+    });
+    return `https://auth.globus.org/v2/oauth2/authorize?${params}`;
+  }
+
+  /*
+   * Exchange Globus auth code for token.
+   */
+  public async exchangeCodeForToken(
+    code: string,
+    redirectUri: string,
+  ): Promise<string> {
+    const globusSharer = this.settings.sharers?.find(
+      (s) => s.type === "globus",
+    )!;
+    const basicAuth = Buffer.from(
+      `${globusSharer.clientId}:${globusSharer.clientSecret}`,
+    ).toString("base64");
+
+    const response = await fetch("https://auth.globus.org/v2/oauth2/token", {
+      method: "POST",
+      headers: {
+        Authorization: `Basic ${basicAuth}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: redirectUri,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Globus token exchange failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.access_token;
+  }
 }
