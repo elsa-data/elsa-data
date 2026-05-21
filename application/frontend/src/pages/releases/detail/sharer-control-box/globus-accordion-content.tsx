@@ -1,14 +1,9 @@
 import React, { PropsWithChildren } from "react";
 import { useSearchParams } from "react-router-dom";
-import {
-  useMutation,
-  UseMutationResult,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, UseMutationResult } from "@tanstack/react-query";
 import { ReleaseTypeLocal } from "../../shared-types";
 import type { ReleasePatchOperationType } from "../../../../../../backend/src/shared/schemas-release-operations";
 import { SharereGlobusType } from "../../../../../../backend/src/config/config-schema-sharer";
-import { EagerErrorBoundary } from "../../../../components/errors";
 import { useTRPC } from "../../../../helpers/trpc-modern";
 
 type GlobusAccordionContentProps = {
@@ -28,37 +23,14 @@ export const GlobusAccordionContent: React.FC<
   PropsWithChildren<GlobusAccordionContentProps>
 > = (props) => {
   const trpc = useTRPC();
-  const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const justAuthorised = searchParams.get("globusAuthorised") === "true";
   const globusAuthError = searchParams.get("globusError") === "true";
 
-  // const globusAuthoriseOptions = trpc.releaseJob.authoriseGlobus.mutationOptions({
-  //   onSuccess: async () => {
-  //     await queryClient.invalidateQueries(); // TODO: what does this do?
-
-  //     window.scrollTo({
-  //       top: 0,
-  //       left: 0,
-  //       behavior: "smooth",
-  //     });
-  //   },
-  // });
-
   const globusVerifyUsernameTriggerMutate = useMutation(
-    trpc.releaseJob.verifyGlobusUsername.mutationOptions({
-      onSuccess: async () => {
-        await queryClient.invalidateQueries();
-      },
-    }),
+    trpc.releaseJob.verifyGlobusUsername.mutationOptions({}),
   );
 
-  // const globusTriggerMutate = useMutation(globusAuthoriseOptions);
-
-  // const error = globusTriggerMutate.error;
-  // const isError = globusTriggerMutate.isError;
-
-  // {isError && <EagerErrorBoundary error={error} />}
   return (
     <>
       <div className="form-control flex-grow lg:w-3/4">
@@ -137,20 +109,7 @@ export const GlobusAccordionContent: React.FC<
           onClick={() => {
             window.location.href = `/api/globus/authorise?releaseKey=${props.releaseKey}`;
           }}
-          disabled={
-            // can't be already running a job
-            !!props.releaseData.runningJob ||
-            // must be activated
-            // !props.releaseData.activation ||
-            // can't be within our own trigger operation
-            // globusVerifyUsernameTriggerMutate.isPending ||
-            // can't be started whilst other fields are being mutated
-            // props.releasePatchMutator.isPending ||
-            // needs to be working
-            //
-            // TODO: Think of sensible guards here
-            !props.globusWorking
-          }
+          disabled={!props.globusWorking}
         >
           Authorise
         </button>
