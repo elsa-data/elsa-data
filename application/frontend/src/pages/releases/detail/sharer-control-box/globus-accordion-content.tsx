@@ -31,6 +31,7 @@ export const GlobusAccordionContent: React.FC<
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const justAuthorised = searchParams.get("globusAuthorised") === "true";
+  const globusAuthError = searchParams.get("globusError") === "true";
 
   // const globusAuthoriseOptions = trpc.releaseJob.authoriseGlobus.mutationOptions({
   //   onSuccess: async () => {
@@ -156,6 +157,11 @@ export const GlobusAccordionContent: React.FC<
         {justAuthorised && (
           <span className="label-text-alt mt-2 text-success">
             Successfully authorised with Globus
+          </span>
+        )}
+        {globusAuthError && (
+          <span className="label-text-alt mt-2 text-error">
+            Globus authorisation attempt failed
           </span>
         )}
       </div>

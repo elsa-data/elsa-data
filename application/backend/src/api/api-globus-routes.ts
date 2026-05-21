@@ -4,10 +4,6 @@ import type { DependencyContainer } from "tsyringe";
 import { GlobusService } from "../business/services/globus/globus-service";
 import { getServices } from "../di-helpers";
 import {
-  FLOW_FAIL_ROUTE_PART,
-  NOT_AUTHORISED_ROUTE_PART,
-} from "../shared/constants-routes";
-import {
   SESSION_GLOBUS_RELEASE_KEY_NAME,
   SESSION_GLOBUS_STATE_KEY_NAME,
   SESSION_GLOBUS_TOKEN_KEY_NAME,
@@ -69,8 +65,7 @@ export const apiGlobusRoutes = async (
 
     if (!code || !state || state !== sessionState || !releaseKey) {
       logger.warn("Globus callback: invalid state or missing code");
-      // TODO: these are for elsa auth flow not globus auth
-      reply.redirect(`/${NOT_AUTHORISED_ROUTE_PART}/${FLOW_FAIL_ROUTE_PART}`);
+      reply.redirect(`/releases/${releaseKey}/detail?globusError=true`);
       return;
     }
 
@@ -92,8 +87,7 @@ export const apiGlobusRoutes = async (
       logger.info({ releaseKey }, "Globus OAuth2 flow completed");
     } catch (err) {
       logger.error(err, "Globus callback: token exchange failed");
-      // TODO: these are for elsa auth flow not globus auth
-      reply.redirect(`/${NOT_AUTHORISED_ROUTE_PART}/${FLOW_FAIL_ROUTE_PART}`);
+      reply.redirect(`/releases/${releaseKey}/detail?globusError=true`);
       return;
     }
 
