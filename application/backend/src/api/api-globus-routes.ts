@@ -1,13 +1,16 @@
 import type { FastifyInstance } from "fastify";
 import { generators } from "openid-client";
 import type { DependencyContainer } from "tsyringe";
+import { AuditEventService } from "../business/services/audit-event-service";
 import { GlobusService } from "../business/services/globus/globus-service";
+import { UserService } from "../business/services/user-service";
 import { getServices } from "../di-helpers";
 import {
   SESSION_GLOBUS_RELEASE_KEY_NAME,
   SESSION_GLOBUS_STATE_KEY_NAME,
   SESSION_GLOBUS_TOKEN_KEY_NAME,
 } from "./auth/session-cookie-constants";
+import { getAuthenticatedUserFromSecureSession } from "./auth/session-cookie-helpers";
 import { cookieBackendSessionSetKeyValue } from "./helpers/cookie-helpers";
 
 /**
@@ -25,12 +28,13 @@ export const apiGlobusRoutes = async (
   },
 ) => {
   const { logger } = getServices(opts.container);
-  // TODO: look into if auditLogService is needed
+  const auditEventService = opts.container.resolve(AuditEventService);
+  const userService = opts.container.resolve(UserService);
 
   const globusService = opts.container.resolve(GlobusService);
 
   fastify.get("/authorise", async (request, reply) => {
-    const { releaseKey } = request.query as { releaseKey?: string }; //TODO: needed?
+    const { releaseKey } = request.query as { releaseKey?: string };
 
     const state = generators.state();
 
@@ -62,6 +66,10 @@ export const apiGlobusRoutes = async (
 
     const sessionState = request.session.get(SESSION_GLOBUS_STATE_KEY_NAME);
     const releaseKey = request.session.get(SESSION_GLOBUS_RELEASE_KEY_NAME);
+    const authedUser = getAuthenticatedUserFromSecureSession(
+      userService,
+      request,
+    );
 
     if (!code || !state || state !== sessionState || !releaseKey) {
       logger.warn("Globus callback: invalid state or missing code");
@@ -69,10 +77,6 @@ export const apiGlobusRoutes = async (
       return;
     }
 
-    logger.info(
-      { code: !!code, state, sessionState, releaseKey },
-      "Globus callback received",
-    );
     try {
       const token = await globusService.exchangeCodeForToken(
         code,
@@ -84,13 +88,31 @@ export const apiGlobusRoutes = async (
         SESSION_GLOBUS_TOKEN_KEY_NAME,
         token,
       );
+      if (authedUser) {
+        await auditEventService.createReleaseAuditEvent(
+          authedUser,
+          releaseKey,
+          "E",
+          "Globus OAuth2 authorisation completed",
+          { releaseKey },
+        );
+      }
       logger.info({ releaseKey }, "Globus OAuth2 flow completed");
     } catch (err) {
       logger.error(err, "Globus callback: token exchange failed");
+      if (authedUser) {
+        await auditEventService.createReleaseAuditEvent(
+          authedUser,
+          releaseKey,
+          "E",
+          "Globus OAuth2 authorisation failed",
+          { error: (err as Error).message },
+          8,
+        );
+      }
       reply.redirect(`/releases/${releaseKey}/detail?globusError=true`);
       return;
     }
-
     reply.redirect(`/releases/${releaseKey}/detail?globusAuthorised=true`);
   });
 };
