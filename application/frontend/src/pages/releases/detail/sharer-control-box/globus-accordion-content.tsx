@@ -1,4 +1,5 @@
 import React, { PropsWithChildren } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   useMutation,
   UseMutationResult,
@@ -28,6 +29,8 @@ export const GlobusAccordionContent: React.FC<
 > = (props) => {
   const trpc = useTRPC();
   const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const justAuthorised = searchParams.get("globusAuthorised") === "true";
 
   // const globusAuthoriseOptions = trpc.releaseJob.authoriseGlobus.mutationOptions({
   //   onSuccess: async () => {
@@ -123,40 +126,39 @@ export const GlobusAccordionContent: React.FC<
           </span>
         )}
       </div>
-      /**
       <div className="form-control">
         <label className="label">
-          <span className="label-text">
-            Verify that researcher Globus username is correct{" "}
-          </span>
+          <span className="label-text">Authorise with Globus </span>
         </label>
         <button
           type="button"
           className="btn-normal w-fit"
           onClick={() => {
-            globusVerifyUsernameTriggerMutate.mutate({
-              username:
-                props.releaseData.dataSharingGlobus?.globusResearcherUsername ??
-                "",
-            });
+            window.location.href = `/api/globus/authorise?releaseKey=${props.releaseKey}`;
           }}
           disabled={
             // can't be already running a job
             !!props.releaseData.runningJob ||
             // must be activated
-            !props.releaseData.activation ||
+            // !props.releaseData.activation ||
             // can't be within our own trigger operation
-            globusVerifyUsernameTriggerMutate.isPending ||
+            // globusVerifyUsernameTriggerMutate.isPending ||
             // can't be started whilst other fields are being mutated
-            props.releasePatchMutator.isPending ||
-            // copy out needs to be working as a mechanism
-            props.globusWorking
+            // props.releasePatchMutator.isPending ||
+            // needs to be working
+            //
+            // TODO: Think of sensible guards here
+            !props.globusWorking
           }
         >
-          Verify Globus username
+          Authorise
         </button>
+        {justAuthorised && (
+          <span className="label-text-alt mt-2 text-success">
+            Successfully authorised with Globus
+          </span>
+        )}
       </div>
-      */
     </>
   );
 };
