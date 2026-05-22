@@ -63,6 +63,8 @@ export const SharerGlobusSchema = z.object({
   type: z.literal("globus"),
   clientId: z.string(), // TODO: Add more strictness
   clientSecret: z.string(),
+  nonCommercialGroupId: z.string(),
+  commercialGroupId: z.string(),
 });
 
 export const SharerSchema = z.discriminatedUnion("type", [

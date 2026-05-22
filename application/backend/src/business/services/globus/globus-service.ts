@@ -1,6 +1,7 @@
 import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import type { ElsaSettings } from "../../../config/elsa-settings";
+import { ReleaseActivationGlobusTokenExpiredError } from "../../exceptions/release-activation";
 import { GlobusEnabledService } from "./globus-enabled-service";
 
 export type GlobusIdentityResult = {
@@ -141,5 +142,81 @@ export class GlobusService {
 
     const data = await response.json();
     return data.access_token;
+  }
+
+  /**
+   * Add a researcher identity to a Globus group.
+   * Uses a token from OAuth2 web flow and group id (specified in sharer config)
+   */
+  public async addResearcherToGroup(
+    token: string,
+    identityId: string,
+    groupId: string,
+  ): Promise<void> {
+    const response = await fetch(
+      `https://groups.api.globus.org/v2/groups/${groupId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          add: [
+            {
+              identity_id: identityId,
+              role: "member",
+            },
+          ],
+        }),
+      },
+    );
+
+    if (response.status === 401) {
+      throw new ReleaseActivationGlobusTokenExpiredError();
+    }
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(`Globus add member failed: ${response.status} - ${body}`);
+    }
+  }
+
+  /*
+   * Remove a researcher identity from a Globus group.
+   */
+  public async removeResearcherGroup(
+    token: string,
+    identityId: string,
+    groupId: string,
+  ): Promise<void> {
+    const response = await fetch(
+      `https://groups.api.globus.org/v2/groups/${groupId}`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          remove: [
+            {
+              identity_id: identityId,
+            },
+          ],
+        }),
+      },
+    );
+
+    if (response.status === 401) {
+      throw new ReleaseActivationGlobusTokenExpiredError();
+    }
+
+    if (!response.ok) {
+      const body = await response.text();
+      throw new Error(
+        `Globus remove member failed: ${response.status} - ${body}`,
+      );
+    }
   }
 }
