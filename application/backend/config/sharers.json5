@@ -45,8 +45,8 @@
       type: "globus",
       clientId: "",
       clientSecret: "",
-      nonCommercialGroupId: "67aa167a-49ca-11f1-9c97-0affe5de4acb",
-      commercialGroupId: "a1d09cb4-49c9-11f1-81e4-0ef5dcc031c5",
+      nonCommercialGroupId: "",
+      commercialGroupId: "",
     },
   ],
 }
