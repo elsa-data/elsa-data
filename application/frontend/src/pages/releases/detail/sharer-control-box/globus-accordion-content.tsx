@@ -92,7 +92,13 @@ export const GlobusAccordionContent: React.FC<
           Verify Globus username
         </button>
         {globusVerifyUsernameTriggerMutate.isSuccess && (
-          <span className="label-text-alt mt-2 text-success">
+          <span
+            className={`label-text-alt mt-2 ${
+              globusVerifyUsernameTriggerMutate.data?.found
+                ? "text-success"
+                : "text-error"
+            }`}
+          >
             {globusVerifyUsernameTriggerMutate.data?.found
               ? "Valid Globus identity"
               : "No Globus identity found for this username"}

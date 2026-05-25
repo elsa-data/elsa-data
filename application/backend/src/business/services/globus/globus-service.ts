@@ -74,6 +74,10 @@ export class GlobusService {
       },
     );
 
+    if (response.status === 400) {
+      return { found: false };
+    }
+
     if (!response.ok) {
       throw new Error(`Globus identity lookup failed: ${response.status}`);
     }
