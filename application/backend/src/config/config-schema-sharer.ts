@@ -61,10 +61,12 @@ export const SharerHtsgetAwsVpcLatticeAccessPointSchema = z.object({
 export const SharerGlobusSchema = z.object({
   id: z.string(),
   type: z.literal("globus"),
-  clientId: z.string(), // TODO: Add more strictness
+  clientId: z.string().uuid("clientId must be a valid UUID"),
   clientSecret: z.string(),
-  nonCommercialGroupId: z.string(),
-  commercialGroupId: z.string(),
+  nonCommercialGroupId: z
+    .string()
+    .uuid("nonCommercialGroupId must be a valid UUID"),
+  commercialGroupId: z.string().uuid("commercialGroupId must be a valid UUID"),
 });
 
 export const SharerSchema = z.discriminatedUnion("type", [
