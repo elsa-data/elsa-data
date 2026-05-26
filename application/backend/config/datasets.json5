@@ -42,5 +42,11 @@
       description: "CONTROL",
       loader: "dev",
     },
+    {
+      uri: "urn:doi:guardians-data-sharing/globus",
+      name: "NCI Globus",
+      description: "NCI Globus demo dataset",
+      loader: "dev",
+    },
   ],
 }

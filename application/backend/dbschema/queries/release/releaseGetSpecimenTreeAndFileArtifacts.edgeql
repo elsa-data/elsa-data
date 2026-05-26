@@ -16,6 +16,7 @@ with
     isAllowedS3Data,
     isAllowedGSData,
     isAllowedR2Data,
+    isAllowedNciGlobusData,
     dataSharingConfiguration
   }
   filter .releaseKey = <str>$releaseKey),
@@ -34,6 +35,7 @@ select {
   releaseIsAllowedS3Data:= release.isAllowedS3Data,
   releaseIsAllowedGSData:= release.isAllowedGSData,
   releaseIsAllowedR2Data := release.isAllowedR2Data,
+  releaseIsAllowedNciGlobusData := release.isAllowedNciGlobusData,
   releaseHtsgetRestrictions := release.dataSharingConfiguration.htsgetRestrictions,
 
   # the tree is an output representation with all the dataset level
