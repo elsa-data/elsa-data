@@ -1,0 +1,9 @@
+dependencies:
+- name: postgresql
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 16.3.0
+- name: reloader
+  repository: https://stakater.github.io/stakater-charts
+  version: 2.1.4
+digest: sha256:eeb3245df8b6fe67a02d13c626ed067da504b0edc901d959c2080849d3fe41e3
+generated: "2025-06-19T11:58:47.255457+10:00"

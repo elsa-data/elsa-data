@@ -115,6 +115,16 @@ export type DataSharingHtsgetAwsVpcLatticeAccessPointType = Type.Static<
   typeof DataSharingHtsgetAwsVpcLatticeAccessPointSchema
 >;
 
+export const DataSharingGlobusSchema = Type.Optional(
+  Type.Object({
+    installed: Type.Boolean(),
+    globusResearcherUsername: Type.Optional(Type.String()),
+    // TODO: Add Group Ids here??
+  }),
+);
+
+export type DataSharingGlobusType = Type.Static<typeof DataSharingGlobusSchema>;
+
 export const ReleaseDetailSchema = Type.Object({
   id: Type.String(),
 
@@ -151,6 +161,7 @@ export const ReleaseDetailSchema = Type.Object({
   isAllowedS3Data: Type.Boolean(),
   isAllowedGSData: Type.Boolean(),
   isAllowedR2Data: Type.Boolean(),
+  isAllowedNciGlobusData: Type.Boolean(),
 
   // Permission for the current user that allowed to edit other user's role within the release.
   rolesAllowedToAlterParticipant: Nullable(
@@ -204,6 +215,8 @@ export const ReleaseDetailSchema = Type.Object({
       users: Type.Array(Type.String()),
     }),
   ),
+
+  dataSharingGlobus: DataSharingGlobusSchema,
 
   // once we get @role link properties working we should enable this
   // roleInRelease: Type.String(),

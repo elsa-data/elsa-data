@@ -1,0 +1,18 @@
+elsa:
+  config:
+    # Tell the app its base URL is local
+    deployedUrl: http://localhost:8080
+
+  ingress:
+    # Clear out the cert-manager annotations so it doesn't try to get a real cert
+    annotations: {}
+
+    # Route localhost traffic to the app
+    hosts:
+      - host: localhost
+        paths:
+          - path: /
+            pathType: Prefix
+
+    # Completely empty the TLS array to run in plain HTTP
+    tls: []

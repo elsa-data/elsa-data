@@ -108,3 +108,8 @@ application/backend/asset/maxmind/
 
 # Mac browsing files
 .DS_Store
+
+.direnv/
+
+# Helm charts
+!helm/charts/*.tgz

@@ -9,4 +9,14 @@ export const SESSION_USER_DB_OBJECT_KEY_NAME = "user_db_object";
 export const SESSION_OIDC_STATE_KEY_NAME = "state";
 export const SESSION_OIDC_NONCE_KEY_NAME = "nonce";
 
-export type SESSION_KEYS = "user_db_object" | "state" | "nonce";
+export const SESSION_GLOBUS_RELEASE_KEY_NAME = "globus_release_key";
+export const SESSION_GLOBUS_STATE_KEY_NAME = "globus_state";
+export const SESSION_GLOBUS_TOKEN_KEY_NAME = "globus_groups_token";
+
+export type SESSION_KEYS =
+  | "user_db_object"
+  | "state"
+  | "nonce"
+  | "globus_state"
+  | "globus_release_key"
+  | "globus_groups_token";

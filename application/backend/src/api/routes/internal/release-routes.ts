@@ -213,6 +213,8 @@ export const releaseRoutes = async (
               case "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointName":
               case "/dataSharingConfiguration/gcpStorageIamEnabled":
               case "/dataSharingConfiguration/gcpStorageIamUsers":
+              case "/dataSharingConfiguration/globusEnabled":
+              case "/dataSharingConfiguration/globusResearcherUsername":
                 reply.send(
                   await releaseService.setDataSharingConfigurationField(
                     authenticatedUser,

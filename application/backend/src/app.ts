@@ -12,6 +12,7 @@ import * as mime from "mime-types";
 import type { DependencyContainer } from "tsyringe";
 import { apiAuthRoutes, callbackRoutes } from "./api/api-auth-routes";
 import { apiExternalRoutes } from "./api/api-external-routes";
+import { apiGlobusRoutes } from "./api/api-globus-routes";
 import { apiInternalRoutes } from "./api/api-internal-routes";
 import { trpcRoutes } from "./api/api-trpc-routes";
 import { apiUnauthenticatedRoutes } from "./api/api-unauthenticated-routes";
@@ -188,6 +189,12 @@ export class App {
       container: this.dc,
       redirectUri: this.settings.deployedUrl + "/cb",
       includeTestUsers: this.settings.devTesting?.allowTestUsers ?? false,
+    });
+
+    this.server.register(apiGlobusRoutes, {
+      prefix: "/api/globus",
+      container: this.dc,
+      redirectUri: this.settings.deployedUrl + "/api/globus/callback",
     });
 
     // our behaviour for React routed websites is that NotFound responses should be replaced

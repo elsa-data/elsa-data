@@ -124,4 +124,13 @@ export const releaseJobRouter = router({
         )) ?? { data: [], total: 0 }
       );
     }),
+  verifyGlobusUsername: internalProcedure
+    .input(
+      z.object({
+        username: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      return ctx.globusService.verifyUsername(input.username);
+    }),
 });
