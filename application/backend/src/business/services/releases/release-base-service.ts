@@ -459,6 +459,7 @@ export abstract class ReleaseBaseService {
       isAllowedS3Data: releaseInfo.isAllowedS3Data,
       isAllowedGSData: releaseInfo.isAllowedGSData,
       isAllowedR2Data: releaseInfo.isAllowedR2Data,
+      isAllowedNciGlobusData: releaseInfo.isAllowedNciGlobusData,
 
       // A list of roles allowed to edit other user's role depending on this auth user
       // e.g. A manager cannot edit Administrator role.
