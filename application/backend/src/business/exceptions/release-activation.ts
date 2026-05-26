@@ -69,3 +69,33 @@ export class ReleaseActivatedMismatchedExpectationsError extends Base7807Error {
     );
   }
 }
+
+export class ReleaseActivationGlobusTokenMissingError extends Base7807Error {
+  constructor() {
+    super(
+      "Globus authorisation required before activating this release",
+      400,
+      "Please authorise with Globus using the Data Sharing Control panel before activating",
+    );
+  }
+}
+
+export class ReleaseActivationGlobusTokenExpiredError extends Base7807Error {
+  constructor() {
+    super(
+      "Globus token has expired",
+      400,
+      "Please re-authorise with Globus using the Data Sharing Control panel before activating",
+    );
+  }
+}
+
+export class ReleaseActivationGlobusResearcherIdentityNotFoundError extends Base7807Error {
+  constructor(username: string) {
+    super(
+      "Researcher Globus identity not found",
+      400,
+      `No active Globus identity was found for username '${username}' - please verify the researcher username`,
+    );
+  }
+}

@@ -4,9 +4,12 @@ import * as gel from "gel";
 import type { Logger } from "pino";
 import { inject, injectable } from "tsyringe";
 import e from "../../../../dbschema/edgeql-js";
+import type { SharerGlobusType } from "../../../config/config-schema-sharer";
 import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AuthenticatedUser } from "../../authenticated-user";
 import {
+  ReleaseActivationGlobusResearcherIdentityNotFoundError,
+  ReleaseActivationGlobusTokenMissingError,
   ReleaseActivationPermissionError,
   ReleaseActivationStateError,
   ReleaseDeactivationRunningJobError,
@@ -16,6 +19,7 @@ import { ReleaseDisappearedError } from "../../exceptions/release-disappear";
 import { AuditEventService } from "../audit-event-service";
 import { AuditEventTimedService } from "../audit-event-timed-service";
 import { EmailService } from "../email-service";
+import { GlobusService } from "../globus/globus-service";
 import { getReleaseInfo } from "../helpers";
 import { JobCloudFormationDeleteService } from "../jobs/job-cloud-formation-delete-service";
 import { ManifestService } from "../manifests/manifest-service";
@@ -47,6 +51,7 @@ export class ReleaseActivationService extends ReleaseBaseService {
     private readonly releaseParticipationService: ReleaseParticipationService,
     @inject(JobCloudFormationDeleteService)
     private readonly jobCloudFormationDeleteService: JobCloudFormationDeleteService,
+    @inject(GlobusService) private readonly globusService: GlobusService,
   ) {
     super(
       settings,
@@ -103,7 +108,11 @@ export class ReleaseActivationService extends ReleaseBaseService {
    * @param releaseKey
    * @protected
    */
-  public async activateRelease(user: AuthenticatedUser, releaseKey: string) {
+  public async activateRelease(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    options?: { globusToken?: string },
+  ) {
     const { userRole } = await this.getBoundaryInfoWithThrowOnFailure(
       user,
       releaseKey,
@@ -151,6 +160,50 @@ export class ReleaseActivationService extends ReleaseBaseService {
           tx,
           releaseKey,
         );
+
+        // If Globus sharing is enabled, add researcher to the correct group
+        if (releaseInfo.dataSharingConfiguration.globusEnabled) {
+          const globusSharer = this.settings.sharers?.find(
+            (s) => s.type === "globus",
+          ) as SharerGlobusType | undefined;
+
+          if (globusSharer) {
+            if (!options?.globusToken) {
+              throw new ReleaseActivationGlobusTokenMissingError();
+            }
+
+            const username =
+              releaseInfo.dataSharingConfiguration.globusResearcherUsername;
+            if (!username) {
+              throw new ReleaseActivationGlobusResearcherIdentityNotFoundError(
+                "(not set)",
+              );
+            }
+
+            const identity = await this.globusService.verifyUsername(username);
+            if (!identity.found || !identity.identity_id) {
+              throw new ReleaseActivationGlobusResearcherIdentityNotFoundError(
+                username,
+              );
+            }
+
+            // Assign group id based on applicant assertion in cohort constructor application coding
+            const groupId = releaseInfo.applicationCoded.studyIsNotCommercial
+              ? globusSharer.nonCommercialGroupId
+              : globusSharer.commercialGroupId;
+
+            await this.globusService.addResearcherToGroup(
+              options.globusToken,
+              identity.identity_id,
+              groupId,
+            );
+
+            this.logger.info(
+              { releaseKey, username, groupId },
+              "Added researcher to Globus group",
+            );
+          }
+        }
 
         // once this is working well we can probably drop this to debug
         this.logger.info(m, "created release master manifest");
@@ -203,7 +256,11 @@ export class ReleaseActivationService extends ReleaseBaseService {
    * @param user
    * @param releaseKey
    */
-  public async deactivateRelease(user: AuthenticatedUser, releaseKey: string) {
+  public async deactivateRelease(
+    user: AuthenticatedUser,
+    releaseKey: string,
+    options?: { globusToken?: string },
+  ) {
     const { userRole, isRunningJob } =
       await this.getBoundaryInfoWithThrowOnFailure(user, releaseKey);
 
@@ -248,6 +305,33 @@ export class ReleaseActivationService extends ReleaseBaseService {
               user,
               releaseKey,
             );
+          }
+        }
+
+        if (releaseInfo.dataSharingConfiguration.globusEnabled) {
+          const globusSharer = this.settings.sharers?.find(
+            (s) => s.type === "globus",
+          ) as SharerGlobusType | undefined;
+
+          if (globusSharer && options?.globusToken) {
+            const username =
+              releaseInfo.dataSharingConfiguration.globusResearcherUsername;
+            if (username) {
+              const identity =
+                await this.globusService.verifyUsername(username);
+              if (identity.found && identity.identity_id) {
+                const groupId = releaseInfo.applicationCoded
+                  .studyIsNotCommercial
+                  ? globusSharer.nonCommercialGroupId
+                  : globusSharer.commercialGroupId;
+
+                await this.globusService.removeResearcherGroup(
+                  options.globusToken,
+                  identity.identity_id,
+                  groupId,
+                );
+              }
+            }
           }
         }
 

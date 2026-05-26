@@ -1,0 +1,13 @@
+apiVersion: v2
+appVersion: 1.16.0
+dependencies:
+- name: postgresql
+  repository: oci://registry-1.docker.io/bitnamicharts
+  version: 16.3.0
+- name: reloader
+  repository: https://stakater.github.io/stakater-charts
+  version: 2.1.4
+description: A Helm chart for Kubernetes
+name: elsa
+type: application
+version: 0.1.0

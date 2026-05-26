@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "elsa.fullname" . }}
+  labels:
+    {{- include "elsa.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "elsa.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        reloader.stakater.com/auto: "true"
+      {{- with .Values.podAnnotations }}
+        
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "elsa.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "elsa.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          #entrypoint: "/bin/sh"
+          command: ["/bin/bash","-c","mkdir /a/config && cat /config/values.json5 > /a/config/values.json5 && cat /secret/session.json5 > /a/config/session.json5 && /a/gel migration apply && NODE_ENV=development /a/bun src/entrypoint.ts"]
+          env:
+            #- name: ELSA_DATA_META_CONFIG_FOLDERS
+            #  value: /config
+            - name: GEL_HOST
+              value: gel
+            - name: GEL_CLIENT_TLS_SECURITY
+              value: insecure
+            - name: ELSA_DATA_META_CONFIG_SOURCES
+              value: file('values'),file('session')
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          #livenessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: 3000
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - name: config
+            mountPath: "/config"
+            readOnly: false
+          - name: secret
+            mountPath: "/secret"
+            readOnly: true
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+      - name: config
+        configMap:
+          name: elsa-config
+          items:
+          - key: "valuesconfig.json5"
+            path: "values.json5"
+      - name: secret 
+        secret:
+          secretName: session
+          items:
+          - key: session
+            path: "session.json5"
+
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

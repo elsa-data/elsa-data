@@ -5,6 +5,7 @@ import type { ElsaSettings } from "../../../config/elsa-settings";
 import { AuditEventService } from "../audit-event-service";
 import { AwsDiscoveryService } from "../aws/aws-discovery-service";
 import { AwsEnabledService } from "../aws/aws-enabled-service";
+import { GlobusEnabledService } from "../globus/globus-enabled-service";
 
 export type SharerWithStatusType = SharerType & {
   notWorkingReason?: string;
@@ -21,6 +22,8 @@ export class SharerService {
     private readonly awsDiscoveryService: AwsDiscoveryService,
     @inject(AuditEventService)
     private readonly auditLogService: AuditEventService,
+    @inject(GlobusEnabledService)
+    private readonly globusEnabledService: GlobusEnabledService,
   ) {}
 
   /**
@@ -49,6 +52,14 @@ export class SharerService {
           : {
               ...s,
               notWorkingReason: "Copy Out service not installed",
+            };
+
+      case "globus":
+        return (await this.globusEnabledService.isEnabled())
+          ? s
+          : {
+              ...s,
+              notWorkingReason: "Globus service not installed",
             };
 
       case "aws-access-point":

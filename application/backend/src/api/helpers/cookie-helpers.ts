@@ -1,6 +1,9 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { AuthenticatedUserJsonType } from "../../business/authenticated-user";
 import {
+  SESSION_GLOBUS_RELEASE_KEY_NAME,
+  SESSION_GLOBUS_STATE_KEY_NAME,
+  SESSION_GLOBUS_TOKEN_KEY_NAME,
   type SESSION_KEYS,
   SESSION_OIDC_NONCE_KEY_NAME,
   SESSION_OIDC_STATE_KEY_NAME,
@@ -12,6 +15,9 @@ declare module "@fastify/secure-session" {
     [SESSION_USER_DB_OBJECT_KEY_NAME]: AuthenticatedUserJsonType;
     [SESSION_OIDC_NONCE_KEY_NAME]: string;
     [SESSION_OIDC_STATE_KEY_NAME]: string;
+    [SESSION_GLOBUS_STATE_KEY_NAME]: string;
+    [SESSION_GLOBUS_TOKEN_KEY_NAME]: string;
+    [SESSION_GLOBUS_RELEASE_KEY_NAME]: string;
   }
 }
 

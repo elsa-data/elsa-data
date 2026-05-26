@@ -3,8 +3,10 @@ import type { Logger } from "pino";
 import { type DependencyContainer, inject, injectable } from "tsyringe";
 import {
   synchroniseDatasetControl,
+  synchroniseDatasetGlobus,
   synchroniseDatasetKaos,
 } from "../../../../../dbschema/queries";
+import globusDataJson from "../../../../test-data/dataset/globus_data.json";
 import { TENF_URI } from "../../../../test-data/dataset/insert-test-data-10f-helpers.ts";
 import { insert10F } from "../../../../test-data/dataset/insert-test-data-10f.ts";
 import {
@@ -15,6 +17,10 @@ import {
   CONTROL_DATASET_DOI,
   CONTROL_DATASET_URI,
 } from "../../../../test-data/dataset/test-data-control.ts";
+import {
+  GLOBUS_DATASET_DOI,
+  GLOBUS_DATASET_URI,
+} from "../../../../test-data/dataset/test-data-globus.ts";
 import {
   KAOS_DATASET_DOI,
   KAOS_DATASET_URI,
@@ -56,6 +62,13 @@ export class DevLoader {
         await synchroniseDatasetControl(executor, {
           datasetDoi: CONTROL_DATASET_DOI,
           datasetUri: CONTROL_DATASET_URI,
+        });
+        break;
+      case GLOBUS_DATASET_URI:
+        await synchroniseDatasetGlobus(executor, {
+          datasetDoi: GLOBUS_DATASET_DOI,
+          datasetUri: GLOBUS_DATASET_URI,
+          sampleData: globusDataJson,
         });
         break;
       default:

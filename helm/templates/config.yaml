@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elsa-config
+data:
+  config.json5: |-
+{{ .Files.Get "elsa-config.json5" | indent 4 }}
+
+{{- $config := .Values.config -}}
+
+{{ with .Values.config.oidc}}
+{{ if not (and .issuerUrl .clientId .clientSecret)}}
+{{- $config := unset $config "oidc" -}}
+{{ end }}
+{{ end }}
+
+{{ with .Values.config.emailer}}
+{{ if not (and .mode .from.name .from.address .sendEmails)}}
+{{- $config := unset $config "emailer" -}}
+{{ end }}
+{{ end }}
+
+  valuesconfig.json5: |-
+{{ $config | toPrettyJson | indent 4}}

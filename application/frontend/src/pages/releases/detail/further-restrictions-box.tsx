@@ -95,6 +95,7 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
       | "/allowedS3"
       | "/allowedGS"
       | "/allowedR2"
+      | "/allowedNciGlobus"
       | null,
     current: boolean,
   ) => (
@@ -175,6 +176,13 @@ export const FurtherRestrictionsBox: React.FC<Props> = ({
                   </>,
                   "/allowedR2",
                   releaseData.isAllowedR2Data,
+                )}
+                {isAllowedCheck(
+                  <>
+                    NCI Globus (<span className="font-mono">/g/data/...</span>)
+                  </>,
+                  "/allowedNciGlobus",
+                  releaseData.isAllowedNciGlobusData,
                 )}
               </RhChecks>
             </div>

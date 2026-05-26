@@ -12,7 +12,8 @@ type SharingConfigurationAccordionProps = {
     | "/dataSharingConfiguration/htsgetEnabled"
     | "/dataSharingConfiguration/awsAccessPointEnabled"
     | "/dataSharingConfiguration/htsgetAwsVpcLatticeAccessPointEnabled"
-    | "/dataSharingConfiguration/gcpStorageIamEnabled";
+    | "/dataSharingConfiguration/gcpStorageIamEnabled"
+    | "/dataSharingConfiguration/globusEnabled";
   current: boolean;
   notWorkingReason: string | undefined;
 };

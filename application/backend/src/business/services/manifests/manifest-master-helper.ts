@@ -12,6 +12,7 @@ import type { ManifestMasterType } from "./manifest-master-types";
 const S3_PREFIX = "s3://";
 const GS_PREFIX = "gs://";
 const R2_PREFIX = "r2://";
+const NCI_GLOBUS_PREFIX = "/g/data/";
 
 /**
  * Converts the manifest data we got direct from the database into a filter
@@ -39,6 +40,11 @@ export async function transformDbManifestToMasterManifest(
       if (url.startsWith(GS_PREFIX) && manifest.releaseIsAllowedGSData)
         return true;
       if (url.startsWith(R2_PREFIX) && manifest.releaseIsAllowedR2Data)
+        return true;
+      if (
+        url.startsWith(NCI_GLOBUS_PREFIX) &&
+        manifest.releaseIsAllowedNciGlobusData
+      )
         return true;
     }
     return false;
@@ -71,7 +77,8 @@ export async function transformDbManifestToMasterManifest(
   if (
     !manifest.releaseIsAllowedS3Data &&
     !manifest.releaseIsAllowedGSData &&
-    !manifest.releaseIsAllowedR2Data
+    !manifest.releaseIsAllowedR2Data &&
+    !manifest.releaseIsAllowedNciGlobusData
   ) {
     if (throwExceptions)
       throw new ReleaseActivatedNothingError("No data locations enabled");
